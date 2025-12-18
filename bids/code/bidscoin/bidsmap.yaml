@@ -1,0 +1,1604 @@
+$schema: schema.json
+Options:
+  bidscoin:
+    version: 4.6.2
+    subprefix: sub-
+    sesprefix: ses-
+    bidsignore:
+    - extra_data/
+    - sub-*_ct.*
+    unknowntypes:
+    - extra_data
+    ignoretypes:
+    - exclude
+    anon: y
+    stripsuffix: y
+    unzip: null
+  plugins:
+    dcm2niix2bids:
+      command: dcm2niix
+      args: -b y -z y -i n -l n
+      meta:
+      - .json
+      - .tsv
+      - .tsv.gz
+      fallback: y
+    events2bids:
+      extraInfo: 7
+      meta:
+      - .json
+DICOM:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+    age<<session_id>>:
+      value: <<PatientAge>>
+      meta:
+        Description: Age of the participant at the time of the acquired session
+        Units: year
+    sex:
+      value: <<PatientSex>>
+      meta:
+        Description: Sex of the participant
+        Levels:
+          M: male
+          F: female
+          O: other
+    height:
+      value: <<PatientSize>>
+      meta:
+        Description: Height of the participant
+        Units: meter
+    weight:
+      value: <<PatientWeight>>
+      meta:
+        Description: Weight of the participant
+        Units: kilogram
+  anat: []
+  func: []
+  perf: []
+  dwi: []
+  fmap:
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-02_ses-20241024_acq-greMTcs9_rec-CC-off/20241024/38928_0006_tfl-b1map-sag/original-primary-flip-angle-map-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: tfl_b1map_sag
+      SeriesDescription: tfl_b1map_sag
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''FLIP ANGLE MAP'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: tfl2d1_512
+      SequenceVariant: ''
+      ScanningSequence: ''
+      EchoPulseSequence: GRADIENT
+      MRAcquisitionType: 2D
+      SliceThickness: '3'
+      FlipAngle: '79.99'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.24'
+      RepetitionTime: '29070'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: famp
+      ce: null
+      rec: null
+      flip: null
+      echo: null
+      inv: null
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      run: <<>>
+      chunk: null
+      suffix: TB1TFL
+    meta:
+      B0FieldIdentifier: null
+    events: {}
+  pet: []
+  eeg: []
+  ieeg: []
+  extra_data:
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0006_gremt-cs4-f4-fa10-1iso-ellip83-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs4_f4_FA10_1iso_ellip83
+      SeriesDescription: greMT_cs4_f4_FA10_1iso_ellip83_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs4f4FA101isoellip83
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs4f4FA101isoellip83RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0007_gremt-cs4-f100-fa6-1iso-ellip83-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs4_f100_FA6_1iso_ellip83
+      SeriesDescription: greMT_cs4_f100_FA6_1iso_ellip83_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '6'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs4f100FA61isoellip83
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs4f100FA61isoellip83RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0008_gremt-cs4-f100-fa10-1iso-ellip83-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs4_f100_FA10_1iso_ellip83
+      SeriesDescription: greMT_cs4_f100_FA10_1iso_ellip83_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs4f100FA101isoellip83
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs4f100FA101isoellip83RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0009_gremt-cs4-f100-fa25-1iso-ellip83-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs4_f100_FA25_1iso_ellip83
+      SeriesDescription: greMT_cs4_f100_FA25_1iso_ellip83_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '25'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs4f100FA251isoellip83
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs4f100FA251isoellip83RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0010_gremt-cs6-f4-fa10-1iso-ellip79-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs6_f4_FA10_1iso_ellip79
+      SeriesDescription: greMT_cs6_f4_FA10_1iso_ellip79_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs6f4FA101isoellip79
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs6f4FA101isoellip79RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0011_gremt-cs6-f100-fa6-1iso-ellip79-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs6_f100_FA6_1iso_ellip79
+      SeriesDescription: greMT_cs6_f100_FA6_1iso_ellip79_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '6'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs6f100FA61isoellip79
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs6f100FA61isoellip79RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0012_gremt-cs6-f100-fa10-1iso-ellip79-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs6_f100_FA10_1iso_ellip79
+      SeriesDescription: greMT_cs6_f100_FA10_1iso_ellip79_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs6f100FA101isoellip79
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs6f100FA101isoellip79RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0013_gremt-cs9-f4-fa10-1iso-ellip76-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs9_f4_FA10_1iso_ellip76
+      SeriesDescription: greMT_cs9_f4_FA10_1iso_ellip76_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs9f4FA101isoellip76
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs9f4FA101isoellip76RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0014_gremt-cs9-f100-fa6-1iso-ellip76-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs9_f100_FA6_1iso_ellip76
+      SeriesDescription: greMT_cs9_f100_FA6_1iso_ellip76_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '6'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.73'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs9f100FA61isoellip76
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs9f100FA61isoellip76RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0015_gremt-cs9-f100-fa10-1iso-ellip76-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs9_f100_FA10_1iso_ellip76
+      SeriesDescription: greMT_cs9_f100_FA10_1iso_ellip76_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs9f100FA101isoellip76
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs9f100FA101isoellip76RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0016_gremt-cs9-f100-fa25-1iso-ellip76-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs9_f100_FA25_1iso_ellip76
+      SeriesDescription: greMT_cs9_f100_FA25_1iso_ellip76_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '25'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.73'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs9f100FA251isoellip76
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs9f100FA251isoellip76RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0017_gremt-cs6-f100-fa25-1iso-ellip79-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs6_f100_FA25_1iso_ellip79
+      SeriesDescription: greMT_cs6_f100_FA25_1iso_ellip79_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '25'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs6f100FA251isoellip79
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs6f100FA251isoellip79RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20250319_rec-PSN-on/20250825/00_0001_gremt-cs4-f100-fa25-1iso-ellip83-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs4_f100_FA25_1iso_ellip83
+      SeriesDescription: greMT_cs4_f100_FA25_1iso_ellip83_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '25'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs4f100FA251isoellip83
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: greMTcs4f100FA251isoellip83RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20250319_rec-PSN-on/20250825/00_0003_gremt-cs4-f100-fa6-1iso-ellip83-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs4_f100_FA6_1iso_ellip83
+      SeriesDescription: greMT_cs4_f100_FA6_1iso_ellip83_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '6'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs4f100FA61isoellip83
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: greMTcs4f100FA61isoellip83RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20250319_rec-PSN-on/20250825/00_0005_gremt-cs4-f100-fa10-1iso-ellip83-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs4_f100_FA10_1iso_ellip83
+      SeriesDescription: greMT_cs4_f100_FA10_1iso_ellip83_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs4f100FA101isoellip83
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: greMTcs4f100FA101isoellip83RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20250319_rec-PSN-on/20250825/00_0007_gremt-cs4-f4-fa10-1iso-ellip83-rr/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs4_f4_FA10_1iso_ellip83
+      SeriesDescription: greMT_cs4_f4_FA10_1iso_ellip83_RR
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs4f4FA101isoellip83
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: greMTcs4f4FA101isoellip83RR
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20251121_acq-vibeMTc9_rec-DL6weak_rec-PSN-on-off/20250828/91_0001_vibemt-c9-f100-fa25-1iso-psnon/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: vibeMT_c9_f100_FA25_1iso
+      SeriesDescription: vibeMT_c9_f100_FA25_1iso_PSNON
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '25'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.41'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: vibeMTc9f100FA251iso
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: vibeMTc9f100FA251isoPSNON
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20251121_acq-vibeMTc9_rec-DL6weak_rec-PSN-on-off/20250828/91_0002_vibemt-c9-f100-fa25-1iso-psnoff/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: vibeMT_c9_f100_FA25_1iso
+      SeriesDescription: vibeMT_c9_f100_FA25_1iso_PSNOFF
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '25'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.41'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: vibeMTc9f100FA251iso
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: vibeMTc9f100FA251isoPSNOFF
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20251121_acq-vibeMTc9_rec-DL6weak_rec-PSN-on-off/20250828/91_0003_vibemt-c9-f100-fa6-1iso-psnon/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: vibeMT_c9_f100_FA6_1iso
+      SeriesDescription: vibeMT_c9_f100_FA6_1iso_PSNON
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '6'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.41'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: vibeMTc9f100FA61iso
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: vibeMTc9f100FA61isoPSNON
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20251121_acq-vibeMTc9_rec-DL6weak_rec-PSN-on-off/20250828/91_0004_vibemt-c9-f100-fa6-1iso-psnoff/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: vibeMT_c9_f100_FA6_1iso
+      SeriesDescription: vibeMT_c9_f100_FA6_1iso_PSNOFF
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '6'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.41'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: vibeMTc9f100FA61iso
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: vibeMTc9f100FA61isoPSNOFF
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20251121_acq-vibeMTc9_rec-DL6weak_rec-PSN-on-off/20250828/91_0005_vibemt-c9-f100-fa10-1iso-psnon/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: vibeMT_c9_f100_FA10_1iso
+      SeriesDescription: vibeMT_c9_f100_FA10_1iso_PSNON
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.41'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: vibeMTc9f100FA101iso
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: vibeMTc9f100FA101isoPSNON
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20251121_acq-vibeMTc9_rec-DL6weak_rec-PSN-on-off/20250828/91_0006_vibemt-c9-f100-fa10-1iso-psnoff/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: vibeMT_c9_f100_FA10_1iso
+      SeriesDescription: vibeMT_c9_f100_FA10_1iso_PSNOFF
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.41'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: vibeMTc9f100FA101iso
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: vibeMTc9f100FA101isoPSNOFF
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20251121_acq-vibeMTc9_rec-DL6weak_rec-PSN-on-off/20250828/91_0007_vibemt-c9-f4-fa10-1iso-psnon/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: vibeMT_c9_f4_FA10_1iso
+      SeriesDescription: vibeMT_c9_f4_FA10_1iso_PSNON
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.41'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: vibeMTc9f4FA101iso
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: vibeMTc9f4FA101isoPSNON
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20251121_acq-vibeMTc9_rec-DL6weak_rec-PSN-on-off/20250828/91_0008_vibemt-c9-f4-fa10-1iso-psnoff/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: vibeMT_c9_f4_FA10_1iso
+      SeriesDescription: vibeMT_c9_f4_FA10_1iso_PSNOFF
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: '1'
+      EchoTime: ''
+      EffectiveEchoTime: '2.41'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: vibeMTc9f4FA101iso
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: '1'
+      dir: ''
+      run: <<>>
+      mod: vibeMTc9f4FA101isoPSNOFF
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-02_ses-20241024_acq-greMTcs9_rec-CC-off/20241024/38928_0007_gremt-cs9-f4-fa10-1iso-ellip76/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs9_f4_FA10_1iso_ellip76
+      SeriesDescription: greMT_cs9_f4_FA10_1iso_ellip76
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs9f4FA101isoellip76
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs9f4FA101isoellip76
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-02_ses-20241024_acq-greMTcs9_rec-CC-off/20241024/38928_0008_gremt-cs9-f100-fa10-1iso-ellip76/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs9_f100_FA10_1iso_ellip76
+      SeriesDescription: greMT_cs9_f100_FA10_1iso_ellip76
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '10'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.46'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs9f100FA101isoellip76
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs9f100FA101isoellip76
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-02_ses-20241024_acq-greMTcs9_rec-CC-off/20241024/38928_0009_gremt-cs9-f100-fa6-1iso-ellip76/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs9_f100_FA6_1iso_ellip76
+      SeriesDescription: greMT_cs9_f100_FA6_1iso_ellip76
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '6'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.73'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs9f100FA61isoellip76
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs9f100FA61isoellip76
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-02_ses-20241024_acq-greMTcs9_rec-CC-off/20241024/38928_0010_gremt-cs9-f100-fa25-1iso-ellip76/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: greMT_cs9_f100_FA25_1iso_ellip76
+      SeriesDescription: greMT_cs9_f100_FA25_1iso_ellip76
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: fl3d3_ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '25'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.73'
+      RepetitionTime: '30'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: greMTcs9f100FA251isoellip76
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: greMTcs9f100FA251isoellip76
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-02_ses-20241024_acq-greMTcs9_rec-CC-off/20241024/38928_0011_t1-mpr-fwe-1iso-cs4-6/original-primary-m-none_e09_0001.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: MR
+      ProtocolName: t1_mpr_fwe_1iso_cs4.6
+      SeriesDescription: t1_mpr_fwe_1iso_cs4.6
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''M'', ''NONE'']'
+      SequenceName: ''
+      PulseSequenceName: WIP_tfl3d1_41ns
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: 3D
+      SliceThickness: '1'
+      FlipAngle: '9'
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: '2.91'
+      RepetitionTime: '2300'
+      PhaseEncodingDirection: ''
+    bids:
+      acq: t1mprfwe1isocs46
+      inv: null
+      rec: null
+      ce: null
+      task: null
+      echo: ''
+      dir: ''
+      run: <<>>
+      mod: t1mprfwe1isocs46
+      part:
+      - ''
+      - mag
+      - phase
+      - real
+      - imag
+      - 0
+      chunk: null
+      suffix: ''
+    meta: {}
+    events: {}
+  exclude:
+  - provenance: /home/rflaherty/test_dicoms/raw/sub-01_ses-20240517-02_rec-PSN-on/20241022/91_0099_phoenixzipreport/original-primary-other-csa-report_e09_0007.dcm
+    properties:
+      filepath: ''
+      filename: ''
+      filesize: ''
+      nrfiles: null
+    attributes:
+      Modality: SR
+      ProtocolName: Phoenix Document
+      SeriesDescription: PhoenixZIPReport
+      ImageType: '[''ORIGINAL'', ''PRIMARY'', ''OTHER'', ''CSA REPORT'']'
+      SequenceName: ''
+      PulseSequenceName: ''
+      SequenceVariant: ''
+      ScanningSequence: ''
+      MRAcquisitionType: ''
+      SliceThickness: ''
+      FlipAngle: ''
+      EchoNumbers: ''
+      EchoTime: ''
+      EffectiveEchoTime: ''
+      RepetitionTime: ''
+      InPlanePhaseEncodingDirection: ''
+    bids:
+      acq: PhoenixDocument
+      task: PhoenixZIPReport
+      echo: ''
+      suffix: ''
+      rec: REPORT
+    meta: {}
+    events: {}
+Presentation:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+  beh: []
+  eeg: []
+  ieeg: []
+  meg: []
+  nirs: []
+  func: []
+  extra_data: []
+  exclude: []
+Psychopy:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+  beh: []
+  eeg: []
+  ieeg: []
+  meg: []
+  nirs: []
+  func: []
+  extra_data: []
+  exclude: []
+Logdata:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+  beh: []
+  eeg: []
+  ieeg: []
+  meg: []
+  nirs: []
+  func: []
+  extra_data: []
+  exclude: []
+PAR:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+  anat: []
+  func: []
+  perf: []
+  dwi: []
+  fmap: []
+  extra_data: []
+  exclude: []
+SPAR:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+  mrs: []
+  extra_data: []
+  exclude: []
+Twix:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+    age:
+      value: <<PatientAge>>
+      meta:
+        Description: Age of the participant at the time of the acquired session
+        Units: year
+    sex:
+      value: <<PatientSex>>
+      meta:
+        Description: Sex of the participant
+        Levels:
+          M: male
+          F: female
+          O: other
+    height:
+      value: <<PatientSize>>
+      meta:
+        Description: Height of the participant
+        Units: meter
+    weight:
+      value: <<PatientWeight>>
+      meta:
+        Description: Weight of the participant
+        Units: kilogram
+  mrs: []
+  extra_data: []
+  exclude: []
+Pfile:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+    age:
+      value: <<rhr_rh_scan_date>>-<<rhe_dateofbirth>>
+      meta:
+        Description: Age of the participant at the time of the acquired session
+        Units: year
+    sex:
+      value: <<rhe_patsex>>
+      meta:
+        Description: Sex of the participant
+        Levels:
+          M: male
+          F: female
+          O: other
+  mrs: []
+  extra_data: []
+  exclude: []
+Nibabel:
+  participant:
+    participant_id:
+      value: <<filepath:/raw/sub-(.*?)_.*?/>>
+      meta:
+        Description: The unique participant identifier of the form sub-<label>, matching
+          a participant entity found in the dataset
+    session_id:
+      value: <<filepath:/raw/sub-.*?_ses-(.*?)_.*?/>>
+      meta:
+        Description: The session identifier of the form ses-<label>, matching a session
+          found in the dataset
+  anat: []
+  func: []
+  perf: []
+  dwi: []
+  fmap: []
+  extra_data: []
+  exclude: []
