@@ -24,7 +24,7 @@ Options:
     version: 4.6.2                  # BIDScoin version (should correspond with the version in pyproject.toml)
     subprefix: sub-                 # The subject prefix of the source data
     sesprefix: ses-                 # The session prefix of the source data
-    bidsignore: [extra_data/, sub-*_ct.*]   # List of entries that are added to the .bidsignore file (for more info, see BIDS specifications), e.g. [extra_data/, pet/, myfile.txt, yourfile.csv]
+    bidsignore: [extra_data/, sub-*_ct.*, swi/, sub-*_ihmt.*]   # List of entries that are added to the .bidsignore file (for more info, see BIDS specifications), e.g. [extra_data/, pet/, myfile.txt, yourfile.csv]
     unknowntypes: [extra_data]      # A list of datatypes that are converted to BIDS-like datatype folders
     ignoretypes: [exclude]          # A list of datatypes that are excluded / not converted to BIDS
     anon: y                         # Set this anonymization flag to 'y' to round off age and discard acquisition date from the metadata
@@ -47,11 +47,11 @@ DICOM:
 # ------------------------------------------------------------------
   participant:                      # Attributes or properties to populate the participants tsv/json files
     participant_id: &participant_id
-      value: <PatientName>           # This filesystem property extracts the subject label from the source directory. NB: Any property or attribute can be used as subject-label, e.g. <PatientID>
+      value: <<PatientName>>           # This filesystem property extracts the subject label from the source directory. NB: Any property or attribute can be used as subject-label, e.g. <PatientID>
       meta:                                     # All data in "meta" is stored in the participants json sidecar-file
         Description: The unique participant identifier, matching a participant entity found in the dataset
     session_id: &session_id
-      value: <StudyDate>   # This filesystem property extracts the session label from the source directory. NB: Any property or attribute can be used as session-label, e.g. <StudyID>
+      value: <<StudyDate>>   # This filesystem property extracts the session label from the source directory. NB: Any property or attribute can be used as session-label, e.g. <StudyID>
       meta:
         Description: The session identifier, matching a session found in the dataset
     age<<session_id>>: &age
@@ -111,20 +111,20 @@ DICOM:
       echo:
       part: ['', mag, phase, real, imag, 0]   # This BIDS value list will be shown as a dropdown menu in the bidseditor with the first (empty) item selected (as indicated by the last item, i.e. 0)
       chunk:
-      suffix: T1w
+      suffix: GRE
     meta: {}                      # This is an optional entry for metadata that will be appended to the json sidecar files produced by the plugin
   - attributes:
       <<: *swi_dicomattr
       ProtocolName: (?i).*(T2star|t2star|t2s).*
-      ImageType: .*'MINIMUM'.*
+      ImageType: .*MINIMUM.*
     bids:
       <<: *swi_dicoment
       suffix: minIP
   - attributes:
       <<: *swi_dicomattr
       ProtocolName: (?i).*(T2star|t2star|t2s).*
-      ImageType: .*'SWI'.*
-      ComplexImageComponent: .*'MAGNITUDE'.*
+      ImageType: .*SWI.*
+      ComplexImageComponent: .*MAGNITUDE.*
     bids:
       <<: *swi_dicoment
       part: mag
@@ -154,6 +154,7 @@ DICOM:
       RepetitionTime:
       InPlanePhaseEncodingDirection:
       ComplexImageComponent:
+      MagnetizationTransfer:
     bids: &anat_dicoment_nonparametric  # See: schema/rules/files/raw/anat.yaml
       task:
       acq: <SeriesDescription>    # This will be expanded by the bidsmapper (so the user can edit it in the bidseditor)
@@ -165,6 +166,54 @@ DICOM:
       chunk:
       suffix: T1w
     meta: {}                      # This is an optional entry for metadata that will be appended to the json sidecar files produced by the plugin
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(MPM|mpm).*
+      EffectiveEchoTime:
+    bids: &anat_dicoment_vfamt          # See: schema/rules/files/raw/anat.yaml
+      task:
+      acq: <SeriesDescription>
+      ce:
+      rec:
+      run: <<>>
+      echo: 
+      flip: <FlipAngle>
+      mt:
+      part: ['', mag, phase, real, imag, 0]
+      chunk:
+      suffix: MPM
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(vibemt|qrage|gremt).*
+      MagnetizationTransfer: .*NONE.*
+      ComplexImageComponent: .*MAGNITUDE.*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      mt: 'off'
+      part: mag
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(vibemt|qrage|gremt).*
+      MagnetizationTransfer: .*NONE.*
+      ComplexImageComponent: .*PHASE.*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      mt: 'off'
+      part: phase
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(vibemt|qrage|gremt).*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      mt: 'on'
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(MPRAGE|T1w|mprage|t1w).*
@@ -184,12 +233,6 @@ DICOM:
     bids:
       <<: *anat_dicoment_nonparametric
       suffix: T2w
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: .*(PDw|pdw).*
-    bids:
-      <<: *anat_dicoment_nonparametric
-      suffix: PDw
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(T2star|t2star|t2s).*
@@ -253,6 +296,10 @@ DICOM:
       run: <<>>
       chunk:
       suffix: T1map
+  - attributes:
+      <<: *anat_dicomattr
+      ImageType: .*'T1_MAP'.*
+    bids: *anat_dicoment_parametric
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(T2|t2).?map.*
@@ -443,72 +490,10 @@ DICOM:
       inv: 2
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(MPM|mpm).*
-      EffectiveEchoTime:
-    bids: &anat_dicoment_vfamt          # See: schema/rules/files/raw/anat.yaml
-      task:
-      acq: <SeriesDescription>
-      ce:
-      rec:
-      run: <<>>
-      echo: 
-      flip: <FlipAngle>
-      mt:
-      part: ['', mag, phase, real, imag, 0]
-      chunk:
-      suffix: MPM
-    meta:
-      EffectiveEchoTime: <<EffectiveEchoTime>>
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*vibemt.*
-      MagnetizationTransfer: .*'NONE'.*
-      ComplexImageComponent: .*'MAGNITUDE'.*
-    bids: 
-      <<: *anat_dicoment_vfamt
-      echo: <EchoNumbers>
-      mt: off
-      part: mag
-    meta:
-      EffectiveEchoTime: <<EffectiveEchoTime>>
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*vibemt.*
-      MagnetizationTransfer: .*'NONE'.*
-      ComplexImageComponent: .*'PHASE'.*
-    bids: 
-      <<: *anat_dicoment_vfamt
-      echo: <EchoNumbers>
-      mt: off
-      part: phase
-    meta:
-      EffectiveEchoTime: <<EffectiveEchoTime>>
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*vibemt.*
-    bids: 
-      <<: *anat_dicoment_vfamt
-      echo: <EchoNumbers>
-      mt: on
-    meta:
-      EffectiveEchoTime: <<EffectiveEchoTime>>
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*qrage.*
-      MagnetizationTransfer: NONE
-    bids: 
-      <<: *anat_dicoment_vfamt
-      mt: off
-    meta:
-      EffectiveEchoTime: <<EffectiveEchoTime>>
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*qrage.*
-    bids: 
-      <<: *anat_dicoment_vfamt
-      mt: on
-    meta:
-      EffectiveEchoTime: <<EffectiveEchoTime>>
+      ProtocolName: .*(PDw|pdw).*
+    bids:
+      <<: *anat_dicoment_nonparametric
+      suffix: PDw
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(MTS|mts).*
@@ -665,7 +650,7 @@ DICOM:
       PhaseEncodingDirection:
     bids: &perf_dicoment_group1         # See: schema/rules/files/raw/perf.yaml
       acq: <ProtocolName>
-      rec: <SeriesDescription>
+      rec:
       dir: <PhaseEncodingDirection>     # PhaseEncodingDirection is not an existing DICOM tag but parsed from other fields by BIDScoin
       run: <<>>
       echo:
@@ -801,7 +786,18 @@ DICOM:
   - attributes:                         # Then catch the normal DWI run-items
       <<: *dwi_dicomattr
       ProtocolName: (?i).*(DWI|dwi|diffusion|HARDI|hardi|DTI|dti|dMRI|dmri|DW.?MRI|dw.?mri).*
-    bids: *dwi_dicoment_DWI
+      SeriesDescription: .*PA.*
+    bids: 
+      <<: *dwi_dicoment_DWI
+      dir: PA
+    meta: *dwi_meta
+  - attributes:                         # Then catch the normal DWI run-items
+      <<: *dwi_dicomattr
+      ProtocolName: (?i).*(DWI|dwi|diffusion|HARDI|hardi|DTI|dti|dMRI|dmri|DW.?MRI|dw.?mri).*
+      SeriesDescription: .*AP.*
+    bids: 
+      <<: *dwi_dicoment_DWI
+      dir: AP
     meta: *dwi_meta
   - attributes:
       <<: *dwi_dicomattr
@@ -1179,13 +1175,13 @@ DICOM:
     bids:
       <<: *leaveout_bids_dicom
       rec: REPORT
-  - attributes:
-      <<: *leaveout_attributes_dicom
-      ImageType: .*'DERIVED'.*
-      ProtocolName: (?i)((?!MP2RAGE).)*     # Make an exception for DERIVED 3D MP2RAGE UNI-images
-    bids:
-      <<: *leaveout_bids_dicom
-      rec: DERIVED
+  # - attributes:
+  #     <<: *leaveout_attributes_dicom
+  #     ImageType: .*'DERIVED'.*
+  #     ProtocolName: (?i)((?!MP2RAGE).)*     # Make an exception for DERIVED 3D MP2RAGE UNI-images
+  #   bids:
+  #     <<: *leaveout_bids_dicom
+  #     rec: DERIVED
 
 
 Presentation:
@@ -1508,12 +1504,6 @@ PAR:
     bids:
       <<: *anat_parent_nonparametric
       suffix: T2w
-  - attributes:
-      <<: *anat_parattr
-      protocol_name: (?i).*(PDw|pdw).*
-    bids:
-      <<: *anat_parent_nonparametric
-      suffix: PDw
   - attributes:
       <<: *anat_parattr
       protocol_name: (?i).*(T2star|t2star).*
