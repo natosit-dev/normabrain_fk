@@ -1,1 +1,1 @@
-bidsmapper ../test_dicoms/raw/ bids/ -t ./bidsmap_dccn.yaml -n 'sub-' -m 'ses-'
+bidsmapper ../test_dicoms/ bids/ -t ./bidsmap_dccn -n '*' -m '*'

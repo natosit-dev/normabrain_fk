@@ -186,7 +186,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage|gremt).*
+      ProtocolName: (?i).*(vibemt|qrage).*
       MagnetizationTransfer: .*NONE.*
       ComplexImageComponent: .*MAGNITUDE.*
     bids: 
@@ -197,7 +197,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage|gremt).*
+      ProtocolName: (?i).*(vibemt|qrage).*
       MagnetizationTransfer: .*NONE.*
       ComplexImageComponent: .*PHASE.*
     bids: 
@@ -208,7 +208,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage|gremt).*
+      ProtocolName: (?i).*(vibemt|qrage).*
     bids: 
       <<: *anat_dicoment_vfamt
       mt: 'on'
@@ -432,7 +432,7 @@ DICOM:
       suffix: MESE
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(ME|me).?(GRE|gre).*
+      ProtocolName: (?i).*(ME|me|mt|MT).?(GRE|gre).*
     bids:
       <<: *anat_dicoment_multiecho
       suffix: MEGRE
