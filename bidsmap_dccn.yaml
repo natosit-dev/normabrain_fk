@@ -297,10 +297,25 @@ DICOM:
       suffix: MTRmap
   - attributes:
       <<: *anat_dicomattr
+      ProtocolName: (?i).*(ihMT|ihmt).*
+    bids:
+      <<: *anat_dicoment_parametric
+      suffix: ihmt
+  - attributes:
+      <<: *anat_dicomattr
       ProtocolName: (?i).*(MT|mt).?sat.*
     bids:
       <<: *anat_dicoment_parametric
       suffix: MTsat
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(MP2R|mp2r).*
+      SeriesDescription: (?i).*(den|DEN).*
+      MRAcquisitionType: 3D
+    bids:
+      <<: *anat_dicoment_parametric
+      rec: UNIDEN
+      suffix: T1w
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(MP2R|mp2r).*
@@ -436,12 +451,62 @@ DICOM:
       ce:
       rec:
       run: <<>>
-      echo:
-      flip:
+      echo: 
+      flip: <FlipAngle>
       mt:
       part: ['', mag, phase, real, imag, 0]
       chunk:
       suffix: MPM
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*vibemt.*
+      MagnetizationTransfer: .*'NONE'.*
+      ComplexImageComponent: .*'MAGNITUDE'.*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      echo: <EchoNumbers>
+      mt: off
+      part: mag
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*vibemt.*
+      MagnetizationTransfer: .*'NONE'.*
+      ComplexImageComponent: .*'PHASE'.*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      echo: <EchoNumbers>
+      mt: off
+      part: phase
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*vibemt.*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      echo: <EchoNumbers>
+      mt: on
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*qrage.*
+      MagnetizationTransfer: NONE
+    bids: 
+      <<: *anat_dicoment_vfamt
+      mt: off
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*qrage.*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      mt: on
     meta:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
