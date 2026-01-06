@@ -77,58 +77,6 @@ DICOM:
       meta:
         Description: Weight of the participant
         Units: kilogram
-  swi:       # ----------------------- All suscptability sweighted imaging run-items --------------------
-  - properties:                   # This is an optional (stub) entry of properties matching (could be added to any run-item)
-      filepath:                   # File folder, e.g. ".*/Parkinson/.*" or ".*(phantom|bottle).*"
-      filename:                   # File name, e.g. ".*fmap.*" or ".*(fmap|field.?map|B0.?map).*"
-      filesize:                   # File size, e.g. "2[4-6]\d MB" for matching files between 240-269 MB
-      nrfiles:                    # Number of files in the folder
-    attributes: &swi_dicomattr   # An empty / non-matching reference dictionary that can be dereferenced in other run-items of this data type
-      Modality:
-      ProtocolName:
-      SeriesDescription:
-      ImageType:
-      SequenceName:
-      PulseSequenceName:
-      SequenceVariant:
-      ScanningSequence:
-      EchoPulseSequence:          # Enhanced DICOM
-      MRAcquisitionType:
-      SliceThickness:
-      FlipAngle:
-      EchoNumbers:
-      EchoTime:
-      EffectiveEchoTime:
-      RepetitionTime:
-      InPlanePhaseEncodingDirection:
-      ComplexImageComponent:
-    bids: &swi_dicoment  # See: schema/rules/files/raw/anat.yaml
-      task:
-      acq: <SeriesDescription>    # This will be expanded by the bidsmapper (so the user can edit it in the bidseditor)
-      ce:
-      rec:
-      run: <<>>                   # This will be updated dynamically during bidscoiner runtime (as it depends on the already existing files)
-      echo:
-      part: ['', mag, phase, real, imag, 0]   # This BIDS value list will be shown as a dropdown menu in the bidseditor with the first (empty) item selected (as indicated by the last item, i.e. 0)
-      chunk:
-      suffix: GRE
-    meta: {}                      # This is an optional entry for metadata that will be appended to the json sidecar files produced by the plugin
-  - attributes:
-      <<: *swi_dicomattr
-      ProtocolName: (?i).*(T2star|t2star|t2s).*
-      ImageType: .*MINIMUM.*
-    bids:
-      <<: *swi_dicoment
-      suffix: minIP
-  - attributes:
-      <<: *swi_dicomattr
-      ProtocolName: (?i).*(T2star|t2star|t2s).*
-      ImageType: .*SWI.*
-      ComplexImageComponent: .*MAGNITUDE.*
-    bids:
-      <<: *swi_dicoment
-      part: mag
-      suffix: GRE
   anat:       # ----------------------- All anatomical run-items --------------------
   - properties:                   # This is an optional (stub) entry of properties matching (could be added to any run-item)
       filepath:                   # File folder, e.g. ".*/Parkinson/.*" or ".*(phantom|bottle).*"
@@ -186,7 +134,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage).*
+      ProtocolName: (?i).*(vibemt|qrage|gremt).*
       MagnetizationTransfer: .*NONE.*
       ComplexImageComponent: .*MAGNITUDE.*
     bids: 
@@ -197,7 +145,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage).*
+      ProtocolName: (?i).*(vibemt|qrage|gremt).*
       MagnetizationTransfer: .*NONE.*
       ComplexImageComponent: .*PHASE.*
     bids: 
@@ -208,7 +156,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage).*
+      ProtocolName: (?i).*(vibemt|qrage|gremt).*
     bids: 
       <<: *anat_dicoment_vfamt
       mt: 'on'
@@ -233,6 +181,20 @@ DICOM:
     bids:
       <<: *anat_dicoment_nonparametric
       suffix: T2w
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(T2star|t2star|t2s).*
+      ImageType: .*MINIMUM.*
+    bids:
+      <<: *anat_dicoment_nonparametric
+      suffix: minIP
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(T2star|t2star|t2s).*
+      ImageType: .*SWI.*
+    bids:
+      <<: *anat_dicoment_nonparametric
+      suffix: swi
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(T2star|t2star|t2s).*
@@ -432,7 +394,7 @@ DICOM:
       suffix: MESE
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(ME|me|mt|MT).?(GRE|gre).*
+      ProtocolName: (?i).*(ME|me).?(GRE|gre).*
     bids:
       <<: *anat_dicoment_multiecho
       suffix: MEGRE
@@ -671,7 +633,7 @@ DICOM:
   - attributes:
       <<: *perf_dicomattr
       ProtocolName: (?i).*pcasl_tgse_2.5iso_tra_PA.*
-      PulseSequenceName: .*'1296'.*
+      PulseSequenceName: .*1296.*
     bids: *perf_dicoment_group1
     meta: 
       <<: *perf_meta
