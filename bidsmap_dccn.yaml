@@ -24,7 +24,7 @@ Options:
     version: 4.6.2                  # BIDScoin version (should correspond with the version in pyproject.toml)
     subprefix: sub-                 # The subject prefix of the source data
     sesprefix: ses-                 # The session prefix of the source data
-    bidsignore: [extra_data/, sub-*_ct.*, swi/, sub-*_ihmt.*]   # List of entries that are added to the .bidsignore file (for more info, see BIDS specifications), e.g. [extra_data/, pet/, myfile.txt, yourfile.csv]
+    bidsignore: [extra_data/, sub-*_ct.*, sub-*_swi.*, sub-*_minIP.*, sub-*_ihmt.*]   # List of entries that are added to the .bidsignore file (for more info, see BIDS specifications), e.g. [extra_data/, pet/, myfile.txt, yourfile.csv]
     unknowntypes: [extra_data]      # A list of datatypes that are converted to BIDS-like datatype folders
     ignoretypes: [exclude]          # A list of datatypes that are excluded / not converted to BIDS
     anon: y                         # Set this anonymization flag to 'y' to round off age and discard acquisition date from the metadata
@@ -116,6 +116,69 @@ DICOM:
     meta: {}                      # This is an optional entry for metadata that will be appended to the json sidecar files produced by the plugin
   - attributes:
       <<: *anat_dicomattr
+      ProtocolName: (?i).*(T1|t1).?map.*
+    bids: &anat_dicoment_parametric     # See: schema/rules/files/raw/anat.yaml
+      task:
+      acq: <ProtocolName>
+      ce:
+      rec:
+      run: <<>>
+      chunk:
+      suffix: T1map
+  - attributes:
+      <<: *anat_dicomattr
+      ImageType: .*'T1_MAP'.*
+    bids: *anat_dicoment_parametric
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(T2|t2).?map.*
+    bids:
+      <<: *anat_dicoment_parametric
+      suffix: T2map
+  - attributes:
+      <<: *anat_dicomattr
+      ImageType: .*'T2_MAP'.*
+    bids: 
+      <<: *anat_dicoment_parametric
+      suffix: T2map
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(T2star|t2star).?map.*
+    bids:
+      <<: *anat_dicoment_parametric
+      suffix: T2starmap
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(R1|r1).?map.*
+    bids:
+      <<: *anat_dicoment_parametric
+      suffix: R1map
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(R2|r2).?map.*
+    bids:
+      <<: *anat_dicoment_parametric
+      suffix: R2map
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(R2star|r2star).?map.*
+    bids:
+      <<: *anat_dicoment_parametric
+      suffix: R2starmap
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(PD|pd).?map.*
+    bids:
+      <<: *anat_dicoment_parametric
+      suffix: PDmap
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(MTR|mtr).?map.*
+    bids:
+      <<: *anat_dicoment_parametric
+      suffix: MTRmap
+  - attributes:
+      <<: *anat_dicomattr
       ProtocolName: (?i).*(MPM|mpm).*
       EffectiveEchoTime:
     bids: &anat_dicoment_vfamt          # See: schema/rules/files/raw/anat.yaml
@@ -134,8 +197,15 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage|gremt).*
-      MagnetizationTransfer: .*NONE.*
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).?mtw.*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      mt: 'on'
+    meta:
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*
       ComplexImageComponent: .*MAGNITUDE.*
     bids: 
       <<: *anat_dicoment_vfamt
@@ -145,21 +215,12 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage|gremt).*
-      MagnetizationTransfer: .*NONE.*
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*
       ComplexImageComponent: .*PHASE.*
     bids: 
       <<: *anat_dicoment_vfamt
       mt: 'off'
       part: phase
-    meta:
-      EffectiveEchoTime: <<EffectiveEchoTime>>
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|qrage|gremt).*
-    bids: 
-      <<: *anat_dicoment_vfamt
-      mt: 'on'
     meta:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
@@ -198,7 +259,7 @@ DICOM:
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(T2star|t2star|t2s).*
-      ComplexImageComponent: .*'MAGNITUDE'.*    
+      ComplexImageComponent: .*MAGNITUDE.*    
     bids:
       <<: *anat_dicoment_nonparametric
       part: mag
@@ -206,7 +267,7 @@ DICOM:
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(T2star|t2star|t2s).*
-      ComplexImageComponent: .*'PHASE'.*
+      ComplexImageComponent: .*PHASE.*
     bids:
       <<: *anat_dicoment_nonparametric
       part: phase
@@ -247,63 +308,6 @@ DICOM:
     bids:
       <<: *anat_dicoment_nonparametric
       suffix: angio
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(T1|t1).?map.*
-    bids: &anat_dicoment_parametric     # See: schema/rules/files/raw/anat.yaml
-      task:
-      acq: <ProtocolName>
-      ce:
-      rec:
-      run: <<>>
-      chunk:
-      suffix: T1map
-  - attributes:
-      <<: *anat_dicomattr
-      ImageType: .*'T1_MAP'.*
-    bids: *anat_dicoment_parametric
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(T2|t2).?map.*
-    bids:
-      <<: *anat_dicoment_parametric
-      suffix: T2map
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(T2star|t2star).?map.*
-    bids:
-      <<: *anat_dicoment_parametric
-      suffix: T2starmap
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(R1|r1).?map.*
-    bids:
-      <<: *anat_dicoment_parametric
-      suffix: R1map
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(R2|r2).?map.*
-    bids:
-      <<: *anat_dicoment_parametric
-      suffix: R2map
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(R2star|r2star).?map.*
-    bids:
-      <<: *anat_dicoment_parametric
-      suffix: R2starmap
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(PD|pd).?map.*
-    bids:
-      <<: *anat_dicoment_parametric
-      suffix: PDmap
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(MTR|mtr).?map.*
-    bids:
-      <<: *anat_dicoment_parametric
-      suffix: MTRmap
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(ihMT|ihmt).*
@@ -632,9 +636,43 @@ DICOM:
       B0FieldIdentifier:
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*pcasl_tgse_2.5iso_tra_PA.*
+      ProtocolName: (?i).*(ASL|asl|Perfusion|perfusion).*
+      ImageType: .*SUBTRACTION.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: subtraction
+    meta: *perf_meta
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*(ASL|asl|Perfusion|perfusion).*
+      ImageType: .*RCBF.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: rcbf
+    meta: *perf_meta
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl_tgse.*
       PulseSequenceName: .*1296.*
-    bids: *perf_dicoment_group1
+      SeriesDescription: .*AP.*
+    bids: 
+      <<: *perf_dicoment_group1
+      dir: AP
+    meta: 
+      <<: *perf_meta
+      ArterialSpinLabelingType: PCASL
+      PostLabelingDelay: 1296
+      BackgroundSuppression: 'false'
+      M0Type: Included
+      TotalAcquiredPairs: 9
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl_tgse.*
+      PulseSequenceName: .*1296.*
+      SeriesDescription: .*PA.*
+    bids: 
+      <<: *perf_dicoment_group1
+      dir: PA
     meta: 
       <<: *perf_meta
       ArterialSpinLabelingType: PCASL
