@@ -4,3 +4,4 @@ bidsmapper ../test_dicoms/ bids/ -t ./bidsmap_normabrain_template -n '*' -m '*' 
 # bidseditor bids/ -t ./bidsmap_normabrain_template
 #then convert the dicoms to nifti and organize into BIDS structure using the bidsmap
 bidscoiner ../test_dicoms/ ./bids/
+python3 add_csa_data_to_meta.py

@@ -14,7 +14,7 @@ import re
 
 import sys
 
-from return_csa_header_parse_by_my_self import return_csa as return_csa
+from csa_header_scripts.return_csa_header_parse_by_my_self import return_csa as return_csa
 def find_params(tag,inputDirectory):
     """
     Retourne un dict {clé: valeur} ne contenant que
@@ -34,8 +34,8 @@ if __name__ == "__main__":
   
     fas = find_params(researchedTag, inputDirectory=inputDirectory)
     val = [float(val) for val in fas.values()]
-    print(val)
-    # print(fas)
+    # print(val)
+    print(fas)
     # print(f"Recherche de {researchedTag} dans les paramètres CSA :")
     
     

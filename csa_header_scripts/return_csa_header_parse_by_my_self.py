@@ -14,7 +14,7 @@ import re
 
 import sys
 
-from _parse_Siemens_MrPhoenixProtocol import _parse_Siemens_MrPhoenixProtocol as _parse_Siemens_MrPhoenixProtocol
+from csa_header_scripts._parse_Siemens_MrPhoenixProtocol import _parse_Siemens_MrPhoenixProtocol as _parse_Siemens_MrPhoenixProtocol
 def return_csa(inputDirectory ):
 
     dataset =  []
@@ -100,6 +100,7 @@ if __name__ == "__main__":
     inputDirectory = sys.argv[1]
     csa_header, mrprotocol, cas = return_csa(inputDirectory)
 
-    print("CSA Header:", csa_header)
-    print("MrProtocol:", mrprotocol)
-    print("Case:", cas)
+    print(csa_header)
+    # print("CSA Header:", csa_header)
+    # print("MrProtocol:", mrprotocol)
+    # print("Case:", cas)
