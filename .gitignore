@@ -2,3 +2,5 @@ bids*/
 */__*
 3T/
 7T/
+.snakemake/
+results/

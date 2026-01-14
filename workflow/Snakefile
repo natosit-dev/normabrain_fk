@@ -1,0 +1,13 @@
+rule copy_dicoms_by_field_strength:
+    input:
+        "../test_dicoms"
+    output:
+        "results/copy_dicoms.complete"
+    conda:
+        "envs/bidscoin.yaml"
+    shell:
+        """
+        if `python3 workflow/scripts/copy_dicoms_field_strength.py {input} . `; then
+            touch {output}
+        fi
+        """
