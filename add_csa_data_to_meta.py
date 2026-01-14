@@ -5,7 +5,7 @@ from bidscoin import bcoin, bids, lsdirs
 from pathlib import Path
 from csa_header_scripts.return_csa_header_parse_by_my_self import return_csa
 
-def add_csa_data_to_meta(bidspath: str = './bids/'):    
+def add_csa_data_to_meta(bidspath: str):    
     t1b1fl_pattern = 'fmap/*TB1TFL*'
     vibemt_pattern = 'anat/*vibe*_MPM*'
     mp2rage_pattern = 'anat/*t1mp2r*'  
@@ -115,6 +115,6 @@ if __name__ == '__main__':
         Read CSA header data from DICOM source directories and add relevant fields to BIDS sidecar JSON files.
         Assumes BIDS structure was generated with bidscoin and that provenance data is available.
         """)
-    parser.add_argument('-b', '--bidspath', type=str, default='./bids/', help="Path to the BIDS directory, default is ./bids/", required=True)
+    parser.add_argument('bidspath', type=str, help="Path to the BIDS directory")
     args = parser.parse_args()
-    add_csa_data_to_meta(args)
+    add_csa_data_to_meta(args.bidspath)
