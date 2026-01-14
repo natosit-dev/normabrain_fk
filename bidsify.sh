@@ -1,4 +1,6 @@
-#first generate the bidsmap for the dicom data
+#first copy the DICOMS to the project directory based on field strength
+python3 copy_dicoms_field_strength.py ../test_dicoms .
+#generate the bidsmap for the dicom data
 bidsmapper ../test_dicoms/ bids/ -t ./bidsmap_normabrain_template -n '*' -m '*' -a
 #edit the bidsmap manually in the GUI
 # bidseditor bids/ -t ./bidsmap_normabrain_template
