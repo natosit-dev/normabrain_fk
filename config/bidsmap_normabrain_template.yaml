@@ -202,6 +202,8 @@ DICOM:
       <<: *anat_dicoment_vfamt
       mt: 'on'
     meta:
+      RepetitionTimePreparation: <RepetitionTime>
+      RepetitionTimeExcitation: <RepetitionTime>
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
@@ -212,6 +214,8 @@ DICOM:
       mt: 'off'
       part: mag
     meta:
+      RepetitionTimePreparation: <RepetitionTime>
+      RepetitionTimeExcitation: <RepetitionTime>
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
@@ -222,6 +226,9 @@ DICOM:
       mt: 'off'
       part: phase
     meta:
+      Units: arbitrary
+      RepetitionTimePreparation: <RepetitionTime>
+      RepetitionTimeExcitation: <RepetitionTime>
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
@@ -272,6 +279,8 @@ DICOM:
       <<: *anat_dicoment_nonparametric
       part: phase
       suffix: T2starw
+    meta:
+      Units: arbitrary
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(T2star|t2star|t2s).*
@@ -446,6 +455,9 @@ DICOM:
       part: ['', mag, phase, real, imag, 0]
       chunk:
       suffix: MP2RAGE
+    meta:
+      RepetitionTimeExcitation: <RepetitionTime>
+      RepetitionTimePreparation: <RepetitionTime>
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(MP2R|mp2r).*
@@ -454,6 +466,9 @@ DICOM:
     bids:
       <<: *anat_dicoment_mp2rage
       inv: 2
+    meta:
+      RepetitionTimeExcitation: <RepetitionTime>
+      RepetitionTimePreparation: <RepetitionTime>
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: .*(PDw|pdw).*
@@ -625,31 +640,14 @@ DICOM:
     meta: &perf_meta
       ArterialSpinLabelingType: "CASL / PCASL / PASL"
       PostLabelingDelay:
-      BackgroundSuppression:
+      BackgroundSuppression: 
       M0Type: "Separate / Included / Estimate / Absent"
       RepetitionTimePreparation:
-      VascularCrushing: <ASLCrusherFlag>
-      AcquisitionVoxelSize:
+      VascularCrushing:
       LabelingDuration: <ASLPulseTrainDuration>
-      LabelingOrientation: <ASLSlabOrientation>
+      AcquisitionVoxelSize:
       B0FieldSource:
       B0FieldIdentifier:
-  - attributes:
-      <<: *perf_dicomattr
-      ProtocolName: (?i).*(ASL|asl|Perfusion|perfusion).*
-      ImageType: .*SUBTRACTION.*
-    bids: 
-      <<: *perf_dicoment_group1
-      rec: subtraction
-    meta: *perf_meta
-  - attributes:
-      <<: *perf_dicomattr
-      ProtocolName: (?i).*(ASL|asl|Perfusion|perfusion).*
-      ImageType: .*RCBF.*
-    bids: 
-      <<: *perf_dicoment_group1
-      rec: rcbf
-    meta: *perf_meta
   - attributes:
       <<: *perf_dicomattr
       ProtocolName: (?i).*pcasl_tgse.*
@@ -660,9 +658,11 @@ DICOM:
       dir: AP
     meta: 
       <<: *perf_meta
+      RepetitionTimePreparation: <RepetitionTime>
       ArterialSpinLabelingType: PCASL
       PostLabelingDelay: 1296
       BackgroundSuppression: 'false'
+      VascularCrushing: 'false'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
@@ -675,9 +675,45 @@ DICOM:
       dir: PA
     meta: 
       <<: *perf_meta
+      RepetitionTimePreparation: <RepetitionTime>
       ArterialSpinLabelingType: PCASL
       PostLabelingDelay: 1296
       BackgroundSuppression: 'false'
+      VascularCrushing: 'false'
+      M0Type: Included
+      TotalAcquiredPairs: 9
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl_tgse.*
+      PulseSequenceName: .*1296.*
+      ImageType: .*SUBTRACTION.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: subtraction
+    meta:
+      <<: *perf_meta
+      RepetitionTimePreparation: <RepetitionTime>
+      ArterialSpinLabelingType: PCASL
+      PostLabelingDelay: 1296
+      BackgroundSuppression: 'false'
+      VascularCrushing: 'false'
+      M0Type: Included
+      TotalAcquiredPairs: 9
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl_tgse.*
+      PulseSequenceName: .*1296.*
+      ImageType: .*RCBF.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: rcbf
+    meta:
+      <<: *perf_meta
+      RepetitionTimePreparation: <RepetitionTime>
+      ArterialSpinLabelingType: PCASL
+      PostLabelingDelay: 1296
+      BackgroundSuppression: 'false'
+      VascularCrushing: 'false'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
@@ -698,6 +734,22 @@ DICOM:
     bids:
       <<: *perf_dicoment_group1
       suffix: noRF
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*(ASL|asl|Perfusion|perfusion).*
+      ImageType: .*SUBTRACTION.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: subtraction
+    meta: *perf_meta
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*(ASL|asl|Perfusion|perfusion).*
+      ImageType: .*RCBF.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: rcbf
+    meta: *perf_meta
   - attributes: *perf_dicomattr
     bids: &perf_dicoment_group2         # See: schema/rules/files/raw/perf.yaml
       acq: <ProtocolName>

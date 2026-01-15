@@ -1,13 +1,34 @@
+from pathlib import Path
+FIELD_STRENGTHS = ['3T', '7T']
+
+rule all:
+    input:
+        "3T/rawdata/bids/code/bidscoin/bidsmap.yaml"
+
 rule copy_dicoms_by_field_strength:
     input:
-        "../test_dicoms"
+        expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])
     output:
-        "results/copy_dicoms.complete"
+        "results/copy_dicoms_" + Path(config["input_dicoms_path"]).name + ".complete"
     conda:
         "envs/bidscoin.yaml"
     shell:
         """
-        if `python3 workflow/scripts/copy_dicoms_field_strength.py {input} . `; then
+        if `python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} . `; then
             touch {output}
         fi
         """
+
+rule bidsmapper:
+    input:
+        copy_dicoms_done = expand("results/copy_dicoms_" + Path(config["input_dicoms_path"]).name + ".complete", input_dicoms_path=config["input_dicoms_path"]),
+        dicoms = expand("{field_strength}/rawdata/dicoms/", field_strength=FIELD_STRENGTHS)
+    output:
+        "{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml"
+    conda:
+        "envs/bidscoin.yaml"
+    shell:
+        """
+        bidsmapper {wildcards.field_strength}/rawdata/dicoms/ {wildcards.field_strength}/rawdata/bids/ -t config/bidsmap_normabrain_template -n '*' -m '*' -a
+        """
+

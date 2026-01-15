@@ -96,15 +96,16 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['ti2_ms'] = float(csa_data['alTI[1]']) / 1000
                 jsondata['ro_fa1_deg'] = csa_data['adFlipAngleDegree[0]']
                 jsondata['ro_fa2_deg'] = csa_data['adFlipAngleDegree[1]']
-                if jsondata['PulseSequenceDetails'] == "%SiemensSeq%/tfl":
+                if jsondata['PulseSequenceDetails'] == "%SiemensSeq%\\tfl":
                     jsondata['n_after'] = int(csa_data['sKSpace.lPartitions']) / 2
                     jsondata['n_before'] = int(csa_data['sFastImaging.lTurboFactor']) - jsondata['n_after']
-                elif jsondata['PulseSequenceDetails'] == "%CustomerSeq%/wip_csTFL_cstfl":
+                elif jsondata['PulseSequenceDetails'] == "%CustomerSeq%\\wip_csTFL_cstfl":
                     jsondata['n_after'] = floor(float(csa_data['sFastImaging.lTurboFactor']) / 2)
                     jsondata['n_before'] = ceil(float(csa_data['sFastImaging.lTurboFactor']) / 2)
-                elif jsondata['PulseSequenceDetails'] == "%CustomerSeq%/cstfl_wip925b":
+                elif jsondata['PulseSequenceDetails'] == "%CustomerSeq%\\cstfl_wip925b":
                     jsondata['n_after'] = floor(float(csa_data['sWipMemBlock.alFree[2]']) / 2)
                     jsondata['n_before'] = ceil(float(csa_data['sWipMemBlock.alFree[2]']) / 2)
+                jsondata['NumberShots'] = [jsondata['n_before'], jsondata['n_after']]
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
 
