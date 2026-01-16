@@ -6,6 +6,7 @@ from pathlib import Path
 from csa_header_scripts.return_csa_header_parse_by_my_self import return_csa
 
 def add_csa_data_to_meta(bidspath: str):    
+    perf_pattern = 'perf/*'
     t1b1fl_pattern = 'fmap/*TB1TFL*'
     vibemt_pattern = 'anat/*vibe*_MPM*'
     mp2rage_pattern = 'anat/*t1mp2r*'  
@@ -21,8 +22,29 @@ def add_csa_data_to_meta(bidspath: str):
         sessions = lsdirs(subject, 'ses-*')
         
         for session in sessions:
-            t1b1fl_targets = sorted([match for match in session.rglob(t1b1fl_pattern) if match.suffixes[0] in ('.tsv','.nii')])
+            
             sourcedir = ''
+            perf_targets = sorted([match for match in session.rglob(perf_pattern) if match.suffixes[0] in ('.tsv','.nii')])
+            for target in perf_targets:
+                for source, row in provdata.iterrows():
+                    if isinstance(row['targets'], str) and target.name in row['targets']:
+                        sourcedir = source
+                datasource = bids.get_datasource(Path(sourcedir), plugins)
+                jsonfile = target.with_suffix('').with_suffix('.json')
+                jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
+                csa_data, mrprotocol, cas = return_csa(sourcedir)
+                if jsondata['BackgroundSuppression'] == 'true' or jsondata['BackgroundSuppression'] == 'YES':
+                    jsondata['BackgroundSuppression'] = True
+                elif jsondata['BackgroundSuppression'] == 'false' or jsondata['BackgroundSuppression'] == 'NO':
+                    jsondata['BackgroundSuppression'] = False
+                if jsondata['VascularCrushing'] == 'true' or jsondata['VascularCrushing'] == 'YES':
+                    jsondata['VascularCrushing'] = True
+                elif jsondata['VascularCrushing'] == 'false' or jsondata['VascularCrushing'] == 'NO':
+                    jsondata['VascularCrushing'] = False
+                with jsonfile.open('w') as jf:
+                    json.dump(jsondata, jf, indent=4)
+            
+            t1b1fl_targets = sorted([match for match in session.rglob(t1b1fl_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in t1b1fl_targets:
                 for source, row in provdata.iterrows():
                     if isinstance(row['targets'], str) and target.name in row['targets']:

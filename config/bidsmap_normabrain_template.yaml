@@ -643,7 +643,7 @@ DICOM:
       BackgroundSuppression: 
       M0Type: "Separate / Included / Estimate / Absent"
       RepetitionTimePreparation:
-      VascularCrushing:
+      VascularCrushing: <ASLCrusherFlag>
       LabelingDuration: <ASLPulseTrainDuration>
       AcquisitionVoxelSize:
       B0FieldSource:
@@ -662,7 +662,6 @@ DICOM:
       ArterialSpinLabelingType: PCASL
       PostLabelingDelay: 1296
       BackgroundSuppression: 'false'
-      VascularCrushing: 'false'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
@@ -679,7 +678,6 @@ DICOM:
       ArterialSpinLabelingType: PCASL
       PostLabelingDelay: 1296
       BackgroundSuppression: 'false'
-      VascularCrushing: 'false'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
@@ -696,7 +694,6 @@ DICOM:
       ArterialSpinLabelingType: PCASL
       PostLabelingDelay: 1296
       BackgroundSuppression: 'false'
-      VascularCrushing: 'false'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
@@ -713,7 +710,6 @@ DICOM:
       ArterialSpinLabelingType: PCASL
       PostLabelingDelay: 1296
       BackgroundSuppression: 'false'
-      VascularCrushing: 'false'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
