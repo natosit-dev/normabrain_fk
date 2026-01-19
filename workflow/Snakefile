@@ -1,10 +1,11 @@
 from pathlib import Path
-import yaml
+import os
 try:
     data_path = Path("data/").resolve()
-    FIELD_STRENGTHS = [x.name for x in data_path.iterdir() if "T" in x.name]
+    FIELD_STRENGTHS = [x.name for x in data_path.glob("*T/") if x.is_dir()]
 except FileNotFoundError:
     FIELD_STRENGTHS = []
+
 
 rule all:
     input:
