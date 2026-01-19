@@ -8,7 +8,7 @@ except FileNotFoundError:
 
 rule all:
     input:
-        expand("data/{field_strength}/rawdata/bids/participants.tsv", field_strength=FIELD_STRENGTHS)
+        expand("results/add_csa_data_to_meta_{field_strength}.complete", field_strength=FIELD_STRENGTHS)
 
 rule copy_dicoms_by_field_strength:
     input:
@@ -47,4 +47,16 @@ rule bidscoiner:
     shell:
         """
         bidscoiner {input.dicoms} data/{wildcards.field_strength}/rawdata/bids/
+        """
+rule add_csa_data_to_meta:
+    input:
+        expand("data/{field_strength}/rawdata/bids/participants.tsv", field_strength=FIELD_STRENGTHS)
+    output:
+        "results/add_csa_data_to_meta_{field_strength}.complete"
+    conda:
+        "envs/bidscoin.yaml"
+    shell:
+        """
+        python3 workflow/scripts/add_csa_data_to_meta.py data/{wildcards.field_strength}/rawdata/bids/
+        touch {output}
         """
