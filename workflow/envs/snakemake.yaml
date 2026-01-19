@@ -1,0 +1,7 @@
+name: snakemake
+channels:
+  - defaults
+dependencies:
+  - snakemake=9.14.5
+  - graphviz=12.2.1
+  - snakefmt=0.11.2

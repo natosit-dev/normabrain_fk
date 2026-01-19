@@ -1,34 +1,50 @@
 from pathlib import Path
-FIELD_STRENGTHS = ['3T', '7T']
+import yaml
+try:
+    data_path = Path("data/").resolve()
+    FIELD_STRENGTHS = [x.name for x in data_path.iterdir()]
+except FileNotFoundError:
+    FIELD_STRENGTHS = []
 
 rule all:
     input:
-        "3T/rawdata/bids/code/bidscoin/bidsmap.yaml"
+        expand("data/{field_strength}/rawdata/bids/participants.tsv", field_strength=FIELD_STRENGTHS)
 
 rule copy_dicoms_by_field_strength:
     input:
         expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])
     output:
-        "results/copy_dicoms_" + Path(config["input_dicoms_path"]).name + ".complete"
+        directory("data/")
     conda:
         "envs/bidscoin.yaml"
     shell:
         """
-        if `python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} . `; then
-            touch {output}
-        fi
+        python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output}
         """
 
 rule bidsmapper:
     input:
-        copy_dicoms_done = expand("results/copy_dicoms_" + Path(config["input_dicoms_path"]).name + ".complete", input_dicoms_path=config["input_dicoms_path"]),
-        dicoms = expand("{field_strength}/rawdata/dicoms/", field_strength=FIELD_STRENGTHS)
+        # copy_dicoms_done = expand("results/copy_dicoms_" + Path(config["input_dicoms_path"]).name + ".complete", input_dicoms_path=config["input_dicoms_path"]),
+        dicoms = expand("data/{field_strength}/rawdata/dicoms/", field_strength=FIELD_STRENGTHS),
+        new_config = "config/snakemake_config.yaml"
     output:
-        "{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml"
+        "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml"
     conda:
         "envs/bidscoin.yaml"
     shell:
         """
-        bidsmapper {wildcards.field_strength}/rawdata/dicoms/ {wildcards.field_strength}/rawdata/bids/ -t config/bidsmap_normabrain_template -n '*' -m '*' -a
+        bidsmapper {input.dicoms} data/{wildcards.field_strength}/rawdata/bids/ -t config/bidsmap_normabrain_template -n '*' -m '*' -a
         """
 
+rule bidscoiner:
+    input:
+        "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml",
+        dicoms = expand("data/{field_strength}/rawdata/dicoms/", field_strength=FIELD_STRENGTHS)
+    output:
+        "data/{field_strength}/rawdata/bids/participants.tsv"
+    conda:
+        "envs/bidscoin.yaml"
+    shell:
+        """
+        bidscoiner {input.dicoms} data/{wildcards.field_strength}/rawdata/bids/
+        """
