@@ -6,33 +6,53 @@ from pathlib import Path
 from csa_header_scripts.return_csa_header_parse_by_my_self import return_csa
 
 def add_csa_data_to_meta(bidspath: str):    
+    #define search patterns for different sequence types
     perf_pattern = 'perf/*'
     t1b1fl_pattern = 'fmap/*TB1TFL*'
     vibemt_pattern = 'anat/*vibe*_MPM*'
     mp2rage_pattern = 'anat/*t1mp2r*'  
+    #define bids directory
     bidsdir = Path(bidspath).resolve()
+    #get list of subject folders
     subjects = lsdirs(bidsdir, 'sub-*')
 
+    #setup logging for bidscoin commands (otherwise you will get errors)
     console = bcoin.setup_logging(bidsdir/'code'/'bidscoin'/'fixmeta.log')
+    #load bidsmap
     bidsmap = bids.BidsMap(Path('bidsmap.yaml'), bidsdir/'code'/'bidscoin', checks=(False, False, False))
+    #get list of plugins used in bidsmap
     plugins  = bidsmap.plugins
+    #get provence, ie source of dicoms for each nifti file created with bidscoin
     provdata = bids.bidsprov(bidsdir)
 
+    #loop through subjects
     for subject in subjects:
+        #get list of session folders for subject
         sessions = lsdirs(subject, 'ses-*')
         
+        #loop through sessions
         for session in sessions:
             
+            #initialize sourcedir
             sourcedir = ''
+            #get list of perfusion target files that match the pattern
             perf_targets = sorted([match for match in session.rglob(perf_pattern) if match.suffixes[0] in ('.tsv','.nii')])
+            #loop through perfusion targets
             for target in perf_targets:
+                #loop through map of provence data to nifiti/tsv bids files
                 for source, row in provdata.iterrows():
+                    #if the target pattern is in the name of the bids file, get the source dicom file path
                     if isinstance(row['targets'], str) and target.name in row['targets']:
                         sourcedir = source
+                #get datasource class from source dicom directory
                 datasource = bids.get_datasource(Path(sourcedir), plugins)
+                #get json sidecar file path for this target
                 jsonfile = target.with_suffix('').with_suffix('.json')
+                #pool metadata from source dicom and target json file
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
+                #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
+                #convert string boolean values to actual booleans
                 if jsondata['BackgroundSuppression'] == 'true' or jsondata['BackgroundSuppression'] == 'YES':
                     jsondata['BackgroundSuppression'] = True
                 elif jsondata['BackgroundSuppression'] == 'false' or jsondata['BackgroundSuppression'] == 'NO':
@@ -41,9 +61,11 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['VascularCrushing'] = True
                 elif jsondata['VascularCrushing'] == 'false' or jsondata['VascularCrushing'] == 'NO':
                     jsondata['VascularCrushing'] = False
+                #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
             
+            #get list of t1b1fl target files that match the pattern
             t1b1fl_targets = sorted([match for match in session.rglob(t1b1fl_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in t1b1fl_targets:
                 for source, row in provdata.iterrows():
@@ -53,10 +75,12 @@ def add_csa_data_to_meta(bidspath: str):
                 jsonfile = target.with_suffix('').with_suffix('.json')
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
-                jsondata['Target_FA_deg'] = float(csa_data['sWipMemBlock.adFree[0]'])
+                #add Target_FA_deg field to json sidecar from csa data
+                jsondata['target_fa_deg'] = float(csa_data['sWipMemBlock.adFree[0]'])
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
 
+            #get list of vibemt target files that match the pattern
             vibemt_targets = sorted([match for match in session.rglob(vibemt_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in vibemt_targets:
                 for source, row in provdata.iterrows():
@@ -66,41 +90,49 @@ def add_csa_data_to_meta(bidspath: str):
                 jsonfile = target.with_suffix('').with_suffix('.json')
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
+                # if MT state is stored as a string in the csa header, convert to int and add to json sidecar, otherwise set it to 0
                 if isinstance(csa_data.get('sWipMemBlock.alFree[0]'), str):
                     jsondata['mt_state'] = int(csa_data['sWipMemBlock.alFree[0]'])
                 else:
                     jsondata['mt_state'] = 0
+                #add other relevant fields from csa header to json sidecar
                 jsondata['sat_pulse_ms'] = float(csa_data['sWipMemBlock.adFree[2]'])
                 jsondata['interdelay_ms'] = float(csa_data['sWipMemBlock.adFree[5]'])
                 jsondata['ro_pulse_ms'] = float(csa_data['sWipMemBlock.alFree[7]']) / 1000
                 jsondata['tr_ms'] = float(csa_data['alTR[0]']) / 1000
                 jsondata['ro_pulse_ms'] = float(csa_data['sWipMemBlock.alFree[7]']) / 1000
                 jsondata['ro_fa_deg'] = csa_data['adFlipAngleDegree[0]']
+                #if RO pulse shape is coded in the csa header, convert it to int and store the value in ro_pulse_shape, otherwise set it to 0
                 if isinstance(csa_data.get('sWipMemBlock.alFree[8]'), str):
                     ro_pulse_shape = int(csa_data['sWipMemBlock.alFree[8]'])
                 else:
-                    ro_pulse_shape = 0 
+                    ro_pulse_shape = 0
+                #convert ro_pulse_shape value to string and store in json sidecar 
                 if ro_pulse_shape == 1:
                     jsondata['ro_pulse_shape'] = 'CSMT'
                 elif ro_pulse_shape == 2:
                     jsondata['ro_pulse_shape'] = 'BP'
                 else:
-                    jsondata['ro_pulse_shape'] = 'Hann'
+                    jsondata['ro_pulse_shape'] = 'Hann' #if not specified RO pulse shape is Hann
+                #add saturation pulse parameters to json sidecar
                 jsondata['sat_pulse_fa_deg'] = float(csa_data['sWipMemBlock.adFree[0]'])
                 jsondata['sat_pulse_offset_hz'] = float(csa_data['sWipMemBlock.adFree[1]'])
+                #if sat pulse shape is coded in the csa header, convert it to int and store the value in sat_pulse_shape, otherwise set it to 0
                 if isinstance(csa_data.get('sWipMemBlock.alFree[1]'), str):
                     sat_pulse_shape = int(csa_data['sWipMemBlock.alFree[1]'])
                 else:
                     sat_pulse_shape = 0
+                #convert sat_pulse_shape value to string and store in json sidecar
                 if sat_pulse_shape == 1:
                     jsondata['sat_pulse_shape'] = 'GaussHann-Sine'
                 elif sat_pulse_shape == 2:
                     jsondata['sat_pulse_shape'] = 'Gauss-Sine'
                 else:
-                    jsondata['sat_pulse_shape'] = 'Hann-Sine'
+                    jsondata['sat_pulse_shape'] = 'Hann-Sine' #if not specified sat pulse shape is Hann-Sine
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
         
+            #loop through mp2rage targets
             mp2rage_targets = sorted([match for match in session.rglob(mp2rage_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in mp2rage_targets:
                 for source, row in provdata.iterrows():
@@ -111,13 +143,18 @@ def add_csa_data_to_meta(bidspath: str):
                 jsonfile = target.with_suffix('').with_suffix('.json')
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
+                #add TR to json sidecar from csa data
                 jsondata['tr_ms'] = float(csa_data['alTR[0]']) / 1000
+                #add TI1 and TI2 to json sidecar from csa data if they are stored as strings
                 if isinstance(csa_data.get('alTI[0]'), str):
                     jsondata['ti1_ms'] = float(csa_data['alTI[0]']) / 1000
                 if isinstance(csa_data.get('alTI[1]'), str):
                     jsondata['ti2_ms'] = float(csa_data['alTI[1]']) / 1000
-                jsondata['ro_fa1_deg'] = csa_data['adFlipAngleDegree[0]']
-                jsondata['ro_fa2_deg'] = csa_data['adFlipAngleDegree[1]']
+                
+                #add readout flip angles to json sidecar from csa data
+                jsondata['ro_fa1_deg'] = float(csa_data['adFlipAngleDegree[0]'])
+                jsondata['ro_fa2_deg'] = float(csa_data['adFlipAngleDegree[1]'])
+                #calculate number of shots before and after the inversion pulse based on sequence type
                 if jsondata['PulseSequenceDetails'] == "%SiemensSeq%\\tfl":
                     jsondata['n_after'] = int(csa_data['sKSpace.lPartitions']) / 2
                     jsondata['n_before'] = int(csa_data['sFastImaging.lTurboFactor']) - jsondata['n_after']
@@ -127,6 +164,7 @@ def add_csa_data_to_meta(bidspath: str):
                 elif jsondata['PulseSequenceDetails'] == "%CustomerSeq%\\cstfl_wip925b":
                     jsondata['n_after'] = floor(float(csa_data['sWipMemBlock.alFree[2]']) / 2)
                     jsondata['n_before'] = ceil(float(csa_data['sWipMemBlock.alFree[2]']) / 2)
+                #save number of shots before and after inversion pulse to NumberShots field in json sidecar, for BIDS compatibility
                 jsondata['NumberShots'] = [jsondata['n_before'], jsondata['n_after']]
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)

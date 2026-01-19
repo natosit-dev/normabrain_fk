@@ -48,6 +48,7 @@ rule bidscoiner:
         """
         bidscoiner {input.dicoms} data/{wildcards.field_strength}/rawdata/bids/
         """
+        
 rule add_csa_data_to_meta:
     input:
         expand("data/{field_strength}/rawdata/bids/participants.tsv", field_strength=FIELD_STRENGTHS)
