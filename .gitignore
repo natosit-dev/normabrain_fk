@@ -2,6 +2,7 @@ data/
 results/
 *__*
 .*
+!.gitignore
 3T/
 7T/
 .snakemake/
