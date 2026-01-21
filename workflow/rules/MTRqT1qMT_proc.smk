@@ -53,3 +53,16 @@ rule synthstrip:
         """
         mri_synthstrip -i {input} -o {output[0]} -m {output[1]} --no-csf
         """
+
+rule DenoiseImage:
+    input:
+        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain.nii.gz",
+        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
+    output:
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised.nii.gz")
+    conda:
+        "../envs/ants.yaml"
+    shell:
+        """
+        DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
+        """
