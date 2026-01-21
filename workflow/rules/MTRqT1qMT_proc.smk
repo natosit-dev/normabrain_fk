@@ -22,17 +22,20 @@
 rule SoS:
     input:
         meta_complete = "results/add_csa_data_to_meta_{field_strength}.complete",
-        echos = lambda wildcards: expand("data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{acq}_echo-{echo}_flip-25_mt-off_part-mag_MPM.nii.gz",
+        echos = lambda wildcards: expand("data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz",
             field_strength=wildcards.field_strength,
             subject=wildcards.subject,
             session=wildcards.session,
             acq=wildcards.acq,
-            echo=glob_wildcards("data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{acq}_echo-{echo}_flip-25_mt-off_part-mag_MPM.nii.gz").echo
+            flip=wildcards.flip,
+            mt=wildcards.mt,
+            part=wildcards.part,
+            echo=glob_wildcards("data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz").echo
         )
     params:
         files=lambda wildcards, input: ','.join(input.echos)
     output:
-       temp("data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS.nii.gz")
+       temp("data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz")
     conda:
         "../envs/qMT.yaml"
     shell:
@@ -43,10 +46,10 @@ rule SoS:
 
 rule synthstrip:
     input:
-        "data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS.nii.gz"
+        "data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain.nii.gz"),
-        "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
+        "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -56,10 +59,10 @@ rule synthstrip:
 
 rule DenoiseImage:
     input:
-        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain.nii.gz",
-        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz",
+        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised.nii.gz")
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -70,10 +73,10 @@ rule DenoiseImage:
 
 rule N4BiasFieldCorrection:
     input:
-        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised.nii.gz",
-        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz",
+        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz"
+        "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:
