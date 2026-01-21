@@ -22,7 +22,8 @@
 configfile: "config/snakemake_config.yaml"
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]])
+    contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
+    seq = config["MPM_sequence"]
 
 rule SoS:
     input:
@@ -53,10 +54,10 @@ rule SoS:
 
 rule synthstrip:
     input:
-        "data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
+        "data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
-        "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
+        "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -66,10 +67,10 @@ rule synthstrip:
 
 rule DenoiseImage:
     input:
-        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz",
-        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz",
+        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz")
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -80,10 +81,10 @@ rule DenoiseImage:
 
 rule N4BiasFieldCorrection:
     input:
-        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz",
-        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz",
+        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz"
+        "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:
@@ -93,5 +94,5 @@ rule N4BiasFieldCorrection:
 
 rule register_MPM_to_ref:
     input:
-        ref = "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz"
+        ref = "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz"
         
