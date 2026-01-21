@@ -57,7 +57,7 @@ rule synthstrip:
         "data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
         temp("data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
-        "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz")
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -84,7 +84,7 @@ rule N4BiasFieldCorrection:
         input_image = "data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz",
         mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz"
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -94,5 +94,17 @@ rule N4BiasFieldCorrection:
 
 rule register_MPM_to_ref:
     input:
-        ref = "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz"
+        ref = "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz",
+        moving = "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz",
+        ref_mask = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz",
+        moving_mask = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+    output:
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4_toREF.nii.gz"),
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4_to{contrast}{flip}{mt}{part}.nii.gz")
+    conda:
+        "../envs/ants.yaml"
+    shell:
+        """
+        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/{wildcards.field_strength}/derivatives/MTRqT1qMT/antsRegistration/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_{wildcards.seq}{wildcards.contrast}{wildcards.acq}_flip-{wildcards.flip}_mt-{wildcards.mt}_part-{wildcards.part}_toREF_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Rigid[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        """
         
