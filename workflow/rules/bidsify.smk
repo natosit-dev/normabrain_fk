@@ -14,7 +14,7 @@ rule copy_dicoms_by_field_strength:
 
 rule bidsmapper:
     input:
-        dicoms = expand("data/{field_strength}/rawdata/dicoms/", field_strength=FIELD_STRENGTHS),
+        dicoms = "data/{field_strength}/rawdata/dicoms/",
         new_config = "config/snakemake_config.yaml"
     output:
         "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml"
@@ -30,7 +30,7 @@ rule bidsmapper:
 rule bidscoiner:
     input:
         "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml",
-        dicoms = expand("data/{field_strength}/rawdata/dicoms/", field_strength=FIELD_STRENGTHS)
+        dicoms = "data/{field_strength}/rawdata/dicoms/"
     output:
         "data/{field_strength}/rawdata/bids/participants.tsv"
     conda:
@@ -44,7 +44,7 @@ rule bidscoiner:
 
 rule add_csa_data_to_meta:
     input:
-        expand("data/{field_strength}/rawdata/bids/participants.tsv", field_strength=FIELD_STRENGTHS)
+        "data/{field_strength}/rawdata/bids/participants.tsv"
     output:
         "results/add_csa_data_to_meta_{field_strength}.complete"
     conda:

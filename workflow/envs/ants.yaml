@@ -1,0 +1,5 @@
+name: ants
+channels:
+  - conda-forge
+dependencies:
+  - ants=2.6.5
