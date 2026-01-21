@@ -1,0 +1,2 @@
+MPM_sequence: "vibeMT"
+MPM_contrasts: ["mt0", "mtw", "pdw", "t1w"]

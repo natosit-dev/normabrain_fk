@@ -14,8 +14,7 @@ rule copy_dicoms_by_field_strength:
 
 rule bidsmapper:
     input:
-        dicoms = "data/{field_strength}/rawdata/dicoms/",
-        new_config = "config/snakemake_config.yaml"
+        dicoms = "data/{field_strength}/rawdata/dicoms/"
     output:
         "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml"
     conda:

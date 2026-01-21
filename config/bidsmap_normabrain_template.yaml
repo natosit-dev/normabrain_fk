@@ -47,7 +47,7 @@ DICOM:
 # ------------------------------------------------------------------
   participant:                      # Attributes or properties to populate the participants tsv/json files
     participant_id: &participant_id
-      value: <<PatientName>>           # This filesystem property extracts the subject label from the source directory. NB: Any property or attribute can be used as subject-label, e.g. <PatientID>
+      value: <<filepath:/(.*?)/>>           # This filesystem property extracts the subject label from the source directory. NB: Any property or attribute can be used as subject-label, e.g. <PatientID>
       meta:                                     # All data in "meta" is stored in the participants json sidecar-file
         Description: The unique participant identifier, matching a participant entity found in the dataset
     session_id: &session_id
