@@ -66,3 +66,17 @@ rule DenoiseImage:
         """
         DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
         """
+
+
+rule N4BiasFieldCorrection:
+    input:
+        input_image = "data/{field_strength}/derivatives/MTRqT1qMT/DenoiseImage/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised.nii.gz",
+        mask_image = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
+    output:
+        "data/{field_strength}/derivatives/MTRqT1qMT/N4BiasFieldCorrection/{subject}/{session}/{subject}_{session}_acq-{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz"
+    conda:
+        "../envs/ants.yaml"
+    shell:
+        """
+        N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
+        """
