@@ -1,0 +1,5 @@
+name: fslmaths
+channels:
+  - https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/public/
+dependencies:
+  - fsl-avwutils=2209.6
