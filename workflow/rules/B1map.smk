@@ -9,7 +9,7 @@ rule smooth_B1:
     input:
         "data/{field_strength}/rawdata/bids/{subject}/{session}/fmap/{subject}_{session}_acq-famp_TB1TFL.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/B1map/SmoothImage/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz")
+        temp("data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -19,10 +19,10 @@ rule smooth_B1:
 
 rule reslice_B1:
     input:
-        b1map = "data/{field_strength}/derivatives/B1map/SmoothImage/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz",
-        ref = "data/{field_strength}/derivatives/MPM_preproc/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS.nii.gz"
+        b1map = "data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz",
+        ref = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/B1map/antsApplyTransforms/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM.nii.gz")
+        temp("data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -32,10 +32,10 @@ rule reslice_B1:
 
 rule normalize_B1_to_target_flip:
     input:
-        fmap = "data/{field_strength}/derivatives/B1map/antsApplyTransforms/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM.nii.gz",
-        mask = "data/{field_strength}/derivatives/MPM_preproc/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        fmap = "data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM.nii.gz",
+        mask = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
     output:
-        "data/{field_strength}/derivatives/B1map/fslmaths/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM_norm.nii.gz"
+        "data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM_norm.nii.gz"
     params:
         target_flip = get_target_flip
     conda:
