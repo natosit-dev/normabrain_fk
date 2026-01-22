@@ -19,11 +19,25 @@
 #             })
 #             paths_df = pd.concat([paths_df, pd.DataFrame([session_series])], ignore_index=True)
 
+import glob
 configfile: "config/snakemake_config.yaml"
 
 wildcard_constraints:
     contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
     seq = config["MPM_sequence"]
+
+# rule remove_Pha_Mag_from_name:
+#     input:
+#         mag = "data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}Mag_echo-{echo}_flip-{flip}_mt-{mt}_part-mag_MPM.nii.gz",
+#         phase = "data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}Pha_echo-{echo}_flip-{flip}_mt-{mt}_part-phase_MPM.nii.gz"
+#     output:
+#         "data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-mag_MPM.nii.gz",
+#         "data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-phase_MPM.nii.gz"
+#     shell:
+#         """
+#         mv {input.mag} {output[0]}
+#         mv {input.phase} {output[1]}
+#         """
 
 rule SoS:
     input:
@@ -43,7 +57,7 @@ rule SoS:
     params:
         files=lambda wildcards, input: ','.join(input.echos)
     output:
-       temp("data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz")
+       temp("data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz".strip("Pha").strip("Mag"))
     conda:
         "../envs/qMT.yaml"
     shell:
