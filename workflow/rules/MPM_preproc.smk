@@ -53,6 +53,17 @@ rule SoS:
         """
 
 
+rule save_ref_SoS:
+    input:
+        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS.nii.gz"
+    output:
+        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_SoS.nii.gz"
+    shell:
+        """
+        cp {input} {output}
+        """
+
+
 rule synthstrip:
     input:
         "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
@@ -65,6 +76,18 @@ rule synthstrip:
         """
         mri_synthstrip -i {input} -o {output[0]} -m {output[1]} --no-csf
         """
+
+
+rule save_ref_brainmask:
+    input:
+        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
+    output:
+        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_brain_mask.nii.gz"
+    shell:
+        """
+        cp {input} {output}
+        """
+
 
 rule DenoiseImage:
     input:
@@ -97,7 +120,7 @@ rule register_MPM_to_ref:
     input:
         ref = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz",
         moving = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz",
-        ref_mask = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz",
+        ref_mask = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_brain_mask.nii.gz",
         moving_mask = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
         temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4_toREF.nii.gz"),
@@ -115,10 +138,10 @@ rule register_MPM_to_ref:
 rule apply_reg_MPM_to_ref:
     input:
         moving = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz",
-        ref = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS.nii.gz",
+        ref = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_SoS.nii.gz",
         reg = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_Composite.h5"
     output:
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_toREF.nii.gz")
+        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_toREF.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:
