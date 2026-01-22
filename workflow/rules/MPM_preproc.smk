@@ -115,7 +115,7 @@ rule register_MPM_to_ref:
     output:
         temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4_toREF.nii.gz"),
         temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4_to{contrast}{flip}{mt}{part}.nii.gz"),
-        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_Composite.h5")
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_Composite.h5"),
         temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_InverseComposite.h5")
     conda:
         "../envs/ants.yaml"
