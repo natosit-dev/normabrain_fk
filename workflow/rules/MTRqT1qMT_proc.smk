@@ -114,11 +114,27 @@ rule register_MPM_to_ref:
         moving_mask = "data/{field_strength}/derivatives/MTRqT1qMT/synthstrip/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
         temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4_toREF.nii.gz"),
-        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4_to{contrast}{flip}{mt}{part}.nii.gz")
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4_to{contrast}{flip}{mt}{part}.nii.gz"),
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_Composite.h5")
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_InverseComposite.h5")
     conda:
         "../envs/ants.yaml"
     shell:
         """
-        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/{wildcards.field_strength}/derivatives/MTRqT1qMT/antsRegistration/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_{wildcards.seq}{wildcards.contrast}{wildcards.acq}_flip-{wildcards.flip}_mt-{wildcards.mt}_part-{wildcards.part}_toREF_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Rigid[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/{wildcards.field_strength}/derivatives/MTRqT1qMT/antsRegistration/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}{wildcards.acq}_flip-{wildcards.flip}_mt-{wildcards.mt}_part-{wildcards.part}_toREF_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Rigid[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
+  
         
+rule apply_reg_MPM_to_ref:
+    input:
+        moving = "data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz",
+        ref = "data/{field_strength}/derivatives/MTRqT1qMT/SoS_images_CLI/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS.nii.gz",
+        reg = "data/{field_strength}/derivatives/MTRqT1qMT/antsRegistration/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_Composite.h5"
+    output:
+        temp("data/{field_strength}/derivatives/MTRqT1qMT/antsApplyTransforms/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_toREF.nii.gz")
+    conda:
+        "../envs/ants.yaml"
+    shell:
+        """
+        antsApplyTransforms -d 3 -v 1 -n Linear -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
+        """
