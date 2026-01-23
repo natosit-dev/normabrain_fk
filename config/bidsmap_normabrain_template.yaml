@@ -51,7 +51,7 @@ DICOM:
       meta:                                     # All data in "meta" is stored in the participants json sidecar-file
         Description: The unique participant identifier, matching a participant entity found in the dataset
     session_id: &session_id
-      value: <<StudyDate>>   # This filesystem property extracts the session label from the source directory. NB: Any property or attribute can be used as session-label, e.g. <StudyID>
+      value: <<filepath:/(.*?)/(.*?)/>>   # This filesystem property extracts the session label from the source directory. NB: Any property or attribute can be used as session-label, e.g. <StudyID>
       meta:
         Description: The session identifier, matching a session found in the dataset
     age<<session_id>>: &age
