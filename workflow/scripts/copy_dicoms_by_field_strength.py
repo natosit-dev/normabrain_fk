@@ -2,6 +2,7 @@ import argparse
 import os
 import pydicom
 import shutil
+import math
 from pathlib import Path
 from bidscoin import lsdirs
 
@@ -32,6 +33,15 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str)
             #copy the contents of the session folder to the new location
             #shutil.copytree(session, new_folder, dirs_exist_ok=True)
             os.system("rsync -au " + str(session) + "/ " + str(new_folder) + "/")
+
+            #remove files from new_folder less than 500 KB (either not images or corrupted)
+            for dicom in list(new_folder.rglob('*.dcm')):
+                dicom_size = math.ceil(os.path.getsize(dicom) / 1024)
+                if dicom_size < 500:
+                    os.remove(dicom)
+                #remove empty folders
+                if not os.listdir(dicom.parent):
+                    os.rmdir(dicom.parent)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

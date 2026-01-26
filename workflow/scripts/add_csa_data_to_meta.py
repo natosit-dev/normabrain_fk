@@ -42,7 +42,7 @@ def add_csa_data_to_meta(bidspath: str):
                 #loop through map of provence data to nifiti/tsv bids files
                 for source, row in provdata.iterrows():
                     #if the target pattern is in the name of the bids file, get the source dicom file path
-                    if isinstance(row['targets'], str) and target.name in row['targets']:
+                    if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
                         sourcedir = source
                 #get datasource class from source dicom directory
                 datasource = bids.get_datasource(Path(sourcedir), plugins)
@@ -69,7 +69,7 @@ def add_csa_data_to_meta(bidspath: str):
             t1b1fl_targets = sorted([match for match in session.rglob(t1b1fl_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in t1b1fl_targets:
                 for source, row in provdata.iterrows():
-                    if isinstance(row['targets'], str) and target.name in row['targets']:
+                    if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
                         sourcedir = source
                 datasource = bids.get_datasource(Path(sourcedir), plugins)
                 jsonfile = target.with_suffix('').with_suffix('.json')
@@ -84,7 +84,7 @@ def add_csa_data_to_meta(bidspath: str):
             vibemt_targets = sorted([match for match in session.rglob(vibemt_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in vibemt_targets:
                 for source, row in provdata.iterrows():
-                    if isinstance(row['targets'], str) and target.name in row['targets']:
+                    if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
                         sourcedir = source
                 datasource = bids.get_datasource(Path(sourcedir), plugins)
                 jsonfile = target.with_suffix('').with_suffix('.json')
@@ -136,7 +136,7 @@ def add_csa_data_to_meta(bidspath: str):
             mp2rage_targets = sorted([match for match in session.rglob(mp2rage_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in mp2rage_targets:
                 for source, row in provdata.iterrows():
-                    if isinstance(row['targets'], str) and target.name in row['targets']:
+                    if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
                         sourcedir = source
                 datasource = bids.get_datasource(Path(sourcedir), plugins)
 
