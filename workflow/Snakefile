@@ -1,15 +1,19 @@
-from pathlib import Path
-import os
-try:
-    data_path = Path("data/")
-    FIELD_STRENGTHS = [x.name for x in data_path.glob("*T/") if x.is_dir()]
-except FileNotFoundError:
-    FIELD_STRENGTHS = []
+# from pathlib import Path
+# import os
+# try:
+#     data_path = Path("data/")
+#     FIELD_STRENGTHS = [x.name for x in data_path.glob("*T/") if x.is_dir()]
+# except FileNotFoundError:
+#     FIELD_STRENGTHS = []
 
+
+# rule all:
+#     input:
+#         expand("results/add_csa_data_to_meta_{field_strength}.complete", field_strength=FIELD_STRENGTHS)
 
 rule all:
     input:
-        expand("results/add_csa_data_to_meta_{field_strength}.complete", field_strength=FIELD_STRENGTHS)
+        "results/add_csa_data_to_meta_3T.complete"
 
 include: "rules/bidsify.smk"
 include: "rules/MPM_preproc.smk"

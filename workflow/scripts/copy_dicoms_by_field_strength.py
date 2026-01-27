@@ -17,16 +17,18 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str)
     for subject in subjects:
         # List session folders within each subject, assuming they are the next directories in the hierarchy
         sessions = lsdirs(subject, '*')
-
+        
+        i=0
         #Loop through the sessions folders
         for session in sessions:
+            i=i+1 #change session name from date to index
             # Read the first DICOM file to get the field strength
             first_dicom_path = list(session.rglob('*.dcm'))[0]
             first_dicom = pydicom.dcmread(first_dicom_path)
             field_value = str(first_dicom[0x18, 0x87].value)
             
             # Create new folder path based on field strength
-            new_folder = Path(os.path.join(output_folder, field_value + 'T', 'rawdata', 'dicoms', subject.name, session.name))
+            new_folder = Path(os.path.join(output_folder, field_value + 'T', 'rawdata', 'dicoms', 'sub-' + subject.name, 'ses-' + str(i)))
             if not os.path.exists(new_folder):
                 os.makedirs(new_folder)
             

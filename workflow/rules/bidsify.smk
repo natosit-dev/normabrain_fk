@@ -1,37 +1,53 @@
-rule copy_dicoms_by_field_strength:
+checkpoint copy_dicoms_by_field_strength:
     input:
         expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])
     output:
-        directory("data/")
+        dir = directory("data/")
     conda:
         "../envs/bidscoin.yaml"
     log:
         "results/logs/copy_dicoms_by_field_strength.log"
     shell:
         """
-        python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output}
+        python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output.dir}
         """
+
+# def get_dicoms_folders(wildcards):
+#     checkpoint_output = checkpoints.copy_dicoms_by_field_strength.get(**wildcards).output[0]
+#     return expand("data/{field_strength}/rawdata/dicoms/",
+#             field_strength=glob_wildcards(os.path.join(checkpoint_output, "{f}/rawdata/dicoms/")).f)
+
+def get_dicoms_folders(wildcards):
+    checkpoint_output = checkpoints.copy_dicoms_by_field_strength.get(**wildcards).output[0]
+    return expand(os.path.join(checkpoint_output, "{field_strength}/rawdata/dicoms/"),
+        field_strength=wildcards.field_strength)
 
 rule bidsmapper:
     input:
-        dicoms = "data/{field_strength}/rawdata/dicoms/"
+        get_dicoms_folders
+        # os.path.join(rules.copy_dicoms_by_field_strength.output.dir, "{field_strength}/rawdata/dicoms/"),
     output:
-        "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml"
+        # "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml"
+        # directory("data/{field_strength}/rawdata/bids")
+        temp("results/bidsmapper_{field_strength}.complete")
     conda:
         "../envs/bidscoin.yaml"
     log:
         "results/logs/bidsmapper_{field_strength}.log"
     shell:
         """
-        bidsmapper {input.dicoms} data/{wildcards.field_strength}/rawdata/bids/ -t config/bidsmap_normabrain_template -n '*' -m '*' -a
+        bidsmapper {input} data/{wildcards.field_strength}/rawdata/bids/ -t config/bidsmap_normabrain_template -a
+        touch {output}
         """
 
 rule bidscoiner:
     input:
-        "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml",
-        dicoms = "data/{field_strength}/rawdata/dicoms/"
+        # "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml",
+        # dicoms = "data/{field_strength}/rawdata/dicoms/"
+        rules.bidsmapper.output,
+        dicoms = get_dicoms_folders
     output:
-        "data/{field_strength}/rawdata/bids/participants.tsv"
+        temp("results/bidscoiner_{field_strength}.complete")
     conda:
         "../envs/bidscoin.yaml"
     log:
@@ -39,11 +55,12 @@ rule bidscoiner:
     shell:
         """
         bidscoiner {input.dicoms} data/{wildcards.field_strength}/rawdata/bids/
+        touch {output}
         """
 
 rule add_csa_data_to_meta:
     input:
-        "data/{field_strength}/rawdata/bids/participants.tsv"
+        rules.bidscoiner.output
     output:
         "results/add_csa_data_to_meta_{field_strength}.complete"
     conda:
