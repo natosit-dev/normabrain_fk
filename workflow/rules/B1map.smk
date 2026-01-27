@@ -1,28 +1,32 @@
 import json
 def get_target_flip(wildcards):
-    with open(f"data/{wildcards.field_strength}/rawdata/bids/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp_TB1TFL.json", "r") as f:
+    with open(f"data/{wildcards.field_strength}/rawdata/bids/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp{wildcards.run}_TB1TFL.json", "r") as f:
         b1map_meta = json.load(f)
     return b1map_meta["target_fa_deg"] * 10
 
 
+wildcard_constraints:
+    run=".*" #run can be an empty string
+
 rule smooth_B1:
     input:
-        "data/{field_strength}/rawdata/bids/{subject}/{session}/fmap/{subject}_{session}_acq-famp_TB1TFL.nii.gz"
+        "data/{field_strength}/rawdata/bids/sub-{subject}/ses-{session}/fmap/sub-{subject}_ses-{session}_acq-famp{run}_TB1TFL.nii.gz",
+        "results/add_csa_data_to_meta_3T.complete"
     output:
-        temp("data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz")
+        temp("results/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp{run}_smooth.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
         """
-        SmoothImage 3 {input} 3x1x1 {output}
+        SmoothImage 3 {input[0]} 3x1x1 {output}
         """
 
 rule reslice_B1:
     input:
-        b1map = "data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz",
-        ref = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_SoS.nii.gz"
+        b1map = "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth.nii.gz",
+        ref = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_reference_SoS.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM.nii.gz")
+        temp("results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -32,10 +36,10 @@ rule reslice_B1:
 
 rule normalize_B1_to_target_flip:
     input:
-        fmap = "data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM.nii.gz",
-        mask = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_brain_mask.nii.gz"
+        fmap = "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}.nii.gz",
+        mask = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_reference_brain_mask.nii.gz"
     output:
-        "data/{field_strength}/derivatives/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w{acq}MPM_norm.nii.gz"
+        "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz"
     params:
         target_flip = get_target_flip
     conda:

@@ -10,3 +10,7 @@ python3 workflow/scripts/add_csa_data_to_meta.py ./3T/rawdata/bids/
 
 snakemake --config input_dicoms_path="../test_dicoms" --sdm conda --cores 2 copy_dicoms_by_field_strength
 snakemake --config input_dicoms_path="../test_dicoms" --sdm conda --cores 2
+
+
+
+snakemake --config input_dicoms_path="../test_dicoms" --sdm conda apptainer --cores 2 data/3T/derivatives/B1map/sub-2025093TNormaPOETjbr/ses-20250926/sub-2025093TNormaPOETjbr_ses-20250926_acq-famp_smooth_reslicedtovibeMTt1wsag6eco1isoc9DLMPM_norm.nii.gz

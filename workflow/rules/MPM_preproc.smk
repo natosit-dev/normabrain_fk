@@ -24,7 +24,9 @@ configfile: "config/snakemake_config.yaml"
 
 wildcard_constraints:
     contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
-    seq = config["MPM_sequence"]
+    seq = config["MPM_sequence"],
+    # t1flip = '|'.join([re.escape(x) for x in config["MPM_T1W_flip"]])
+
 
 rule SoS:
     input:
@@ -44,7 +46,7 @@ rule SoS:
     params:
         files=lambda wildcards, input: ','.join(input.echos)
     output:
-       temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz".strip("Pha").strip("Mag"))
+       temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz".strip("Pha").strip("Mag"))
     conda:
         "../envs/qMT.yaml"
     shell:
@@ -55,9 +57,9 @@ rule SoS:
 
 rule save_ref_SoS:
     input:
-        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS.nii.gz"
+        "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz"
     output:
-        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_SoS.nii.gz"
+        "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_reference_SoS.nii.gz"
     shell:
         """
         cp {input} {output}
@@ -66,10 +68,10 @@ rule save_ref_SoS:
 
 rule synthstrip:
     input:
-        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
+        "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz")
+        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
+        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz")
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -80,9 +82,9 @@ rule synthstrip:
 
 rule save_ref_brainmask:
     input:
-        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
     output:
-        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_brain_mask.nii.gz"
+        "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_reference_brain_mask.nii.gz"
     shell:
         """
         cp {input} {output}
@@ -91,10 +93,10 @@ rule save_ref_brainmask:
 
 rule DenoiseImage:
     input:
-        input_image = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz",
-        mask_image = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+        input_image = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz",
+        mask_image = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz")
+        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -105,10 +107,10 @@ rule DenoiseImage:
 
 rule N4BiasFieldCorrection:
     input:
-        input_image = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz",
-        mask_image = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+        input_image = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz",
+        mask_image = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz")
+        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -118,30 +120,30 @@ rule N4BiasFieldCorrection:
 
 rule register_MPM_to_ref:
     input:
-        ref = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz",
-        moving = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz",
-        ref_mask = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_brain_mask.nii.gz",
-        moving_mask = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+        ref = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_denoised_n4.nii.gz",
+        moving = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4.nii.gz",
+        ref_mask = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_reference_brain_mask.nii.gz",
+        moving_mask = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4_toREF.nii.gz"),
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-25_mt-off_part-mag_SoS_brain_denoised_n4_to{contrast}{flip}{mt}{part}.nii.gz"),
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_Composite.h5"),
-        temp("data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_InverseComposite.h5")
+        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_denoised_n4_toREF{t1flip}.nii.gz"),
+        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_denoised_n4_to{contrast}{flip}{mt}{part}.nii.gz"),
+        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF{t1flip}_Composite.h5"),
+        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF{t1flip}_InverseComposite.h5")
     conda:
         "../envs/ants.yaml"
     shell:
         """
-        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/{wildcards.field_strength}/derivatives/MPM_preproc/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}{wildcards.acq}_flip-{wildcards.flip}_mt-{wildcards.mt}_part-{wildcards.part}_toREF_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Rigid[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ results/{wildcards.field_strength}/MPM_preproc/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}{wildcards.acq}_flip-{wildcards.flip}_mt-{wildcards.mt}_part-{wildcards.part}_toREF{wildcards.t1flip}_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Rigid[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
   
         
 rule apply_reg_MPM_to_ref:
     input:
-        moving = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz",
-        ref = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_reference_SoS.nii.gz",
-        reg = "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF_Composite.h5"
+        moving = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz",
+        ref = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_reference_SoS.nii.gz",
+        reg = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_toREF{t1flip}_Composite.h5"
     output:
-        "data/{field_strength}/derivatives/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_toREF.nii.gz"
+        "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_toREF{t1flip}.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:

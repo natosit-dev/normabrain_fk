@@ -28,7 +28,7 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str)
             field_value = str(first_dicom[0x18, 0x87].value)
             
             # Create new folder path based on field strength
-            new_folder = Path(os.path.join(output_folder, field_value + 'T', 'rawdata', 'dicoms', 'sub-' + subject.name, 'ses-' + str(i)))
+            new_folder = Path(os.path.join(output_folder, field_value + 'T', 'dicoms', 'sub-' + subject.name, 'ses-' + str(i)))
             if not os.path.exists(new_folder):
                 os.makedirs(new_folder)
             
