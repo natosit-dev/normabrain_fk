@@ -2,7 +2,7 @@ checkpoint copy_dicoms_by_field_strength:
     input:
         expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])
     output:
-        dir = directory("data/")
+        dir = directory("data/rawdata/dicoms")
     conda:
         "../envs/bidscoin.yaml"
     log:
@@ -19,7 +19,7 @@ checkpoint copy_dicoms_by_field_strength:
 
 def get_dicoms_folders(wildcards):
     checkpoint_output = checkpoints.copy_dicoms_by_field_strength.get(**wildcards).output[0]
-    return expand(os.path.join(checkpoint_output, "{field_strength}/rawdata/dicoms/"),
+    return expand(os.path.join(checkpoint_output, "{field_strength}"),
         field_strength=wildcards.field_strength)
 
 rule bidsmapper:
@@ -27,16 +27,15 @@ rule bidsmapper:
         get_dicoms_folders
         # os.path.join(rules.copy_dicoms_by_field_strength.output.dir, "{field_strength}/rawdata/dicoms/"),
     output:
-        # "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml"
+        "data/rawdata/bids/{field_strength}/code/bidscoin/bidsmap.yaml"
         # directory("data/{field_strength}/rawdata/bids")
-        temp("results/bidsmapper_{field_strength}.complete")
     conda:
         "../envs/bidscoin.yaml"
     log:
         "results/logs/bidsmapper_{field_strength}.log"
     shell:
         """
-        bidsmapper {input} data/{wildcards.field_strength}/rawdata/bids/ -t config/bidsmap_normabrain_template -a
+        bidsmapper {input} data/rawdata/bids/{wildcards.field_strength} -t config/bidsmap_normabrain_template -a
         touch {output}
         """
 
@@ -47,14 +46,14 @@ rule bidscoiner:
         rules.bidsmapper.output,
         dicoms = get_dicoms_folders
     output:
-        temp("results/bidscoiner_{field_strength}.complete")
+        "data/rawdata/bids/{field_strength}/participants.tsv"
     conda:
         "../envs/bidscoin.yaml"
     log:
         "results/logs/bidscoiner_{field_strength}.log"
     shell:
         """
-        bidscoiner {input.dicoms} data/{wildcards.field_strength}/rawdata/bids/
+        bidscoiner {input.dicoms} data/rawdata/bids/{wildcards.field_strength}
         touch {output}
         """
 
@@ -69,6 +68,6 @@ rule add_csa_data_to_meta:
         "results/logs/add_csa_data_to_meta_{field_strength}.log"
     shell:
         """
-        python3 workflow/scripts/add_csa_data_to_meta.py data/{wildcards.field_strength}/rawdata/bids/
+        python3 workflow/scripts/add_csa_data_to_meta.py data/rawdata/bids/{wildcards.field_strength}
         touch {output}
         """

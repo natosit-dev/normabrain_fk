@@ -3,7 +3,7 @@
 # paths_df = pd.DataFrame(columns=["subject", "session", "field_strength", "session_path"])
 # session_paths = []
 # for strength in FIELD_STRENGTHS:
-#     bids_path = data_path / strength / "rawdata" / "bids"
+#     bids_path = data_path / strength / "bids"
 #     subject_paths = [x for x in bids_path.glob('sub-*') if x.is_dir()]
 #     for subject in subject_paths:
 #         sessions = [x for x in subject.glob("ses-*") if x.is_dir()]
@@ -31,7 +31,7 @@ wildcard_constraints:
 rule SoS:
     input:
         meta_complete = "results/add_csa_data_to_meta_{field_strength}.complete",
-        echos = lambda wildcards: expand("data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz",
+        echos = lambda wildcards: expand("data/{field_strength}/bids/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz",
             field_strength=wildcards.field_strength,
             subject=wildcards.subject,
             session=wildcards.session,
@@ -41,7 +41,7 @@ rule SoS:
             flip=wildcards.flip,
             mt=wildcards.mt,
             part=wildcards.part,
-            echo=glob_wildcards("data/{field_strength}/rawdata/bids/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz").echo
+            echo=glob_wildcards("data/{field_strength}/bids/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz").echo
         )
     params:
         files=lambda wildcards, input: ','.join(input.echos)
