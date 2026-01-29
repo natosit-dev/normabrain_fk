@@ -1,6 +1,6 @@
 import json
 def get_target_flip(wildcards):
-    with open(f"data/{wildcards.field_strength}/bids/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp{wildcards.run}_TB1TFL.json", "r") as f:
+    with open(f"data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp{wildcards.run}_TB1TFL.json", "r") as f:
         b1map_meta = json.load(f)
     return b1map_meta["target_fa_deg"] * 10
 
@@ -10,7 +10,7 @@ wildcard_constraints:
 
 rule smooth_B1:
     input:
-        "data/{field_strength}/bids/sub-{subject}/ses-{session}/fmap/sub-{subject}_ses-{session}_acq-famp{run}_TB1TFL.nii.gz",
+        "data/rawdata/bids/{field_strength}/sub-{subject}/ses-{session}/fmap/sub-{subject}_ses-{session}_acq-famp{run}_TB1TFL.nii.gz",
         "results/add_csa_data_to_meta_{field_strength}.complete"
     output:
         temp("results/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp{run}_smooth.nii.gz")
