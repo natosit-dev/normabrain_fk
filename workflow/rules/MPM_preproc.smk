@@ -151,3 +151,7 @@ rule apply_reg_MPM_to_ref:
         """
         antsApplyTransforms -d 3 -v 1 -n Linear -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
         """
+
+# apply B1 correction
+# rule setup.py
+# rule fit_JSPqMT_CLI.py
