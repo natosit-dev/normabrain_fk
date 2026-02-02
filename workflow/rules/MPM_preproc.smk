@@ -20,6 +20,7 @@
 #             paths_df = pd.concat([paths_df, pd.DataFrame([session_series])], ignore_index=True)
 
 #TO DO: remove unnecessary save_reference rules
+#move results from results to data/derivatives? more BIDS-friendly
 
 import glob
 configfile: "config/snakemake_config.yaml"
@@ -57,7 +58,7 @@ rule SoS:
     threads: 2
     shell:
         """
-        python3 workflow/scripts/qMT/SoS_images_CLI.py {params.files} {output}
+        python3 workflow/scripts/SoS_images_CLI.py {params.files} {output}
         """
 # python3 workflow/scripts/qMT/SoS_images_CLI.py {params.files} {output}
 
@@ -156,7 +157,3 @@ rule apply_reg_MPM_to_ref:
         """
         antsApplyTransforms -d 3 -v 1 -n Linear -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
         """
-
-# apply B1 correction
-# rule setup.py
-# rule fit_JSPqMT_CLI.py
