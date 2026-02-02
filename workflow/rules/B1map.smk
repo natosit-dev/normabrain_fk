@@ -6,7 +6,8 @@ def get_target_flip(wildcards):
 
 #TO DO: implement checkpoint for BIDS
 wildcard_constraints:
-    run=".*" #run can be an empty string
+    run=".*", #run can be an empty string
+    t1flip="\d+" #t1flip should be a number
 
 rule smooth_B1:
     input:

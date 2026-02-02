@@ -19,6 +19,8 @@
 #             })
 #             paths_df = pd.concat([paths_df, pd.DataFrame([session_series])], ignore_index=True)
 
+#TO DO: remove unnecessary save_reference rules
+
 import glob
 configfile: "config/snakemake_config.yaml"
 
@@ -27,26 +29,29 @@ wildcard_constraints:
     seq = config["MPM_sequence"],
     # t1flip = '|'.join([re.escape(x) for x in config["MPM_T1W_flip"]])
 
+def get_echos(wildcards):
+    return glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*{wildcards.acq}*_echo-*_flip-{wildcards.flip}_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz')
 
 rule SoS:
     input:
         meta_complete = "results/add_csa_data_to_meta_{field_strength}.complete",
-        echos = lambda wildcards: expand("data/rawdata/bids/{field_strength}/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz",
-            field_strength=wildcards.field_strength,
-            subject=wildcards.subject,
-            session=wildcards.session,
-            seq=config["MPM_sequence"],
-            contrast=wildcards.contrast,
-            acq=wildcards.acq,
-            flip=wildcards.flip,
-            mt=wildcards.mt,
-            part=wildcards.part,
-            echo=glob_wildcards("data/rawdata/bids/{field_strength}/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz").echo
-        )
+        echos = get_echos
+        # echos = lambda wildcards: expand("data/rawdata/bids/{field_strength}/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz",
+        #     field_strength=wildcards.field_strength,
+        #     subject=wildcards.subject,
+        #     session=wildcards.session,
+        #     seq=config["MPM_sequence"],
+        #     contrast=wildcards.contrast,
+        #     acq=wildcards.acq,
+        #     flip=wildcards.flip,
+        #     mt=wildcards.mt,
+        #     part=wildcards.part,
+        #     echo=glob_wildcards("data/rawdata/bids/{field_strength}/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz").echo
+        # )
     params:
         files=lambda wildcards, input: ','.join(input.echos)
     output:
-       "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz".strip("Pha").strip("Mag")
+       "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz".strip("Pha").strip("Mag").strip("6eco").strip("3eco")
     conda:
         "../envs/qMT.yaml"
     threads: 2
@@ -54,7 +59,7 @@ rule SoS:
         """
         python3 workflow/scripts/qMT/SoS_images_CLI.py {params.files} {output}
         """
-
+# python3 workflow/scripts/qMT/SoS_images_CLI.py {params.files} {output}
 
 rule save_ref_SoS:
     input:
@@ -65,14 +70,14 @@ rule save_ref_SoS:
         """
         cp {input} {output}
         """
-
-
+# results/3T/MPM_preproc/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMTt1w6ecosag1isoc9_flip-33_mt-off_part-mag_SoS.nii.gz
+# results/3T/MPM_preproc/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMTt1w6eco3ecosag1isoc9_flip-33_mt-off_part-mag_SoS.nii.gz
 rule synthstrip:
     input:
         "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
         temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
-        temp("results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz")
+        "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:

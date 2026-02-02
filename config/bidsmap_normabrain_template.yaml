@@ -198,10 +198,25 @@ DICOM:
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).?mtw.*
+      ComplexImageComponent: .*MAGNITUDE.*
     bids: 
       <<: *anat_dicoment_vfamt
       mt: 'on'
+      part: mag
     meta:
+      RepetitionTimePreparation: <RepetitionTime>
+      RepetitionTimeExcitation: <RepetitionTime>
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).?mtw.*
+      ComplexImageComponent: .*PHASE.*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      mt: 'on'
+      part: phase
+    meta:
+      Units: arbitrary
       RepetitionTimePreparation: <RepetitionTime>
       RepetitionTimeExcitation: <RepetitionTime>
       EffectiveEchoTime: <<EffectiveEchoTime>>

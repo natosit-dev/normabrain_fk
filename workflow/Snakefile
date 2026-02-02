@@ -18,3 +18,4 @@ rule all:
 include: "rules/bidsify.smk"
 include: "rules/MPM_preproc.smk"
 include: "rules/B1map.smk"
+include: "rules/qT1qMT.smk"
