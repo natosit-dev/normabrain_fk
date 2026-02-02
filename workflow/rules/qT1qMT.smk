@@ -27,13 +27,12 @@ rule mtr:
 
 rule setup_fit_JSPqMT_CLI:
     output:
-        "results/setup_fit_JSPqMT_CLI.complete"
+        directory("workflow/scripts/luca_qMT/build/")
     conda:
         "../envs/qMT.yaml"
     shell:
         """
-        python3 workflow/scripts/qMT/setup.py build_ext --inplace
-        touch {output}
+        cd workflow/scripts/luca_qMT/
+        python3 setup.py build_ext --inplace
         """
-# rule setup.py
 # rule fit_JSPqMT_CLI.py
