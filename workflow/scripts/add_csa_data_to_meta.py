@@ -101,7 +101,7 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata['ro_pulse_ms'] = float(csa_data['sWipMemBlock.alFree[7]']) / 1000
                 jsondata['tr_ms'] = float(csa_data['alTR[0]']) / 1000
                 jsondata['ro_pulse_ms'] = float(csa_data['sWipMemBlock.alFree[7]']) / 1000
-                jsondata['ro_fa_deg'] = csa_data['adFlipAngleDegree[0]']
+                jsondata['ro_fa_deg'] = float(csa_data['adFlipAngleDegree[0]'])
                 #if RO pulse shape is coded in the csa header, convert it to int and store the value in ro_pulse_shape, otherwise set it to 0
                 if isinstance(csa_data.get('sWipMemBlock.alFree[8]'), str):
                     ro_pulse_shape = int(csa_data['sWipMemBlock.alFree[8]'])
