@@ -32,10 +32,12 @@ wildcard_constraints:
 def get_echos(wildcards):
     return glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*{wildcards.acq}*_echo-*_flip-{wildcards.flip}_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz')
 
+def check_csa_added_to_meta(wildcards):
+    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 rule SoS:
     input:
-        meta_complete = rules.add_csa_data_to_meta.output,
+        meta_complete = check_csa_added_to_meta,
         echos = get_echos
     params:
         files=lambda wildcards, input: ','.join(input.echos)

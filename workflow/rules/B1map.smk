@@ -4,6 +4,9 @@ def get_target_flip(wildcards):
         b1map_meta = json.load(f)
     return b1map_meta["target_fa_deg"] * 10
 
+def check_csa_added_to_meta(wildcards):
+    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+
 #TO DO: implement checkpoint for BIDS
 wildcard_constraints:
     run=".*", #run can be an empty string
@@ -12,7 +15,8 @@ wildcard_constraints:
 rule smooth_B1:
     input:
         "data/rawdata/bids/{field_strength}/sub-{subject}/ses-{session}/fmap/sub-{subject}_ses-{session}_acq-famp{run}_TB1TFL.nii.gz",
-        rules.add_csa_data_to_meta.output
+        # rules.add_csa_data_to_meta.output
+        check_csa_added_to_meta
     output:
         temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp{run}_smooth.nii.gz")
     conda:

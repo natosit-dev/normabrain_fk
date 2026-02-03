@@ -42,7 +42,7 @@ rule bidscoiner:
         touch {output}
         """
 
-rule add_csa_data_to_meta:
+checkpoint add_csa_data_to_meta:
     input:
         rules.bidscoiner.output
     output:
