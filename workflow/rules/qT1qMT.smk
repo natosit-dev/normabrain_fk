@@ -30,10 +30,10 @@ wildcard_constraints:
 
 rule mtr:
     input:
-        mt_off = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0{acq}_flip-{flip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        mt_on = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw{acq}_flip-{flip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz"
+        mt_off = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0{acq}_flip-{flip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw{acq}_flip-{flip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz"
     output:
-        "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_flip-{flip}_toREF{t1flip}_MTRmap.nii.gz"
+        "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_flip-{flip}_toREF{t1flip}_MTRmap.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:
@@ -56,18 +56,18 @@ rule setup_fit_JSPqMT_CLI:
 rule fit_JSPqMT_CLI:
     input:
         build = directory("workflow/scripts/luca_qMT/build/"),
-        mt_off = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0{acq}_flip-{mtflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        mt_on = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw{acq}_flip-{mtflip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz",
-        pdw = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw{acq}_flip-{pdflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        t1w = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz",
-        b1map = "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz",
-        mask = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        mt_off = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0{acq}_flip-{mtflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw{acq}_flip-{mtflip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz",
+        pdw = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw{acq}_flip-{pdflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
+        t1w = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz",
+        b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz",
+        mask = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
     params:
         mt_params = get_qMT_params
     output:
-        mpfmap = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_MPFmap{run}.nii.gz",
-        t1map = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_T1map{run}.nii.gz",
-        r1map = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_R1map{run}.nii.gz"
+        mpfmap = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_MPFmap{run}.nii.gz",
+        t1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_T1map{run}.nii.gz",
+        r1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_R1map{run}.nii.gz"
     threads: 8
     conda:
         "../envs/qMT.yaml"

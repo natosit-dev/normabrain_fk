@@ -5,8 +5,6 @@ checkpoint copy_dicoms_by_field_strength:
         dir = directory("data/rawdata/dicoms")
     conda:
         "../envs/bidscoin.yaml"
-    log:
-        "results/logs/copy_dicoms_by_field_strength.log"
     shell:
         """
         python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output.dir}
@@ -24,8 +22,6 @@ rule bidsmapper:
         "data/rawdata/bids/{field_strength}/code/bidscoin/bidsmap.yaml"
     conda:
         "../envs/bidscoin.yaml"
-    log:
-        "results/logs/bidsmapper_{field_strength}.log"
     shell:
         """
         bidsmapper {input} data/rawdata/bids/{wildcards.field_strength} -t config/bidsmap_normabrain_template -a
@@ -40,8 +36,6 @@ rule bidscoiner:
         "data/rawdata/bids/{field_strength}/participants.tsv"
     conda:
         "../envs/bidscoin.yaml"
-    log:
-        "results/logs/bidscoiner_{field_strength}.log"
     shell:
         """
         bidscoiner {input.dicoms} data/rawdata/bids/{wildcards.field_strength}
@@ -52,13 +46,10 @@ rule add_csa_data_to_meta:
     input:
         rules.bidscoiner.output
     output:
-        "results/add_csa_data_to_meta_{field_strength}.complete"
+        "data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log"
     conda:
         "../envs/bidscoin.yaml"
-    log:
-        "results/logs/add_csa_data_to_meta_{field_strength}.log"
     shell:
         """
         python3 workflow/scripts/add_csa_data_to_meta.py data/rawdata/bids/{wildcards.field_strength}
-        touch {output}
         """

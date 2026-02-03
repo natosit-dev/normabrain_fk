@@ -12,9 +12,9 @@ wildcard_constraints:
 rule smooth_B1:
     input:
         "data/rawdata/bids/{field_strength}/sub-{subject}/ses-{session}/fmap/sub-{subject}_ses-{session}_acq-famp{run}_TB1TFL.nii.gz",
-        "results/add_csa_data_to_meta_{field_strength}.complete"
+        rules.add_csa_data_to_meta.output
     output:
-        temp("results/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp{run}_smooth.nii.gz")
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp{run}_smooth.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -24,10 +24,10 @@ rule smooth_B1:
 
 rule reslice_B1:
     input:
-        b1map = "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth.nii.gz",
-        ref = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz"
+        b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth.nii.gz",
+        ref = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz"
     output:
-        temp("results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}.nii.gz")
+        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -37,10 +37,10 @@ rule reslice_B1:
 
 rule normalize_B1_to_target_flip:
     input:
-        fmap = "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}.nii.gz",
-        mask = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        fmap = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}.nii.gz",
+        mask = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
     output:
-        "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz"
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz"
     params:
         target_flip = get_target_flip
     conda:
@@ -52,10 +52,10 @@ rule normalize_B1_to_target_flip:
 
 rule mask_B1:
     input:
-        fmap = "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz",
-        mask = "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        fmap = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz",
+        mask = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
     output:
-        "results/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm_brain.nii.gz"
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm_brain.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:
