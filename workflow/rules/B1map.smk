@@ -29,9 +29,9 @@ rule smooth_B1:
 rule reslice_B1:
     input:
         b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth.nii.gz",
-        ref = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz"
+        ref = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}.nii.gz")
+        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1wMPM{t1flip}.nii.gz")
     conda:
         "../envs/ants.yaml"
     shell:
@@ -41,10 +41,10 @@ rule reslice_B1:
 
 rule normalize_B1_to_target_flip:
     input:
-        fmap = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}.nii.gz",
-        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        fmap = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1wMPM{t1flip}.nii.gz",
+        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz"
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1wMPM{t1flip}_norm.nii.gz"
     params:
         target_flip = get_target_flip
     conda:
@@ -56,10 +56,10 @@ rule normalize_B1_to_target_flip:
 
 rule mask_B1:
     input:
-        fmap = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz",
-        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        fmap = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1wMPM{t1flip}_norm.nii.gz",
+        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm_brain.nii.gz"
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1wMPM{t1flip}_norm_brain.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:
