@@ -1,18 +1,3 @@
-# from pathlib import Path
-# import os
-# try:
-#     data_path = Path("data/")
-#     FIELD_STRENGTHS = [x.name for x in data_path.glob("*T/") if x.is_dir()]
-# except FileNotFoundError:
-#     FIELD_STRENGTHS = []
-
-
-# rule all:
-#     input:
-#         expand("results/add_csa_data_to_meta_{field_strength}.complete", field_strength=FIELD_STRENGTHS)
-
-# snakemake --config input_dicoms_path="../test_dicoms" -np results/3T/qT1qMT/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMTsag1isoc9_t1flip-33_mtflip-14_pdflip-6_MPFmap_run-1.nii.gz --dag | sed -n "/digraph/,/}/p" | dot -Tsvg > MPFmap_dag.svg
-
 rule all:
     input:
         "results/add_csa_data_to_meta_3T.complete"

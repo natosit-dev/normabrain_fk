@@ -12,11 +12,6 @@ checkpoint copy_dicoms_by_field_strength:
         python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output.dir}
         """
 
-# def get_dicoms_folders(wildcards):
-#     checkpoint_output = checkpoints.copy_dicoms_by_field_strength.get(**wildcards).output[0]
-#     return expand("data/{field_strength}/rawdata/dicoms/",
-#             field_strength=glob_wildcards(os.path.join(checkpoint_output, "{f}/rawdata/dicoms/")).f)
-
 def get_dicoms_folders(wildcards):
     checkpoint_output = checkpoints.copy_dicoms_by_field_strength.get(**wildcards).output[0]
     return expand(os.path.join(checkpoint_output, "{field_strength}"),
@@ -25,10 +20,8 @@ def get_dicoms_folders(wildcards):
 rule bidsmapper:
     input:
         get_dicoms_folders
-        # os.path.join(rules.copy_dicoms_by_field_strength.output.dir, "{field_strength}/rawdata/dicoms/"),
     output:
         "data/rawdata/bids/{field_strength}/code/bidscoin/bidsmap.yaml"
-        # directory("data/{field_strength}/rawdata/bids")
     conda:
         "../envs/bidscoin.yaml"
     log:
@@ -41,8 +34,6 @@ rule bidsmapper:
 
 rule bidscoiner:
     input:
-        # "data/{field_strength}/rawdata/bids/code/bidscoin/bidsmap.yaml",
-        # dicoms = "data/{field_strength}/rawdata/dicoms/"
         rules.bidsmapper.output,
         dicoms = get_dicoms_folders
     output:

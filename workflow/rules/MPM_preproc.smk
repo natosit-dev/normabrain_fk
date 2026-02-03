@@ -33,22 +33,11 @@ wildcard_constraints:
 def get_echos(wildcards):
     return glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*{wildcards.acq}*_echo-*_flip-{wildcards.flip}_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz')
 
+
 rule SoS:
     input:
         meta_complete = "results/add_csa_data_to_meta_{field_strength}.complete",
         echos = get_echos
-        # echos = lambda wildcards: expand("data/rawdata/bids/{field_strength}/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz",
-        #     field_strength=wildcards.field_strength,
-        #     subject=wildcards.subject,
-        #     session=wildcards.session,
-        #     seq=config["MPM_sequence"],
-        #     contrast=wildcards.contrast,
-        #     acq=wildcards.acq,
-        #     flip=wildcards.flip,
-        #     mt=wildcards.mt,
-        #     part=wildcards.part,
-        #     echo=glob_wildcards("data/rawdata/bids/{field_strength}/{subject}/{session}/anat/{subject}_{session}_acq-{seq}{contrast}{acq}_echo-{echo}_flip-{flip}_mt-{mt}_part-{part}_MPM.nii.gz").echo
-        # )
     params:
         files=lambda wildcards, input: ','.join(input.echos)
     output:
@@ -60,7 +49,7 @@ rule SoS:
         """
         python3 workflow/scripts/SoS_images_CLI.py {params.files} {output}
         """
-# python3 workflow/scripts/qMT/SoS_images_CLI.py {params.files} {output}
+
 
 rule save_ref_SoS:
     input:
@@ -71,8 +60,8 @@ rule save_ref_SoS:
         """
         cp {input} {output}
         """
-# results/3T/MPM_preproc/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMTt1w6ecosag1isoc9_flip-33_mt-off_part-mag_SoS.nii.gz
-# results/3T/MPM_preproc/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMTt1w6eco3ecosag1isoc9_flip-33_mt-off_part-mag_SoS.nii.gz
+
+
 rule synthstrip:
     input:
         "results/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}{acq}_flip-{flip}_mt-{mt}_part-{part}_SoS.nii.gz"
@@ -124,6 +113,7 @@ rule N4BiasFieldCorrection:
         """
         N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
         """
+
 
 rule register_MPM_to_ref:
     input:
