@@ -1,3 +1,2 @@
-MPM_sequence: "vibeMT"
-MPM_contrasts: ["mt0", "mtw", "pdw", "t1w"]
-MPM_T1W_flip: ["25", "33"]
+VFA_sequence: "vibeMT"
+VFA_contrasts: ["mt0", "mtw", "pdw", "t1w"]

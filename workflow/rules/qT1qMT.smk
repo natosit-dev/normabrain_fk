@@ -25,13 +25,13 @@ wildcard_constraints:
     pdflip=r"\d+"
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
-    seq = config["MPM_sequence"]
+    contrast = '|'.join([re.escape(x) for x in config["VFA_contrasts"]]),
+    seq = config["VFA_sequence"]
 
 rule mtr:
     input:
-        mt_off = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0{acq}_flip-{flip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        mt_on = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw{acq}_flip-{flip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz"
+        mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0{acq}_flip-{flip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw{acq}_flip-{flip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz"
     output:
         "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_flip-{flip}_toREF{t1flip}_MTRmap.nii.gz"
     conda:
@@ -56,12 +56,12 @@ rule setup_fit_JSPqMT_CLI:
 rule fit_JSPqMT_CLI:
     input:
         build = directory("workflow/scripts/luca_qMT/build/"),
-        mt_off = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0{acq}_flip-{mtflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        mt_on = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw{acq}_flip-{mtflip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz",
-        pdw = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw{acq}_flip-{pdflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        t1w = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz",
+        mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0{acq}_flip-{mtflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw{acq}_flip-{mtflip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz",
+        pdw = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw{acq}_flip-{pdflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
+        t1w = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz",
         b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1w{acq}MPM{t1flip}_norm.nii.gz",
-        mask = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w{acq}_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
     params:
         mt_params = get_qMT_params
     output:
