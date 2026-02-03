@@ -1,13 +1,13 @@
 import json
 import glob
 def get_qMT_params(wildcards):
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.acq}*_echo-1_flip-{wildcards.mtflip}_mt-on_part-mag_MPM.json')[0]
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.acq}*_echo-1_flip-{wildcards.mtflip}_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         mt0map_meta = json.load(f)
         mt_params = {
             'mt_state' : mt0map_meta["mt_state"],
             'sat_pulse_ms' : mt0map_meta['sat_pulse_ms'],
-            'interdelay_ms' : mt0map_meta['interdealy_ms'],
+            'interdelay_ms' : mt0map_meta['interdelay_ms'],
             'ro_pulse_ms' : mt0map_meta['ro_pulse_ms'],
             'tr_ms' : mt0map_meta['tr_ms'],
             'ro_fa_deg' : mt0map_meta['ro_fa_deg'],
@@ -18,9 +18,11 @@ def get_qMT_params(wildcards):
         }
     return mt_params
 
-
-
-configfile: "config/snakemake_config.yaml"
+wildcard_constraints:
+    run=".*", #run can be an empty string
+    t1flip=r"\d+", #t1flip should be a number
+    mtflip=r"\d+",
+    pdflip=r"\d+"
 
 wildcard_constraints:
     contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
@@ -63,9 +65,9 @@ rule fit_JSPqMT_CLI:
     params:
         mt_params = get_qMT_params
     output:
-        mpfmap = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_{run}_MPFmap.nii.gz",
-        t1map = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_{run}_T1map.nii.gz",
-        r1map = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_{run}_R1map.nii.gz"
+        mpfmap = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_MPFmap{run}.nii.gz",
+        t1map = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_T1map{run}.nii.gz",
+        r1map = "results/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}{acq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_R1map{run}.nii.gz"
     threads: 8
     conda:
         "../envs/qMT.yaml"
@@ -73,15 +75,15 @@ rule fit_JSPqMT_CLI:
         """
         python3 workflow/scripts/luca_qMT/fit_JSPqMT_CLI.py \
         {input.mt_off},{input.mt_on} \
-        {input.pwd},{input.mt_off},{input.t1w} \
+        {input.pdw},{input.mt_off},{input.t1w} \
         {output.mpfmap} \
         {output.t1map} \
-        --R1f {output.r1map}
+        --R1f {output.r1map} \
         --MTw_TIMINGS {params.mt_params[sat_pulse_ms]},{params.mt_params[interdelay_ms]},{params.mt_params[ro_pulse_ms]},{params.mt_params[tr_ms]} \
         --VFA_TIMINGS {params.mt_params[ro_pulse_ms]},{params.mt_params[tr_ms]} \
-        --VFA_PARX {wildcards.pdflip},{wildcards.mtflip},{wildcards.t1flip} \
+        --VFA_PARX {wildcards.pdflip},{wildcards.mtflip},{wildcards.t1flip},{params.mt_params[ro_pulse_shape]} \
         --MTw_PARX {params.mt_params[ro_fa_deg]},{params.mt_params[ro_pulse_shape]},{params.mt_params[sat_pulse_fa_deg]},{params.mt_params[sat_pulse_offset_hz]},{params.mt_params[sat_pulse_shape]} \
-        --B1 {input.b1} \
+        --B1 {input.b1map} \
         --mask {input.mask} \
         --nworkers {threads} \
         --cpp_opt
