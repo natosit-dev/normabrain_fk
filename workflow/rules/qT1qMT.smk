@@ -1,7 +1,7 @@
 import json
 import glob
 def get_qMT_params(wildcards):
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.acq}*_echo-1_flip-{wildcards.mtflip}_mt-off_part-mag_MPM.json')[0]
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*_echo-1_flip-{wildcards.mtflip}_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         mt0map_meta = json.load(f)
         mt_params = {
