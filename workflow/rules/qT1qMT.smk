@@ -1,28 +1,41 @@
 import json
 import glob
 def get_qMT_params(wildcards):
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*_echo-1_flip-{wildcards.mtflip}_mt-off_part-mag_MPM.json')[0]
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
-        mt0map_meta = json.load(f)
+        mt0_meta = json.load(f)
         mt_params = {
-            'mt_state' : mt0map_meta["mt_state"],
-            'sat_pulse_ms' : mt0map_meta['sat_pulse_ms'],
-            'interdelay_ms' : mt0map_meta['interdelay_ms'],
-            'ro_pulse_ms' : mt0map_meta['ro_pulse_ms'],
-            'tr_ms' : mt0map_meta['tr_ms'],
-            'ro_fa_deg' : mt0map_meta['ro_fa_deg'],
-            'ro_pulse_shape' : mt0map_meta['ro_pulse_shape'],
-            'sat_pulse_fa_deg' : mt0map_meta['sat_pulse_fa_deg'],
-            'sat_pulse_offset_hz' : mt0map_meta['sat_pulse_offset_hz'],
-            'sat_pulse_shape' : mt0map_meta['sat_pulse_shape']
+            'mtflip' : mt0_meta["FlipAngle"],
+            'sat_pulse_ms' : mt0_meta['sat_pulse_ms'],
+            'interdelay_ms' : mt0_meta['interdelay_ms'],
+            'ro_pulse_ms' : mt0_meta['ro_pulse_ms'],
+            'tr_ms' : mt0_meta['tr_ms'],
+            'ro_fa_deg' : mt0_meta['ro_fa_deg'],
+            'ro_pulse_shape' : mt0_meta['ro_pulse_shape'],
+            'sat_pulse_fa_deg' : mt0_meta['sat_pulse_fa_deg'],
+            'sat_pulse_offset_hz' : mt0_meta['sat_pulse_offset_hz'],
+            'sat_pulse_shape' : mt0_meta['sat_pulse_shape']
         }
     return mt_params
 
+def get_t1flip(wildcards):
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}t1w*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
+    with open(json_path, "r") as f:
+        t1w_meta = json.load(f)
+    return t1w_meta["FlipAngle"]
+
+def get_pdflip(wildcards):
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}pdw*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
+    with open(json_path, "r") as f:
+        pdw_meta = json.load(f)
+    return pdw_meta["FlipAngle"]
+
+
 wildcard_constraints:
     run=".*", #run can be an empty string
-    t1flip=r"\d+", #t1flip should be a number
-    mtflip=r"\d+",
-    pdflip=r"\d+"
+    # t1flip=r"\d+", #t1flip should be a number
+    # mtflip=r"\d+",
+    # pdflip=r"\d+"
 
 wildcard_constraints:
     contrast = '|'.join([re.escape(x) for x in config["VFA_contrasts"]]),
@@ -30,10 +43,10 @@ wildcard_constraints:
 
 rule mtr:
     input:
-        mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_flip-{flip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        mt_on = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_flip-{flip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz"
+        mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_toREF.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_SoS_toREF.nii.gz"
     output:
-        "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_flip-{flip}_toREF{t1flip}_MTRmap.nii.gz"
+        "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_toREF_MTRmap.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:
@@ -55,19 +68,21 @@ rule setup_fit_JSPqMT_CLI:
 
 rule fit_JSPqMT_CLI:
     input:
-        build = directory("workflow/scripts/luca_qMT/build/"),
-        mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_flip-{mtflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        mt_on = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_flip-{mtflip}_mt-on_part-mag_SoS_toREF{t1flip}.nii.gz",
-        pdw = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw_flip-{pdflip}_mt-off_part-mag_SoS_toREF{t1flip}.nii.gz",
-        t1w = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_flip-{t1flip}_mt-off_part-mag_SoS.nii.gz",
-        b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1wMPM{t1flip}_norm.nii.gz",
-        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_flip-{t1flip}_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        build = "workflow/scripts/luca_qMT/build/",
+        mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_toREF.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_SoS_toREF.nii.gz",
+        pdw = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_SoS_toREF.nii.gz",
+        t1w = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
+        b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp{run}_smooth_reslicedto{seq}t1wMPM_norm.nii.gz",
+        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS_brain_mask.nii.gz"
     params:
-        mt_params = get_qMT_params
+        mt_params = get_qMT_params,
+        t1flip = get_t1flip,
+        pdflip = get_pdflip
     output:
-        mpfmap = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_MPFmap{run}.nii.gz",
-        t1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_T1map{run}.nii.gz",
-        r1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_t1flip-{t1flip}_mtflip-{mtflip}_pdflip-{pdflip}_R1map{run}.nii.gz"
+        mpfmap = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_MPFmap{run}.nii.gz",
+        t1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map{run}.nii.gz",
+        r1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_R1map{run}.nii.gz"
     threads: 8
     conda:
         "../envs/qMT.yaml"
@@ -81,7 +96,7 @@ rule fit_JSPqMT_CLI:
         --R1f {output.r1map} \
         --MTw_TIMINGS {params.mt_params[sat_pulse_ms]},{params.mt_params[interdelay_ms]},{params.mt_params[ro_pulse_ms]},{params.mt_params[tr_ms]} \
         --VFA_TIMINGS {params.mt_params[ro_pulse_ms]},{params.mt_params[tr_ms]} \
-        --VFA_PARX {wildcards.pdflip},{wildcards.mtflip},{wildcards.t1flip},{params.mt_params[ro_pulse_shape]} \
+        --VFA_PARX {params.pdflip},{params.mt_params[mtflip]},{params.t1flip},{params.mt_params[ro_pulse_shape]} \
         --MTw_PARX {params.mt_params[ro_fa_deg]},{params.mt_params[ro_pulse_shape]},{params.mt_params[sat_pulse_fa_deg]},{params.mt_params[sat_pulse_offset_hz]},{params.mt_params[sat_pulse_shape]} \
         --B1 {input.b1map} \
         --mask {input.mask} \
