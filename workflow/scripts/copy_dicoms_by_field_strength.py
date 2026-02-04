@@ -36,14 +36,17 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str)
             #shutil.copytree(session, new_folder, dirs_exist_ok=True)
             os.system("rsync -au " + str(session) + "/ " + str(new_folder) + "/")
 
-            #remove files from new_folder less than 500 KB (either not images or corrupted)
-            for dicom in list(new_folder.rglob('*.dcm')):
-                dicom_size = math.ceil(os.path.getsize(dicom) / 1024)
-                if dicom_size < 500:
-                    os.remove(dicom)
-                #remove empty folders
-                if not os.listdir(dicom.parent):
-                    os.rmdir(dicom.parent)
+            # #remove files from new_folder less than 300 KB (either not images or corrupted)
+            # for dicom in list(new_folder.rglob('*.dcm')):
+            #     dicom_size = math.ceil(os.path.getsize(dicom) / 1024)
+            #     if dicom_size < 300:
+            #         os.remove(dicom)
+            #     #remove empty folders
+            #     if not os.listdir(dicom.parent):
+            #         os.rmdir(dicom.parent)
+            #remove dicoms with NoAV in the name
+            for dicom in list(new_folder.rglob('NoAV*.dcm')):
+                os.remove(dicom)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
