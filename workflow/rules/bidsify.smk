@@ -28,7 +28,7 @@ rule bidsmapper:
         touch {output}
         """
 
-rule bidscoiner:
+checkpoint bidscoiner:
     input:
         rules.bidsmapper.output,
         dicoms = get_dicoms_folders
@@ -42,9 +42,14 @@ rule bidscoiner:
         touch {output}
         """
 
+def check_bidscoiner_ran(wildcards):
+    checkpoint_output = checkpoints.bidscoiner.get(**wildcards).output[0]
+    return checkpoint_output
+
 checkpoint add_csa_data_to_meta:
     input:
-        rules.bidscoiner.output
+        bidscoiner = check_bidscoiner_ran,
+        # bidsdir = "data/rawdata/bids/{field_strength}"
     output:
         "data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log"
     conda:

@@ -36,7 +36,7 @@ def check_csa_added_to_meta(wildcards):
 
 rule SoS:
     input:
-        meta_complete = check_csa_added_to_meta,
+        # meta_complete = check_csa_added_to_meta,
         echos = get_echos
     params:
         files=lambda wildcards, input: ','.join(input.echos)

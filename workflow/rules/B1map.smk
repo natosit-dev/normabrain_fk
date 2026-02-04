@@ -16,7 +16,7 @@ def get_last_b1map_run(wildcards):
 rule smooth_B1:
     input:
         get_last_b1map_run,
-        check_csa_added_to_meta
+        # check_csa_added_to_meta
     output:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz")
     conda:

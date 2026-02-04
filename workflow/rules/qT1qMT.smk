@@ -40,7 +40,7 @@ rule mtr:
         mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_toREF.nii.gz",
         mt_on = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_SoS_toREF.nii.gz"
     output:
-        "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_toREF_MTRmap.nii.gz"
+        "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_MTRmap.nii.gz"
     conda:
         "../envs/ants.yaml"
     shell:
