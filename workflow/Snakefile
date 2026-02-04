@@ -2,7 +2,8 @@ configfile: "config/snakemake_config.yaml"
 
 rule all:
     input:
-        "results/add_csa_data_to_meta_3T.complete"
+        "data/rawdata/bids/3T/code/bidscoin/fixmeta.log",
+        "data/derivatives/3T/qT1qMT/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_MPFmap.nii.gz"
 
 include: "rules/bidsify.smk"
 include: "rules/VFA_preproc.smk"

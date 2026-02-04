@@ -59,9 +59,10 @@ rule synthstrip:
         "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
+    threads: 4
     shell:
         """
-        mri_synthstrip -i {input} -o {output[0]} -m {output[1]} --no-csf
+        mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
         """
 
 
