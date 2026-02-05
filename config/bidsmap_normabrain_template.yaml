@@ -127,7 +127,7 @@ DICOM:
       suffix: T1map
   - attributes:
       <<: *anat_dicomattr
-      ImageType: .*'T1_MAP'.*
+      ImageType: .*T1.?MAP.*
     bids: *anat_dicoment_parametric
   - attributes:
       <<: *anat_dicomattr
@@ -197,19 +197,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).?mtw.*
-      ComplexImageComponent: .*MAGNITUDE.*
-    bids: 
-      <<: *anat_dicoment_vfamt
-      mt: 'on'
-      part: mag
-    meta:
-      RepetitionTimePreparation: <RepetitionTime>
-      RepetitionTimeExcitation: <RepetitionTime>
-      EffectiveEchoTime: <<EffectiveEchoTime>>
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).?mtw.*
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).*mtw.*
       ComplexImageComponent: .*PHASE.*
     bids: 
       <<: *anat_dicoment_vfamt
@@ -222,11 +210,10 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).*
-      ComplexImageComponent: .*MAGNITUDE.*
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).*mtw.*
     bids: 
       <<: *anat_dicoment_vfamt
-      mt: 'off'
+      mt: 'on'
       part: mag
     meta:
       RepetitionTimePreparation: <RepetitionTime>
@@ -242,6 +229,17 @@ DICOM:
       part: phase
     meta:
       Units: arbitrary
+      RepetitionTimePreparation: <RepetitionTime>
+      RepetitionTimeExcitation: <RepetitionTime>
+      EffectiveEchoTime: <<EffectiveEchoTime>>
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).*
+    bids: 
+      <<: *anat_dicoment_vfamt
+      mt: 'off'
+      part: mag
+    meta:
       RepetitionTimePreparation: <RepetitionTime>
       RepetitionTimeExcitation: <RepetitionTime>
       EffectiveEchoTime: <<EffectiveEchoTime>>
