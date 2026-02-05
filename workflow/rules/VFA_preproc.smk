@@ -32,7 +32,8 @@ def get_echos(wildcards):
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
-
+#rule concat echos for each contrast
+#then run new SoS script on these
 rule SoS:
     input:
         # meta_complete = check_csa_added_to_meta,
