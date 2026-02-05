@@ -42,7 +42,7 @@ rule mtr:
     output:
         "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_MTRmap.nii.gz"
     conda:
-        "../envs/ants.yaml"
+        "../envs/qMT.yaml"
     shell:
         """
         ImageMath 3 {output} MTR {input.mt_off} {input.mt_on}
@@ -84,16 +84,16 @@ rule fit_JSPqMT_CLI:
         """
         python3 workflow/scripts/luca_qMT/fit_JSPqMT_CLI.py \
         {input.mt_off},{input.mt_on} \
-        {input.pdw},{input.mt_off},{input.t1w} \
+        {input.pdw},{input.t1w} \
         {output.mpfmap} \
         {output.t1map} \
         --R1f {output.r1map} \
         --MTw_TIMINGS {params.mt_params[sat_pulse_ms]},{params.mt_params[interdelay_ms]},{params.mt_params[ro_pulse_ms]},{params.mt_params[tr_ms]} \
         --VFA_TIMINGS {params.mt_params[ro_pulse_ms]},{params.mt_params[tr_ms]} \
-        --VFA_PARX {params.pdflip},{params.mt_params[mtflip]},{params.t1flip},{params.mt_params[ro_pulse_shape]} \
+        --VFA_PARX {params.pdflip},{params.t1flip},{params.mt_params[ro_pulse_shape]} \
         --MTw_PARX {params.mt_params[ro_fa_deg]},{params.mt_params[ro_pulse_shape]},{params.mt_params[sat_pulse_fa_deg]},{params.mt_params[sat_pulse_offset_hz]},{params.mt_params[sat_pulse_shape]} \
         --B1 {input.b1map} \
         --mask {input.mask} \
         --nworkers {threads} \
-        --cpp_opt
+        --cpp_opt --use_GBM
         """

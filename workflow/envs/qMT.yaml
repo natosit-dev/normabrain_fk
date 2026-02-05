@@ -1,13 +1,16 @@
 name: qMT
 channels:
   - conda-forge
+  - MRtrix3
 dependencies:
-  - python
-  - numpy
-  - scipy
-  - nibabel
-  - pybind11
-  - eigen
-  - setuptools
-  - nlopt
-  - gxx_linux-64
+  - python=3.13.5
+  - numpy=2.3.2
+  - scipy=1.16.1
+  - nibabel=5.3.2
+  - pybind11=3.0.0
+  - eigen=3.4.0
+  - setuptools=80.9.0
+  - nlopt=2.10.0
+  - gxx_linux-64=15.1.0
+  - ants=2.6.2
+  - mrtrix3=3.0.7

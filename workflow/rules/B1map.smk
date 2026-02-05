@@ -20,7 +20,7 @@ rule smooth_B1:
     output:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz")
     conda:
-        "../envs/ants.yaml"
+        "../envs/qMT.yaml"
     shell:
         """
         SmoothImage 3 {input[0]} 3x1x1 {output}
@@ -33,7 +33,7 @@ rule reslice_B1:
     output:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w.nii.gz")
     conda:
-        "../envs/ants.yaml"
+        "../envs/qMT.yaml"
     shell:
         """
         antsApplyTransforms -d 3 -v 1 -r {input.ref} -i {input.b1map} -o {output}
@@ -61,7 +61,7 @@ rule mask_B1:
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w_norm_brain.nii.gz"
     conda:
-        "../envs/ants.yaml"
+        "../envs/qMT.yaml"
     shell:
         """
         ImageMath 3 {output} m {input.fmap} {input.mask}
