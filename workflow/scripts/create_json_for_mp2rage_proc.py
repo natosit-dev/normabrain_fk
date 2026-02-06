@@ -1,0 +1,130 @@
+import json
+import argparse
+from bidscoin import bcoin, bids, lsdirs
+from pathlib import Path
+
+
+def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_folder: str):
+    # with open(metadata_json_path, "r") as f:
+    #     metadata = json.load(f)
+    
+    #convert path strings to Path objects, used to grab metadata later
+    b1map_nifti_path = Path(b1map_nifti)
+    inv1_nifti_path = Path(inv1_nifti)
+    inv2_nifti_path = Path(inv2_nifti)
+    unit1_nifti_path = Path(unit1_nifti)
+    output_path = Path(output_folder)
+
+    mp2rage_proc_params = {
+        #pipeline settings
+        "verbose": True,
+        "use_deprecated_normalization_from_12bits": False,
+        "use_alternative_denoising_on_synthetic_maps": False,
+        "do_ants_transform_B1_map_to_t1wUNI_space": True,
+        "do_ants_smoothing_of_B1_map_in_t1wUNI_space": True,
+        "do_ants_smoothing_using_median_filtering": False,
+        "is_ants_smoothing_sigma_in_spacing_units": False,
+        "do_restore_bijectivity_of_qT1_along_local_B1": True,
+        "do_bound_B1_to_valid_interpolation_range": False,
+        "do_round_on_export": True,
+        "export_quantitative_instead_of_qualitative": False,
+        "export_interpolation_hypersurface_data_n_plot": True,
+        "show_interpolation_hypersurface_plot": False,
+
+        #maps to compute
+        "compute_t1wUNI_DEN": True,
+        "compute_t1wUNI_B1Corrected": True,
+        "compute_t1wUNI_B1Corrected_DEN": True,
+        "compute_qT1": True,
+        "compute_qR1": True,
+        "compute_EDGE": True,
+        "compute_EDGE_DEN": True,
+        "compute_FLAWS": True,
+        "compute_FLAWS_DEN": True,
+
+        #paths to input files
+        "path_INPUT_b1_faUnit": b1map_nifti_path,
+        "path_INPUT_inversion_1_msUnit": inv1_nifti_path,
+        "path_INPUT_inversion_2_msUnit": inv2_nifti_path,
+        "path_INPUT_t1wUNI_dicomUnit": unit1_nifti_path,
+
+        #paths to output files
+        "path_OUTPUT_b1_processed_perthousand": Path(output_path, "b1_processed_relativeUnit_perThousand.nii.gz"),
+        "path_OUTPUT_t1wUNI_DEN_dicomUnit": Path(output_path, "t1wUNI_DEN_dicomUnit.nii.gz"),
+        "path_OUTPUT_t1wUNI_B1Corrected_dicomUnit": Path(output_path, "t1wUNI_B1Corrected_dicomUnit.nii.gz"),
+        "path_OUTPUT_t1wUNI_B1Corrected_DEN_dicomUnit": Path(output_path, "t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"),
+        "path_OUTPUT_qT1_msUnit": Path(output_path, "qT1_msUnit.nii.gz"),
+        "path_OUTPUT_qR1_pksUnit": Path(output_path, "qR1_pksUnit.nii.gz"),
+        "path_OUTPUT_EDGE_dicomUnit": Path(output_path, "EDGE_dicomUnit.nii.gz"),
+        "path_OUTPUT_EDGE_DEN_dicomUnit": Path(output_path, "EDGE_DEN_dicomUnit.nii.gz"),
+        "path_OUTPUT_FLAWS_dicomUnit": Path(output_path, "FLAWS_dicomUnit.nii.gz"),
+        "path_OUTPUT_FLAWS_DEN_dicomUnit": Path(output_path, "FLAWS_DEN_dicomUnit.nii.gz"),
+        "path_OUTPUT_global_mask": Path(output_path, "global_mask.nii.gz"),
+        "path_OUTPUT_interpolation_hypersurface_no_ext": Path(output_path, "out_interpolant_hypersurface_plot"),
+
+        #ANTS parameters
+        "ants_interpolation_method_for_resampling": "BSpline[3]",
+        "ants_smoothing_sigma": "3x1x1",
+
+        #what are these next parameters and where do they come from?!??!
+        # "vref_b1_vUnit"                                 : 247.007827759,
+        # "vref_t1wUNI_vUnit"                             : 247.007827759,
+        # "target_b1_faUnit"                              : 899.9,
+        # "noise_shift"                                   : 100.0,
+
+        # "t_echo_spacing_msUnit"                         : 7.4,
+        # "t_repeat_MP2RAGE_msUnit"                       : 5000.0,
+        # "t_inversion1_msUnit"                           : 900.0,
+        # "t_inversion2_msUnit"                           : 2750.0,
+        # "fa_1_degUnit"                                  : 6.0,
+        # "fa_2_degUnit"                                  : 5.0,
+        # "inversion_efficiency"                          : 1.0,
+        # "M0"                                            : 1.0,
+
+        # "edge_t_echo_spacing_msUnit"                    : 2.5,
+        # "edge_t_repeat_MP2RAGE_msUnit"                  : 8000.0,
+        # "edge_t_inversion1_msUnit"                      : 820.0,
+        # "edge_t_inversion2_msUnit"                      : 1320.0,
+        # "edge_fa_1_degUnit"                             : 5.0,
+        # "edge_fa_2_degUnit"                             : 5.0,
+        # "edge_inversion_efficiency"                     : 1.0,
+        # "edge_M0"                                       : 1.0,
+
+        # "flaws1_t_echo_spacing_msUnit"                  : 7.5,
+        # "flaws1_t_repeat_MP2RAGE_msUnit"                : 8250.0,
+        # "flaws1_t_inversion1_msUnit"                    : 900.0,
+        # "flaws1_t_inversion2_msUnit"                    : 3700.0,
+        # "flaws1_fa_1_degUnit"                           : 9.0,
+        # "flaws1_fa_2_degUnit"                           : 5.0,
+        # "flaws1_inversion_efficiency"                   : 1.0,
+        # "flaws1_M0"                                     : 1.0,
+
+        # "flaws2_t_echo_spacing_msUnit"                  : 3.1,
+        # "flaws2_t_repeat_MP2RAGE_msUnit"                : 5000.0,
+        # "flaws2_t_inversion1_msUnit"                    : 200.0,
+        # "flaws2_t_inversion2_msUnit"                    : 1200.0,
+        # "flaws2_fa_1_degUnit"                           : 5.0,
+        # "flaws2_fa_2_degUnit"                           : 5.0,
+        # "flaws2_inversion_efficiency"                   : 1.0,
+        # "flaws2_M0"                                     : 1.0,
+
+
+        # "datatype"                                      : 512,
+        # "n_threads"                                     : 10,
+
+        # "n_before"                                      : 64,
+        # "n_after"                                       : 128,
+
+        # "edge_n_before"                                 : 64,
+        # "edge_n_after"                                  : 128,
+
+        # "flaws1_n_before"                               : 64,
+        # "flaws1_n_after"                                : 128,
+
+        # "flaws2_n_before"                               : 64,
+        # "flaws2_n_after"                                : 128,
+
+        # "array_b1_relativeUnit"                         : [191, 0.1, 2.0],
+        # "array_qT1_msUnit"                              : [3996, 100.0, 4095.0]
+
+    }
