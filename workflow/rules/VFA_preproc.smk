@@ -20,6 +20,8 @@
 #             paths_df = pd.concat([paths_df, pd.DataFrame([session_series])], ignore_index=True)
 
 
+#TO DO: implement MPPCA denoising before SoS
+
 import glob
 
 wildcard_constraints:
@@ -32,8 +34,7 @@ def get_echos(wildcards):
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
-#rule concat echos for each contrast
-#then run new SoS script on these
+
 rule SoS:
     input:
         # meta_complete = check_csa_added_to_meta,
