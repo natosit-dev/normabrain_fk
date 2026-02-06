@@ -1,20 +1,20 @@
 import json
 import glob
 def get_qMT_params(wildcards):
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
-        mt0_meta = json.load(f)
+        mtw_meta = json.load(f)
         mt_params = {
-            'mtflip' : mt0_meta["FlipAngle"],
-            'sat_pulse_ms' : mt0_meta['sat_pulse_ms'],
-            'interdelay_ms' : mt0_meta['interdelay_ms'],
-            'ro_pulse_ms' : mt0_meta['ro_pulse_ms'],
-            'tr_ms' : mt0_meta['tr_ms'],
-            'ro_fa_deg' : mt0_meta['ro_fa_deg'],
-            'ro_pulse_shape' : mt0_meta['ro_pulse_shape'],
-            'sat_pulse_fa_deg' : mt0_meta['sat_pulse_fa_deg'],
-            'sat_pulse_offset_hz' : mt0_meta['sat_pulse_offset_hz'],
-            'sat_pulse_shape' : mt0_meta['sat_pulse_shape']
+            'mtflip' : mtw_meta["FlipAngle"],
+            'sat_pulse_ms' : mtw_meta['sat_pulse_ms'],
+            'interdelay_ms' : mtw_meta['interdelay_ms'],
+            'ro_pulse_ms' : mtw_meta['ro_pulse_ms'],
+            'tr_ms' : mtw_meta['tr_ms'],
+            'ro_fa_deg' : mtw_meta['ro_fa_deg'],
+            'ro_pulse_shape' : mtw_meta['ro_pulse_shape'],
+            'sat_pulse_fa_deg' : mtw_meta['sat_pulse_fa_deg'],
+            'sat_pulse_offset_hz' : mtw_meta['sat_pulse_offset_hz'],
+            'sat_pulse_shape' : mtw_meta['sat_pulse_shape']
         }
     return mt_params
 
