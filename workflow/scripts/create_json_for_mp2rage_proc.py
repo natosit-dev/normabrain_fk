@@ -51,25 +51,25 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
         "compute_FLAWS_DEN": False,
 
         #paths to input files
-        "path_INPUT_b1_faUnit": b1map_nifti_path,
-        "path_INPUT_inversion_1_msUnit": inv1_nifti_path,
-        "path_INPUT_inversion_2_msUnit": inv2_nifti_path,
-        "path_INPUT_t1wUNI_dicomUnit": unit1_nifti_path,
+        "path_INPUT_b1_faUnit": str(b1map_nifti_path),
+        "path_INPUT_inversion_1_msUnit": str(inv1_nifti_path),
+        "path_INPUT_inversion_2_msUnit": str(inv2_nifti_path),
+        "path_INPUT_t1wUNI_dicomUnit": str(unit1_nifti_path),
 
         #paths to output files
         # what is relativeUnit vs dicomUnit?
-        "path_OUTPUT_b1_processed_perthousand": Path(output_path, "b1_processed_relativeUnit_perThousand.nii.gz"),
-        "path_OUTPUT_t1wUNI_DEN_dicomUnit": Path(output_path, "t1wUNI_DEN_dicomUnit.nii.gz"),
-        "path_OUTPUT_t1wUNI_B1Corrected_dicomUnit": Path(output_path, "t1wUNI_B1Corrected_dicomUnit.nii.gz"),
-        "path_OUTPUT_t1wUNI_B1Corrected_DEN_dicomUnit": Path(output_path, "t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"),
-        "path_OUTPUT_qT1_msUnit": Path(output_path, "qT1_msUnit.nii.gz"),
-        "path_OUTPUT_qR1_pksUnit": Path(output_path, "qR1_pksUnit.nii.gz"),
-        "path_OUTPUT_EDGE_dicomUnit": Path(output_path, "EDGE_dicomUnit.nii.gz"),
-        "path_OUTPUT_EDGE_DEN_dicomUnit": Path(output_path, "EDGE_DEN_dicomUnit.nii.gz"),
-        "path_OUTPUT_FLAWS_dicomUnit": Path(output_path, "FLAWS_dicomUnit.nii.gz"),
-        "path_OUTPUT_FLAWS_DEN_dicomUnit": Path(output_path, "FLAWS_DEN_dicomUnit.nii.gz"),
-        "path_OUTPUT_global_mask": Path(output_path, "global_mask.nii.gz"),
-        "path_OUTPUT_interpolation_hypersurface_no_ext": Path(output_path, "out_interpolant_hypersurface_plot"),
+        "path_OUTPUT_b1_processed_perthousand": str(Path(output_path, "b1_processed_relativeUnit_perThousand.nii.gz")),
+        "path_OUTPUT_t1wUNI_DEN_dicomUnit": str(Path(output_path, "t1wUNI_DEN_dicomUnit.nii.gz")),
+        "path_OUTPUT_t1wUNI_B1Corrected_dicomUnit": str(Path(output_path, "t1wUNI_B1Corrected_dicomUnit.nii.gz")),
+        "path_OUTPUT_t1wUNI_B1Corrected_DEN_dicomUnit": str(Path(output_path, "t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz")),
+        "path_OUTPUT_qT1_msUnit": str(Path(output_path, "qT1_msUnit.nii.gz")),
+        "path_OUTPUT_qR1_pksUnit": str(Path(output_path, "qR1_pksUnit.nii.gz")),
+        "path_OUTPUT_EDGE_dicomUnit": str(Path(output_path, "EDGE_dicomUnit.nii.gz")),
+        "path_OUTPUT_EDGE_DEN_dicomUnit": str(Path(output_path, "EDGE_DEN_dicomUnit.nii.gz")),
+        "path_OUTPUT_FLAWS_dicomUnit": str(Path(output_path, "FLAWS_dicomUnit.nii.gz")),
+        "path_OUTPUT_FLAWS_DEN_dicomUnit": str(Path(output_path, "FLAWS_DEN_dicomUnit.nii.gz")),
+        "path_OUTPUT_global_mask": str(Path(output_path, "global_mask.nii.gz")),
+        "path_OUTPUT_interpolation_hypersurface_no_ext": str(Path(output_path, "out_interpolant_hypersurface_plot")),
 
         #ANTS parameters
         "ants_interpolation_method_for_resampling": "BSpline[3]",
@@ -146,7 +146,7 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
 
     }
 
-    output_json = Path(output_path, "mp2rage_proc_params.json")
+    output_json = str(Path(output_path, "mp2rage_proc_params.json"))
     with open(output_json, "w") as f:
         json.dump(mp2rage_proc_params, f)
 
