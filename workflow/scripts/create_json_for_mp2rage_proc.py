@@ -1,10 +1,8 @@
 import json
-import argparse
-from bidscoin import bcoin, bids, lsdirs
 from pathlib import Path
+from snakemake.script import snakemake
 
-
-def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_folder: str):
+def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_folder: str, echo_spacing: float, threads: int):
     # with open(metadata_json_path, "r") as f:
     #     metadata = json.load(f)
     
@@ -14,6 +12,15 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
     inv2_nifti_path = Path(inv2_nifti)
     unit1_nifti_path = Path(unit1_nifti)
     output_path = Path(output_folder)
+
+    #grab metadata
+    b1map_json_path = b1map_nifti_path.with_suffix(".json")
+    with open(b1map_json_path, "r") as b1:
+        b1map_meta = json.load(b1)
+
+    inv1_json_path = inv1_nifti_path.with_suffix(".json")
+    with open(inv1_json_path, "r") as inv1:
+        inv1_meta = json.load(inv1)
 
     mp2rage_proc_params = {
         #pipeline settings
@@ -37,10 +44,10 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
         "compute_t1wUNI_B1Corrected_DEN": True,
         "compute_qT1": True,
         "compute_qR1": True,
-        "compute_EDGE": True,
-        "compute_EDGE_DEN": True,
-        "compute_FLAWS": True,
-        "compute_FLAWS_DEN": True,
+        "compute_EDGE": False,
+        "compute_EDGE_DEN": False,
+        "compute_FLAWS": False,
+        "compute_FLAWS_DEN": False,
 
         #paths to input files
         "path_INPUT_b1_faUnit": b1map_nifti_path,
@@ -49,6 +56,7 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
         "path_INPUT_t1wUNI_dicomUnit": unit1_nifti_path,
 
         #paths to output files
+        # what is relativeUnit vs dicomUnit?
         "path_OUTPUT_b1_processed_perthousand": Path(output_path, "b1_processed_relativeUnit_perThousand.nii.gz"),
         "path_OUTPUT_t1wUNI_DEN_dicomUnit": Path(output_path, "t1wUNI_DEN_dicomUnit.nii.gz"),
         "path_OUTPUT_t1wUNI_B1Corrected_dicomUnit": Path(output_path, "t1wUNI_B1Corrected_dicomUnit.nii.gz"),
@@ -66,21 +74,29 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
         "ants_interpolation_method_for_resampling": "BSpline[3]",
         "ants_smoothing_sigma": "3x1x1",
 
-        #what are these next parameters and where do they come from?!??!
-        # "vref_b1_vUnit"                                 : 247.007827759,
-        # "vref_t1wUNI_vUnit"                             : 247.007827759,
-        # "target_b1_faUnit"                              : 899.9,
-        # "noise_shift"                                   : 100.0,
+        #B1map parameters
+        #v1ref no longer needs to be set manually, we will keep default values here for now
+        "vref_b1_vUnit"                                 : 247.007827759,
+        "vref_t1wUNI_vUnit"                             : 247.007827759,
+        "target_b1_faUnit"                              : b1map_meta["target_fa_deg"] * 10,
+        #noise_shift is the same as lambda, see MP2RAGE paper
+        "noise_shift"                                   : 100.0,
 
-        # "t_echo_spacing_msUnit"                         : 7.4,
-        # "t_repeat_MP2RAGE_msUnit"                       : 5000.0,
-        # "t_inversion1_msUnit"                           : 900.0,
-        # "t_inversion2_msUnit"                           : 2750.0,
-        # "fa_1_degUnit"                                  : 6.0,
-        # "fa_2_degUnit"                                  : 5.0,
-        # "inversion_efficiency"                          : 1.0,
-        # "M0"                                            : 1.0,
+        #MP2RAGE parameters
+        #echo spacing needs to be read from PDF of scan protocol
+        "t_echo_spacing_msUnit"                         : echo_spacing,
+        "t_repeat_MP2RAGE_msUnit"                       : inv1_meta["tr_ms"],
+        "t_inversion1_msUnit"                           : inv1_meta["ti1_ms"],
+        "t_inversion2_msUnit"                           : inv1_meta["ti2_ms"],
+        "fa_1_degUnit"                                  : inv1_meta["ro_fa1_deg"],
+        "fa_2_degUnit"                                  : inv1_meta["ro_fa2_deg"],
+        #inversion efficiency and M0 vary across the brain, set them to 1 for now
+        "inversion_efficiency"                          : 1.0,
+        "M0"                                            : 1.0,
+        "n_before"                                      : inv1_meta["n_before"],
+        "n_after"                                       : inv1_meta["n_after"],
 
+        #parameters for synthetic EDGE images
         # "edge_t_echo_spacing_msUnit"                    : 2.5,
         # "edge_t_repeat_MP2RAGE_msUnit"                  : 8000.0,
         # "edge_t_inversion1_msUnit"                      : 820.0,
@@ -90,6 +106,7 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
         # "edge_inversion_efficiency"                     : 1.0,
         # "edge_M0"                                       : 1.0,
 
+        #parameters for synthetic FLAWS images
         # "flaws1_t_echo_spacing_msUnit"                  : 7.5,
         # "flaws1_t_repeat_MP2RAGE_msUnit"                : 8250.0,
         # "flaws1_t_inversion1_msUnit"                    : 900.0,
@@ -108,12 +125,11 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
         # "flaws2_inversion_efficiency"                   : 1.0,
         # "flaws2_M0"                                     : 1.0,
 
+        #Ask Tim what "datatype" means here
+        "datatype"                                      : 512,
+        "n_threads"                                     : threads,
 
-        # "datatype"                                      : 512,
-        # "n_threads"                                     : 10,
 
-        # "n_before"                                      : 64,
-        # "n_after"                                       : 128,
 
         # "edge_n_before"                                 : 64,
         # "edge_n_after"                                  : 128,
@@ -128,3 +144,9 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
         # "array_qT1_msUnit"                              : [3996, 100.0, 4095.0]
 
     }
+
+    output_json = Path(output_path, "mp2rage_proc_params.json")
+    with open(output_json, "w") as f:
+        json.dump(mp2rage_proc_params, f)
+
+create_json_for_mp2rage_proc(snakemake.input.b1map_nifti, snakemake.input.inv1_nifti, snakemake.input.inv2_nifti, snakemake.input.unit1_nifti, snakemake.output, snakemake.config["mp2rage_echo_spacing"], snakemake.threads)
