@@ -9,12 +9,13 @@ def get_unit1(wildcards):
 
 rule json_for_mp2rage_proc:
     input:
-        b1map_nifti = get_last_b1map_run
-        inv1_nifti = get_inv1
-        inv2_nifti = get_inv2
-        unitt1_nifti = get_unit1
+        b1map_nifti = get_last_b1map_run,
+        inv1_nifti = get_inv1,
+        inv2_nifti = get_inv2,
+        unit1_nifti = get_unit1,
     output:
-        directory("data/derivatives/{field_strength}/mp2rage/{subject}/{session}/")
+        directory("data/derivatives/{field_strength}/mp2rage/{subject}/{session}/"),
+        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/mp2rage_proc_params.json"
     threads:
         8
     script:

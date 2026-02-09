@@ -10,7 +10,7 @@ def add_csa_data_to_meta(bidspath: str):
     perf_pattern = 'perf/*'
     t1b1fl_pattern = 'fmap/*TB1TFL*'
     vibemt_pattern = 'anat/*vibe*_MPM*'
-    mp2rage_pattern = 'anat/*t1mp2r*'  
+    mp2rage_pattern = 'anat/*MP2RAGE*'  
     #define bids directory
     bidsdir = Path(bidspath).resolve()
     #get list of subject folders

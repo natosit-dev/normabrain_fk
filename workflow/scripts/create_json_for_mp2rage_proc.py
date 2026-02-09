@@ -14,11 +14,12 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
     output_path = Path(output_folder)
 
     #grab metadata
-    b1map_json_path = b1map_nifti_path.with_suffix(".json")
+    #need with_suffix('') or else will return nii.json
+    b1map_json_path = b1map_nifti_path.with_suffix('').with_suffix(".json") 
     with open(b1map_json_path, "r") as b1:
         b1map_meta = json.load(b1)
 
-    inv1_json_path = inv1_nifti_path.with_suffix(".json")
+    inv1_json_path = inv1_nifti_path.with_suffix('').with_suffix(".json")
     with open(inv1_json_path, "r") as inv1:
         inv1_meta = json.load(inv1)
 
@@ -149,4 +150,4 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
     with open(output_json, "w") as f:
         json.dump(mp2rage_proc_params, f)
 
-create_json_for_mp2rage_proc(snakemake.input.b1map_nifti, snakemake.input.inv1_nifti, snakemake.input.inv2_nifti, snakemake.input.unit1_nifti, snakemake.output, snakemake.config["mp2rage_echo_spacing"], snakemake.threads)
+create_json_for_mp2rage_proc(snakemake.input.b1map_nifti, snakemake.input.inv1_nifti, snakemake.input.inv2_nifti, snakemake.input.unit1_nifti, snakemake.output[0], snakemake.config["mp2rage_echo_spacing"], snakemake.threads)
