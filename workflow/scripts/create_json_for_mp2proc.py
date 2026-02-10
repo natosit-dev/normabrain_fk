@@ -98,33 +98,33 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
         "n_after"                                       : inv1_meta["n_after"],
 
         #parameters for synthetic EDGE images
-        # "edge_t_echo_spacing_msUnit"                    : 2.5,
-        # "edge_t_repeat_MP2RAGE_msUnit"                  : 8000.0,
-        # "edge_t_inversion1_msUnit"                      : 820.0,
-        # "edge_t_inversion2_msUnit"                      : 1320.0,
-        # "edge_fa_1_degUnit"                             : 5.0,
-        # "edge_fa_2_degUnit"                             : 5.0,
-        # "edge_inversion_efficiency"                     : 1.0,
-        # "edge_M0"                                       : 1.0,
+        "edge_t_echo_spacing_msUnit"                    : 2.5,
+        "edge_t_repeat_MP2RAGE_msUnit"                  : 8000.0,
+        "edge_t_inversion1_msUnit"                      : 820.0,
+        "edge_t_inversion2_msUnit"                      : 1320.0,
+        "edge_fa_1_degUnit"                             : 5.0,
+        "edge_fa_2_degUnit"                             : 5.0,
+        "edge_inversion_efficiency"                     : 1.0,
+        "edge_M0"                                       : 1.0,
 
         #parameters for synthetic FLAWS images
-        # "flaws1_t_echo_spacing_msUnit"                  : 7.5,
-        # "flaws1_t_repeat_MP2RAGE_msUnit"                : 8250.0,
-        # "flaws1_t_inversion1_msUnit"                    : 900.0,
-        # "flaws1_t_inversion2_msUnit"                    : 3700.0,
-        # "flaws1_fa_1_degUnit"                           : 9.0,
-        # "flaws1_fa_2_degUnit"                           : 5.0,
-        # "flaws1_inversion_efficiency"                   : 1.0,
-        # "flaws1_M0"                                     : 1.0,
+        "flaws1_t_echo_spacing_msUnit"                  : 7.5,
+        "flaws1_t_repeat_MP2RAGE_msUnit"                : 8250.0,
+        "flaws1_t_inversion1_msUnit"                    : 900.0,
+        "flaws1_t_inversion2_msUnit"                    : 3700.0,
+        "flaws1_fa_1_degUnit"                           : 9.0,
+        "flaws1_fa_2_degUnit"                           : 5.0,
+        "flaws1_inversion_efficiency"                   : 1.0,
+        "flaws1_M0"                                     : 1.0,
 
-        # "flaws2_t_echo_spacing_msUnit"                  : 3.1,
-        # "flaws2_t_repeat_MP2RAGE_msUnit"                : 5000.0,
-        # "flaws2_t_inversion1_msUnit"                    : 200.0,
-        # "flaws2_t_inversion2_msUnit"                    : 1200.0,
-        # "flaws2_fa_1_degUnit"                           : 5.0,
-        # "flaws2_fa_2_degUnit"                           : 5.0,
-        # "flaws2_inversion_efficiency"                   : 1.0,
-        # "flaws2_M0"                                     : 1.0,
+        "flaws2_t_echo_spacing_msUnit"                  : 3.1,
+        "flaws2_t_repeat_MP2RAGE_msUnit"                : 5000.0,
+        "flaws2_t_inversion1_msUnit"                    : 200.0,
+        "flaws2_t_inversion2_msUnit"                    : 1200.0,
+        "flaws2_fa_1_degUnit"                           : 5.0,
+        "flaws2_fa_2_degUnit"                           : 5.0,
+        "flaws2_inversion_efficiency"                   : 1.0,
+        "flaws2_M0"                                     : 1.0,
 
         #Ask Tim what "datatype" means here
         "datatype"                                      : 512,
@@ -132,17 +132,17 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
 
 
 
-        # "edge_n_before"                                 : 64,
-        # "edge_n_after"                                  : 128,
+        "edge_n_before"                                 : 64,
+        "edge_n_after"                                  : 128,
 
-        # "flaws1_n_before"                               : 64,
-        # "flaws1_n_after"                                : 128,
+        "flaws1_n_before"                               : 64,
+        "flaws1_n_after"                                : 128,
 
-        # "flaws2_n_before"                               : 64,
-        # "flaws2_n_after"                                : 128,
+        "flaws2_n_before"                               : 64,
+        "flaws2_n_after"                                : 128,
 
-        # "array_b1_relativeUnit"                         : [191, 0.1, 2.0],
-        # "array_qT1_msUnit"                              : [3996, 100.0, 4095.0]
+        "array_b1_relativeUnit"                         : [191, 0.1, 2.0],
+        "array_qT1_msUnit"                              : [3996, 100.0, 4095.0]
 
     }
 

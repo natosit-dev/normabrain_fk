@@ -19,7 +19,7 @@ rule json_for_mp2proc:
     threads:
         8
     script:
-        "../scripts/create_json_for_mp2rage_proc.py"
+        "../scripts/create_json_for_mp2proc.py"
 
 rule run_mp2proc:
     input:
@@ -28,7 +28,9 @@ rule run_mp2proc:
         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz"
     threads:
         8
+    container:
+        "docker://hugodary/b1corr_t1map_cpp:latest"
     shell:
         """
-        scripts/MP2Proc/ {input}
+        /opt/vol_proc/main {input}
         """
