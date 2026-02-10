@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from snakemake.script import snakemake
 
-def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_folder: str, echo_spacing: float, threads: int):
+def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_folder: str, echo_spacing: float, threads: int):
     # with open(metadata_json_path, "r") as f:
     #     metadata = json.load(f)
     
@@ -146,8 +146,8 @@ def create_json_for_mp2rage_proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: 
 
     }
 
-    output_json = str(Path(output_path, "mp2rage_proc_params.json"))
+    output_json = str(Path(output_path, "mp2proc.json"))
     with open(output_json, "w") as f:
         json.dump(mp2rage_proc_params, f)
 
-create_json_for_mp2rage_proc(snakemake.input.b1map_nifti, snakemake.input.inv1_nifti, snakemake.input.inv2_nifti, snakemake.input.unit1_nifti, snakemake.output[0], snakemake.config["mp2rage_echo_spacing"], snakemake.threads)
+create_json_for_mp2proc(snakemake.input.b1map_nifti, snakemake.input.inv1_nifti, snakemake.input.inv2_nifti, snakemake.input.unit1_nifti, snakemake.output[0], snakemake.config["mp2rage_echo_spacing"], snakemake.threads)
