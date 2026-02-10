@@ -21,6 +21,7 @@
 
 
 #TO DO: implement MPPCA denoising before SoS
+#TO DO: checkpoint to make sure bids data is present
 
 import glob
 
