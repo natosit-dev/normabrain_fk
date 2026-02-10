@@ -12,11 +12,10 @@ def check_csa_added_to_meta(wildcards):
 def get_last_b1map_run(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp*_TB1TFL.nii.gz'))[-1]
 
-#TO DO: checkpoint to check bids data is present
 rule smooth_B1:
     input:
         get_last_b1map_run,
-        # check_csa_added_to_meta
+        check_csa_added_to_meta
     output:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth.nii.gz")
     conda:
