@@ -52,17 +52,3 @@ rule normalize_B1_to_target_flip:
         """
         fslmaths {input.fmap} -mas {input.mask} -div {params.target_flip} {output} -odt float 
         """
-
-rule mask_B1:
-    input:
-        fmap = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w_norm.nii.gz",
-        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS_brain_mask.nii.gz"
-    output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_smooth_reslicedto{seq}t1w_norm_brain.nii.gz"
-    conda:
-        "../envs/qMT.yaml"
-    shell:
-        """
-        ImageMath 3 {output} m {input.fmap} {input.mask}
-        """
-        
