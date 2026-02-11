@@ -19,10 +19,6 @@
 #             })
 #             paths_df = pd.concat([paths_df, pd.DataFrame([session_series])], ignore_index=True)
 
-
-#TO DO: implement MPPCA denoising before SoS
-#TO DO: checkpoint to make sure bids data is present
-
 import glob
 
 wildcard_constraints:
