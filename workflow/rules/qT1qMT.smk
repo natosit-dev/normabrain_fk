@@ -1,3 +1,4 @@
+#TO DO: use docker for fit_JSP instead of requiring local compilation
 import json
 import glob
 def get_qMT_params(wildcards):

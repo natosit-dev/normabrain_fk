@@ -50,7 +50,7 @@ rule SoS:
         """
 
 
-rule synthstrip:
+rule synthstrip_mpm:
     input:
         "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
@@ -65,7 +65,7 @@ rule synthstrip:
         """
 
 
-rule DenoiseImage:
+rule DenoiseImage_mpm:
     input:
         input_image = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain.nii.gz",
         mask_image = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
@@ -79,7 +79,7 @@ rule DenoiseImage:
         """
 
 
-rule N4BiasFieldCorrection:
+rule N4BiasFieldCorrection_mpm:
     input:
         input_image = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_denoised.nii.gz",
         mask_image = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
