@@ -49,21 +49,21 @@ rule mtr:
         ImageMath 3 {output} MTR {input.mt_off} {input.mt_on}
         """
 
-rule setup_fit_JSPqMT_CLI:
-    output:
-        directory("workflow/scripts/luca_qMT/build/")
-    conda:
-        "../envs/qMT.yaml"
-    shell:
-        """
-        cd workflow/scripts/luca_qMT/
-        python3 setup.py build_ext --inplace
-        """
+# rule setup_fit_JSPqMT_CLI:
+#     output:
+#         directory("workflow/scripts/luca_qMT/build/")
+#     conda:
+#         "../envs/qMT.yaml"
+#     shell:
+#         """
+#         cd workflow/scripts/luca_qMT/
+#         python3 setup.py build_ext --inplace
+#         """
 
 
 rule fit_JSPqMT_CLI:
     input:
-        build = "workflow/scripts/luca_qMT/build/",
+        # build = "workflow/scripts/luca_qMT/build/",
         mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
         mt_on = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_SoS_registeredto{seq}t1w.nii.gz",
         pdw = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
@@ -79,8 +79,8 @@ rule fit_JSPqMT_CLI:
         t1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         r1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_R1map.nii.gz"
     threads: 8
-    conda:
-        "../envs/qMT.yaml"
+    container:
+        "docker://hugodary/vibe_mt:latest"
     shell:
         """
         python3 workflow/scripts/luca_qMT/fit_JSPqMT_CLI.py \
