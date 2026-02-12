@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from snakemake.script import snakemake
 
-def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_json: str, echo_spacing: float, threads: int, ants_kernel: str = "3x1x1", uncorr_q1: bool=False,):
+def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_json: str, echo_spacing: float, threads: int, uncorr_q1: bool=False,):
     # with open(metadata_json_path, "r") as f:
     #     metadata = json.load(f)
     
@@ -57,7 +57,6 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
         "path_INPUT_t1wUNI_dicomUnit": str(unit1_nifti_path),
 
         #paths to output files
-        # what is relativeUnit vs dicomUnit?
         "path_OUTPUT_b1_processed_perthousand": str(Path(output_path, "b1_processed_relativeUnit_perThousand.nii.gz")),
         "path_OUTPUT_t1wUNI_DEN_dicomUnit": str(Path(output_path, "t1wUNI_DEN_dicomUnit.nii.gz")),
         "path_OUTPUT_t1wUNI_B1Corrected_dicomUnit": str(Path(output_path, "t1wUNI_B1Corrected_dicomUnit.nii.gz")),
@@ -73,7 +72,7 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
 
         #ANTS parameters
         "ants_interpolation_method_for_resampling": "Linear",
-        "ants_smoothing_sigma": ants_kernel,
+        "ants_smoothing_sigma": "3x1x1",
 
         #B1map parameters
         "vref_b1_vUnit"                                 : b1map_meta["TxRefAmp"],
@@ -133,7 +132,6 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
         "flaws2_n_before"                               : 64,
         "flaws2_n_after"                                : 128,
  
-        #Ask Tim what "datatype" means here
         "datatype"                                      : 512,
         "n_threads"                                     : threads,
 
@@ -143,4 +141,4 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
     with open(output_json, "w") as f:
         json.dump(mp2rage_proc_params, f)
 
-create_json_for_mp2proc(snakemake.input.b1map_nifti, snakemake.input.inv1_nifti, snakemake.input.inv2_nifti, snakemake.input.unit1_nifti, snakemake.output[0], snakemake.config["mp2rage_echo_spacing"], snakemake.threads, uncorr_q1=snakemake.params.uncorr_q1)
+create_json_for_mp2proc(b1map_nifti=snakemake.input.b1map_nifti, inv1_nifti=snakemake.input.inv1_nifti, inv2_nifti=snakemake.input.inv2_nifti, unit1_nifti=snakemake.input.unit1_nifti, output_json=snakemake.output[0], echo_spacing=snakemake.config["mp2rage_echo_spacing"], threads=snakemake.threads, uncorr_q1=snakemake.params.uncorr_q1)
