@@ -1,3 +1,4 @@
+#TO DO: implement synthmorph for registeration
 def get_inv1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
 
@@ -45,7 +46,7 @@ rule synthstrip_uncorr_qT1:
          "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain.nii.gz",
          "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthstrip:1.8-gpu"
     threads:
         4
     shell:
@@ -68,12 +69,13 @@ rule N4BiasFieldCorrection_uncorr_qT1:
 
 rule json_for_mp2proc:
     input:
-        b1map_nifti = get_last_b1map_run,
+        b1map_nifti = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.nii.gz",
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
+    params:
+        uncorr_q1 = False
     output:
-        # directory("data/derivatives/{field_strength}/mp2rage/{subject}/{session}/"),
         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/mp2proc.json"
     threads:
         8

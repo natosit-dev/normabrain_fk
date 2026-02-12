@@ -57,7 +57,7 @@ rule synthstrip_mpm:
         temp("data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
         "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 4
     shell:
         """
