@@ -1,5 +1,6 @@
 import json
 import glob
+import shutil
 def get_target_flip(wildcards):
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp*_TB1TFL.json'))[-1] #select last run
     with open(json_path, "r") as f:
@@ -89,6 +90,18 @@ rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM
         """
         antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
         """
+
+rule copy_b1map_json_after_regtoMP2RAGE:
+    input:
+        check_csa_added_to_meta,
+        b1map_raw = get_last_b1map_run,
+        b1map_registeredtoMP2RAGE = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.json"
+    run:
+        b1map_raw_json = Path(input.b1map_raw).with_suffix("").with_suffix(".json")
+        b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")
+        shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
 
 rule smooth_B1:
     input:
