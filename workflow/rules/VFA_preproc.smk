@@ -1,24 +1,3 @@
-#generate a dataframe of all subject/session paths
-# import pandas as pd
-# paths_df = pd.DataFrame(columns=["subject", "session", "field_strength", "session_path"])
-# session_paths = []
-# for strength in FIELD_STRENGTHS:
-#     bids_path = data_path / strength / "bids"
-#     subject_paths = [x for x in bids_path.glob('sub-*') if x.is_dir()]
-#     for subject in subject_paths:
-#         sessions = [x for x in subject.glob("ses-*") if x.is_dir()]
-#         session_paths = [*session_paths, *sessions]
-#         subject = subject.name
-#         for session in sessions:
-#             session_name = session.name
-#             session_series = pd.Series({
-#                 "subject": subject,
-#                 "session": session_name,
-#                 "field_strength": strength,
-#                 "session_path": session
-#             })
-#             paths_df = pd.concat([paths_df, pd.DataFrame([session_series])], ignore_index=True)
-
 import glob
 
 wildcard_constraints:
