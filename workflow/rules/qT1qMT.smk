@@ -79,8 +79,8 @@ rule fit_JSPqMT_CLI:
         t1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         r1map = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_R1map.nii.gz"
     threads: 8
-    container:
-        "docker://hugodary/vibe_mt:latest"
+    # container:
+    #     "docker://hugodary/vibe_mt:latest"
     shell:
         """
         python3 workflow/scripts/luca_qMT/fit_JSPqMT_CLI.py \
