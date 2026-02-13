@@ -1,4 +1,3 @@
-#TO DO: implement synthmorph for registeration
 def get_inv1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
 
@@ -39,33 +38,33 @@ rule create_uncorr_q1:
         cp {output[0]} {output[1]}
         """
 
-rule synthstrip_uncorr_qT1:
-    input:
-       "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1.nii.gz"
-    output:
-         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain.nii.gz",
-         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
-    container:
-        "docker://freesurfer/synthstrip:1.8-gpu"
-    threads:
-        4
-    shell:
-        """
-        mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
-        """
+# rule synthstrip_uncorr_qT1:
+#     input:
+#        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1.nii.gz"
+#     output:
+#          "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain.nii.gz",
+#          "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
+#     container:
+#         "docker://freesurfer/synthstrip:1.8-gpu"
+#     threads:
+#         4
+#     shell:
+#         """
+#         mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+#         """
 
-rule N4BiasFieldCorrection_uncorr_qT1:
-    input:
-        input_image = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
-    output:
-        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_n4.nii.gz"
-    conda:
-        "../envs/qMT.yaml"
-    shell:
-        """
-        N4BiasFieldCorrection -d 3 -s 1 -v 1 -c [ 50x50x50x50, 0 ] -i {input.input_image} -x {input.mask_image} -o {output}
-        """
+# rule N4BiasFieldCorrection_uncorr_qT1:
+#     input:
+#         input_image = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain.nii.gz",
+#         mask_image = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
+#     output:
+#         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_n4.nii.gz"
+#     conda:
+#         "../envs/qMT.yaml"
+#     shell:
+#         """
+#         N4BiasFieldCorrection -d 3 -s 1 -v 1 -c [ 50x50x50x50, 0 ] -i {input.input_image} -x {input.mask_image} -o {output}
+#         """
 
 rule json_for_mp2proc:
     input:
