@@ -99,3 +99,37 @@ rule fit_JSPqMT_CLI:
         --nworkers {threads} \
         --cpp_opt --use_GBM
         """
+
+rule register_qT1_mpm_to_mp2rage:
+    input:
+        moving = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
+        ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/qT1_msUnit.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
+    threads: 4
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        if command -v nvcc --version && command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+            mri_synthmorph register -g -m affine -t {output} {input.moving} {input.ref}
+        else
+            mri_synthmorph register -m affine -t {output} {input.moving} {input.ref}
+        fi
+        """
+
+
+rule apply_reg_qT1_mpm_to_mp2rage:
+    input:
+        moving = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
+        ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/qT1_msUnit.nii.gz",
+        reg = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
+    output:
+        "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE.nii.gz"
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell: #register and reslice to MP2RAGE
+        """
+        mri_synthmorph apply {input.reg} {input.moving} {output}
+        """  

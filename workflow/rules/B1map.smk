@@ -24,7 +24,7 @@ rule register_b1anat_to_mp2rage:
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE.lta"
-    threads: 2
+    threads: 4
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -52,6 +52,7 @@ rule apply_reg_b1map_to_mp2rage:
         mri_synthmorph apply -H {input.reg} {input.moving} {output}
         """ 
 
+
 rule copy_b1map_json_after_regtoMP2RAGE:
     input:
         check_csa_added_to_meta,
@@ -64,6 +65,7 @@ rule copy_b1map_json_after_regtoMP2RAGE:
         b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")
         shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
 
+
 rule register_b1anat_to_mpm_t1w:
     input:
         check_csa_added_to_meta,
@@ -71,7 +73,7 @@ rule register_b1anat_to_mpm_t1w:
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w.lta"
-    threads: 2
+    threads: 4
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -83,6 +85,7 @@ rule register_b1anat_to_mpm_t1w:
             mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
         fi
         """
+
 
 rule apply_reg_b1map_to_mpm_t1w:
     input:
@@ -97,6 +100,7 @@ rule apply_reg_b1map_to_mpm_t1w:
         """
         mri_synthmorph apply {input.reg} {input.moving} {output}
         """  
+
 
 rule smooth_B1:
     input:
