@@ -24,11 +24,17 @@ rule register_b1anat_to_mp2rage:
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE.lta"
+    threads: 2
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
+        if command -v nvcc --version && command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+            mri_synthmorph register -g -m rigid -t {output} {input.moving} {input.ref}
+        else
+            mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
+        fi
         """
     
 
@@ -70,7 +76,12 @@ rule register_b1anat_to_mpm_t1w:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthmorph register -m rigid -j {threads} -t {output} {input.moving} {input.ref}
+       if command -v nvcc --version && command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+            mri_synthmorph register -g -m rigid -t {output} {input.moving} {input.ref}
+        else
+            mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
+        fi
         """
 
 rule apply_reg_b1map_to_mpm_t1w:

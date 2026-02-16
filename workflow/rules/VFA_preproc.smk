@@ -1,4 +1,4 @@
-# TO DO: spine mask
+# TO DO: spine mask, register MPM to MP2RAGE
 import glob
 
 wildcard_constraints:
@@ -41,7 +41,12 @@ rule synthstrip_mpm:
     threads: 4
     shell:
         """
-        mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+        if command -v nvcc --version && command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
+        else 
+            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+        fi
         """
 
 rule register_MPM_to_t1w:
@@ -50,11 +55,17 @@ rule register_MPM_to_t1w:
         moving = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
         "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_registeredto{seq}t1w.lta"
+    threads: 4
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
+        if command -v nvcc --version && command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+            mri_synthmorph register -g -m rigid -t {output} {input.moving} {input.ref}
+        else
+            mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
+        fi
         """
 
 rule apply_reg_MPM_to_t1w:
