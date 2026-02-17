@@ -49,19 +49,38 @@ rule synthstrip_mpm:
         """
 
 
+rule install_sct:
+    output:
+        ".snakemake/scripts/install_sct.done"
+    shell: #Check if sct is already installed. If not, install version 7.2 for linux.
+        """
+        if ! command -v sct_deepseg; then
+            if [[ $(uname) == Darwin* ]]; then
+                wget https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/download/7.2/install_sct-7.2_macos.sh
+            else
+                wget https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/download/7.2/install_sct-7.2_linux.sh
+            fi
+            mv install_sct-7.2_*.sh .snakemake/scripts/
+            bash .snakemake/scripts/install_sct-7.2_*.sh -y    
+        fi
+        touch .snakemake/scripts/install_sct.done
+        """
+
+
 rule spineseg_mpm:
     input:
-       "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
+       "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz",
+       ".snakemake/scripts/install_sct.done"
     output:
         "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_all.nii.gz",
         temp("data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_discs.nii.gz"),
         temp("data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_discs.json")
-    container:
-        "docker://vnmd/spinalcordtoolbox_7.2:20251215"
-    threads: 4
+    # container:
+    #     "docker://vnmd/spinalcordtoolbox_7.2:20251215"
+    threads: 8
     shell:
         """
-        sct_deepseg spine -fill-holes 1 -i {input}
+        sct_deepseg spine -i {input[0]}
         """
 
 

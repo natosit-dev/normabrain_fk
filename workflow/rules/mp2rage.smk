@@ -1,5 +1,8 @@
 import glob
 
+def check_csa_added_to_meta(wildcards):
+    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+
 def get_inv1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
 
@@ -12,6 +15,7 @@ def get_unit1(wildcards):
 
 rule json_for_uncorr_q1:
     input:
+        meta_complete = check_csa_added_to_meta,
         b1map_nifti = get_last_b1map_run,
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
@@ -38,7 +42,7 @@ rule create_uncorr_q1:
     shell:
         """
         /opt/vol_proc/main {input}
-        cp "data/derivatives/{wildcards.field_strength}/mp2rage/{wildcards.subject}/{wildcards.session}/qT1_msUnit.nii.gz", {output}
+        cp "data/derivatives/{wildcards.field_strength}/mp2rage/{wildcards.subject}/{wildcards.session}/qT1_msUnit.nii.gz" {output}
         """
 
 
