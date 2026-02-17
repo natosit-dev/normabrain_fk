@@ -7,6 +7,7 @@ def get_inv2(wildcards):
 def get_unit1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_UNIT1.nii.gz'))[0]
 
+
 rule json_for_uncorr_q1:
     input:
         b1map_nifti = get_last_b1map_run,
@@ -21,6 +22,7 @@ rule json_for_uncorr_q1:
         8
     script:
         "../scripts/create_json_for_mp2proc.py"
+
 
 rule create_uncorr_q1:
     input:
@@ -54,6 +56,7 @@ rule json_for_mp2proc:
         8
     script:
         "../scripts/create_json_for_mp2proc.py"
+
 
 rule run_mp2proc:
     input:

@@ -1,6 +1,7 @@
 import json
 import glob
 import shutil
+
 def get_target_flip(wildcards):
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp*_TB1TFL.json'))[-1] #select last run
     with open(json_path, "r") as f:

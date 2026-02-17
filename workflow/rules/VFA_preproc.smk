@@ -1,6 +1,3 @@
-# TO DO: spine mask
-#sct_deepseg spine -i data/derivatives/3T/VFA_preproc/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMTt1w_mt-off_part-mag_SoS.nii.gz
-#fslmaths data/derivatives/3T/VFA_preproc/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMTt1w_mt-off_part-mag_SoS_totalspineseg_all.nii.gz -bin data/derivatives/3T/VFA_preproc/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMTt1w_mt-off_part-mag_SoS_spine_mask.nii.gz
 import glob
 
 wildcard_constraints:

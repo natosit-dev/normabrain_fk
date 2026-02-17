@@ -1,5 +1,10 @@
 import json
 import glob
+
+wildcard_constraints:
+    contrast = '|'.join([re.escape(x) for x in config["VFA_contrasts"]]),
+    seq = config["VFA_sequence"]
+    
 def get_qMT_params(wildcards):
     json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
@@ -31,10 +36,6 @@ def get_pdflip(wildcards):
     return pdw_meta["FlipAngle"]
 
 
-wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["VFA_contrasts"]]),
-    seq = config["VFA_sequence"]
-
 rule mtr:
     input:
         mt_off = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
@@ -47,6 +48,7 @@ rule mtr:
         """
         ImageMath 3 {output} MTR {input.mt_off} {input.mt_on}
         """
+
 
 rule setup_fit_JSPqMT_CLI:
     output:
