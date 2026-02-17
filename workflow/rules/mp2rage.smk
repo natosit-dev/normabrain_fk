@@ -28,7 +28,6 @@ rule create_uncorr_q1:
     input:
         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_q1.json"
     output:
-        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/qT1_msUnit.nii.gz",
         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1.nii.gz"
     threads:
         8
@@ -37,7 +36,7 @@ rule create_uncorr_q1:
     shell:
         """
         /opt/vol_proc/main {input}
-        cp {output[0]} {output[1]}
+        cp "data/derivatives/{wildcards.field_strength}/mp2rage/{wildcards.subject}/{wildcards.session}/qT1_msUnit.nii.gz", {output}
         """
 
 
