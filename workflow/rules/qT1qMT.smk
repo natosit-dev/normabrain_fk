@@ -68,7 +68,7 @@ rule fit_JSPqMT_CLI:
         pdw = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
         t1w = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
         b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth_norm.nii.gz",
-        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS_brain_mask.nii.gz"
+        mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS_brain_spine_mask.nii.gz"
     params:
         mt_params = get_qMT_params,
         t1flip = get_t1flip,
@@ -99,6 +99,7 @@ rule fit_JSPqMT_CLI:
         --nworkers {threads} \
         --cpp_opt --use_GBM
         """
+
 
 rule register_qT1_mpm_to_mp2rage:
     input:

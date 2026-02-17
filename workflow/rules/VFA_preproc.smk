@@ -51,6 +51,39 @@ rule synthstrip_mpm:
         fi
         """
 
+
+rule spineseg_mpm:
+    input:
+       "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_all.nii.gz",
+        temp("data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_discs.nii.gz"),
+        temp("data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_discs.json")
+    container:
+        "docker://vnmd/spinalcordtoolbox_7.2:20251215"
+    threads: 4
+    shell:
+        """
+        sct_deepseg spine -fill-holes 1 -i {input}
+        """
+
+
+rule brain_and_spine_mask_mpm:
+    input:
+       spine_seg = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_all.nii.gz",
+        brain_mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+    output:
+        spine_mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_spine_mask.nii.gz",
+        brain_spine_mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_spine_mask.nii.gz"  
+    conda:
+        "../envs/fslmaths.yaml"
+    shell:
+        """
+        fslmaths {input.spine_seg} -bin {output.spine_mask}
+        fslmaths {input.brain_mask} -add {output.spine_mask} {output.brain_spine_mask}
+        """
+
+
 rule register_MPM_to_t1w:
     input:
         ref = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
@@ -69,6 +102,7 @@ rule register_MPM_to_t1w:
             mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
         fi
         """
+
 
 rule apply_reg_MPM_to_t1w:
     input:
