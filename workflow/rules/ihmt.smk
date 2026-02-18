@@ -1,3 +1,5 @@
+#TO DO: ask team about apodization w/ zero-filling versus 3D mrtrix3 for degibbs
+
 import glob
 import shutil
 from pathlib import Path
@@ -34,8 +36,8 @@ rule denoise_ihmt:
         #remove dummy bval, bvec, and scratch directory after command has finished
         bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bval"),
         bvec_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bvec"),
-        bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.bval"),
-        bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.bvec"),
+        bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.bval"),
+        bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.bvec"),
         scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_tmp"))
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
@@ -73,13 +75,13 @@ rule degibbs_moco_and_maps_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.gz"
     output:
-        preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs_moco_preproc.nii.gz",
-        ihmtr="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTR.nii.gz",
-        mtrs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii.gz",
-        mtrd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRd.nii.gz",
-        ihmtrinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTRinv.nii.gz",
-        mtrsinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRsinv.nii.gz",
-        mtrdinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRdinv.nii.gz"
+        preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs_moco_preproc.nii",
+        ihmtr="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTR.nii",
+        mtrs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii",
+        mtrd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRd.nii",
+        ihmtrinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTRinv.nii",
+        mtrsinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRsinv.nii",
+        mtrdinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRdinv.nii"
     container:
         "docker://hugodary/ihmt_proc:latest"
     shell: 
@@ -90,5 +92,5 @@ rule degibbs_moco_and_maps_ihmt:
         /opt/ihMT_proc/process_ihMT.sh -u 2 -m 1 -c ihMT,ihMTR,MTRs,MTRd,ihMTRinv,MTRsinv,MTRdinv -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_
         
         #rename preproc image for clarity
-        mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_ihMT.nii.gz {output.preproc}
+        mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_ihMT.nii {output.preproc}
         """
