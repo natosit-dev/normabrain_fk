@@ -10,7 +10,8 @@ def get_raw_ihmt(wildcards):
 
 
 rule copy_raw_ihmt_data:
-    #need to create in order for designer to work
+    #img, json, bvec, and bval need to have the same basename for designer to work
+    #we don't want to save dummy bvec and bval to rawdata so instead we will copy img and json
     input:
         check_csa_added_to_meta,
         raw_img = get_raw_ihmt
