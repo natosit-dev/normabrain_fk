@@ -30,6 +30,7 @@ rule denoise_ihmt:
         json="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.json"
     output:
         out="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.gz",
+        noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_noisemap.nii",
         #remove dummy bval, bvec, and scratch directory after command has finished
         bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bval"),
         bvec_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bvec"),
@@ -51,7 +52,7 @@ rule denoise_ihmt:
         #denoise with the jespersen algorithm extension to MPPCA since it is better for multi-contrast data
         designer -denoise -shrinkage frob -algorithm jespersen -adaptive_patch -pe_dir j -nocleanup -scratch {output.scratch} {input.img} {output.out}
         #move noisemap out of denoise_tmp and rename for clarity
-        cp data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}/denoise_tmp/sigma.nii data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_noisemap.nii
+        cp {output.scratch}/sigma.nii {output.noisemap}
         """
 
 rule degibbs_ihmt:
