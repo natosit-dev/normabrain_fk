@@ -16,8 +16,8 @@ rule copy_raw_ihmt_data:
         check_csa_added_to_meta,
         raw_img = get_raw_ihmt
     output:
-        img=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.nii.gz"),
-        json=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.json")
+        img=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.nii.gz"),
+        json=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.json")
     run:
         shutil.copy(input.raw_img, output.img)
         raw_json = Path(input.raw_img).with_suffix("").with_suffix(".json")
@@ -26,17 +26,17 @@ rule copy_raw_ihmt_data:
 
 rule denoise_ihmt:
     input:
-        img="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.nii.gz",
-        json="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.json"
+        img="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.nii.gz",
+        json="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.json"
     output:
-        out="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.gz",
-        noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_noisemap.nii",
+        out="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz",
+        noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_noisemap.nii",
         #remove dummy bval, bvec, and scratch directory after command has finished
-        bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bval"),
-        bvec_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bvec"),
-        bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.bval"),
-        bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.bvec"),
-        scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_tmp"))
+        bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.bval"),
+        bvec_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.bvec"),
+        bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.bval"),
+        bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.bvec"),
+        scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/ihmt_denoise_tmp"))
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell: 
@@ -58,22 +58,21 @@ rule denoise_ihmt:
 
 rule degibbs_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs_preproc.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz"
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
-    shell:
+    shell: #use the Bautista extension of the Kellner protocol because data is 3D not 2D
         """
-        #use the Bautista extension of the Kellner protocol because data is 3D not 2D
         mrdegibbs -mode 3d {input} {output}
         """
 
 rule degibbs_moco_and_maps_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs_preproc.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz"
     output:
-        preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs_moco_preproc.nii",
+        preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii",
         ihmtr="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTR.nii",
         mtrs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii",
         mtrd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRd.nii",
