@@ -29,7 +29,7 @@ rule denoise_ihmt:
         img="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.nii.gz",
         json="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.json"
     output:
-        out="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.gz",
+        out="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.gz",
         noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_noisemap.nii",
         #remove dummy bval, bvec, and scratch directory after command has finished
         bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bval"),
@@ -37,7 +37,6 @@ rule denoise_ihmt:
         bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.bval"),
         bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.bvec"),
         scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_tmp"))
-    threads: 8
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell: 
@@ -55,15 +54,37 @@ rule denoise_ihmt:
         cp {output.scratch}/sigma.nii {output.noisemap}
         """
 
-rule degibbs_ihmt:
+# rule degibbs_ihmt:
+#     input:
+#         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.gz"
+#     output:
+#         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs.nii.gz"
+#     container:
+#         "docker://nyudiffusionmri/designer2:v2.0.15"
+#     shell:
+#         """
+#         #use the Bautista extension of the Kellner protocol because data is 3D not 2D
+#         mrdegibbs -mode 3d {input} {output}
+#         """
+
+rule degibbs_moco_and_maps_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_preproc.nii.gz"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs.nii.gz"
+        preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs_moco_preproc.nii.gz",
+        ihmtr="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTR.nii.gz",
+        mtrs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii.gz",
+        mtrd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRd.nii.gz",
+        ihmtrinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTRinv.nii.gz",
+        mtrsinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRsinv.nii.gz",
+        mtrdinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRdinv.nii.gz"
     container:
-        "docker://nyudiffusionmri/designer2:v2.0.15"
-    shell:
+        "docker://hugodary/ihmt_proc:latest"
+    shell: 
+        # -u 2 means use cos-kernel apodization and zero-filling x2 for degibbs
+        # -m 1 means use ihMT-MoCo for motion correction (from Soustelle preprint)
+        # -c is a comma separated list of desired output maps
         """
-        #use the Bautista extension of the Kellner protocol because data is 3D not 2D
-        mrdegibbs -mode 3d {input} {output}
+        /opt/ihMT_proc/process_ihMT.sh -u 2 -m 1 -c ihMT,ihMTR,MTRs,MTRd,ihMTRinv,MTRsinv,MTRdinv -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_
+        mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_ihMT.nii.gz {output.preproc}
         """
