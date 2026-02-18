@@ -30,9 +30,12 @@ rule denoise_ihmt:
         json="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.json"
     output:
         out="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.gz",
-        bval=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bval"),
-        bvec=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bvec"),
-        scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}/denoise_tmp"))
+        #remove dummy bval, bvec, and scratch directory after command has finished
+        bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bval"),
+        bvec_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_raw.bvec"),
+        bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.bval"),
+        bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.bvec"),
+        scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_tmp"))
     threads: 8
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
@@ -43,9 +46,23 @@ rule denoise_ihmt:
         vols="$((${{vols}}-1))" #subtract 1, because one of the entries has to be nonzero
         vols_string=$(printf "%${{vols}}s") #function to replicate following string by number of vols
         vols_zeros=${{vols_string// /0 }} #create string with number of 0s equal to number of vols (minus 1)
-        echo "${{vols_zeros}}500" > {output.bval} #create dummy bval file with number of entries = number of volumes
-        echo -e "${{vols_zeros}}1\n${{vols_zeros}}1\n${{vols_zeros}}1" > {output.bvec} #dummy bvec has to have 3 rows
+        echo "${{vols_zeros}}500" > {output.bval_raw} #create dummy bval file with number of entries = number of volumes
+        echo -e "${{vols_zeros}}1\n${{vols_zeros}}1\n${{vols_zeros}}1" > {output.bvec_raw} #dummy bvec has to have 3 rows
         #denoise with the jespersen algorithm extension to MPPCA since it is better for multi-contrast data
         designer -denoise -shrinkage frob -algorithm jespersen -adaptive_patch -pe_dir j -nocleanup -scratch {output.scratch} {input.img} {output.out}
+        #move noisemap out of denoise_tmp and rename for clarity
         cp data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}/denoise_tmp/sigma.nii data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_noisemap.nii
+        """
+
+rule degibbs_ihmt:
+    input:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_denoise_degibbs.nii.gz"
+    container:
+        "docker://nyudiffusionmri/designer2:v2.0.15"
+    shell:
+        """
+        #use the Bautista extension of the Kellner protocol because data is 3D not 2D
+        mrdegibbs -mode 3d {input} {output}
         """
