@@ -48,7 +48,9 @@ rule denoise_ihmt:
         vols_zeros=${{vols_string// /0 }} #create string with number of 0s equal to number of vols (minus 1)
         echo "${{vols_zeros}}500" > {output.bval_raw} #create dummy bval file with number of entries = number of volumes
         echo -e "${{vols_zeros}}1\n${{vols_zeros}}1\n${{vols_zeros}}1" > {output.bvec_raw} #dummy bvec has to have 3 rows
+
         #denoise with the jespersen algorithm extension to MPPCA since it is better for multi-contrast data
+        #pe_dir is not relevant for denoise but designer throws an error if it is not set, set it to j for now
         designer -denoise -shrinkage frob -algorithm jespersen -adaptive_patch -pe_dir j -nocleanup -scratch {output.scratch} {input.img} {output.out}
         #move noisemap out of denoise_tmp and rename for clarity
         cp {output.scratch}/sigma.nii {output.noisemap}
@@ -86,5 +88,7 @@ rule degibbs_moco_and_maps_ihmt:
         # -c is a comma separated list of desired output maps
         """
         /opt/ihMT_proc/process_ihMT.sh -u 2 -m 1 -c ihMT,ihMTR,MTRs,MTRd,ihMTRinv,MTRsinv,MTRdinv -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_
+        
+        #rename preproc image for clarity
         mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_ihMT.nii.gz {output.preproc}
         """
