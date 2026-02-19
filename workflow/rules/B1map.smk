@@ -21,12 +21,8 @@ def get_last_b1anat_run(wildcards):
 rule register_b1anat_to_MP2RAGE:
     input:
         check_csa_added_to_meta,
-<<<<<<< HEAD
-        ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1.nii.gz"
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz"
     params:
-=======
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz",
->>>>>>> origin/mpm
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE.lta"
@@ -77,12 +73,8 @@ rule copy_b1map_json_after_regtoMP2RAGE:
 rule register_b1anat_to_MPM_t1w:
     input:
         check_csa_added_to_meta,
-<<<<<<< HEAD
-        ref = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz"
+        ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos.nii.gz"
     params:
-=======
-        ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos.nii.gz",
->>>>>>> origin/mpm
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w.lta"
