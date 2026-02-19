@@ -13,6 +13,7 @@ def get_echos(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))[:config["n_echos"]]
 
 def get_qMT_params(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         mtw_meta = json.load(f)
@@ -31,12 +32,14 @@ def get_qMT_params(wildcards):
     return mt_params
 
 def get_t1flip(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}t1w*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         t1w_meta = json.load(f)
     return t1w_meta["FlipAngle"]
 
 def get_pdflip(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}pdw*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         pdw_meta = json.load(f)
@@ -193,6 +196,7 @@ rule setup_fit_JSPqMT_CLI:
 
 rule fit_JSPqMT_CLI:
     input:
+        meta_complete = check_csa_added_to_meta,
         build = "workflow/scripts/luca_qMT/build/",
         mt_off = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_sos_registeredto{seq}t1w.nii.gz",
         mt_on = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_sos_registeredto{seq}t1w.nii.gz",

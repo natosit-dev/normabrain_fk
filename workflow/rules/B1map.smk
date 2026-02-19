@@ -2,19 +2,22 @@ import json
 import glob
 import shutil
 
+def check_csa_added_to_meta(wildcards):
+    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+
 def get_target_flip(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp*_TB1TFL.json'))[-1] #select last run
     with open(json_path, "r") as f:
         b1map_meta = json.load(f)
     return b1map_meta["target_fa_deg"] * 10
 
-def check_csa_added_to_meta(wildcards):
-    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-
 def get_last_b1map_run(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp*_TB1TFL.nii.gz'))[-1]
 
 def get_last_b1anat_run(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-anat*_TB1TFL.nii.gz'))[-1]
 
 
@@ -123,6 +126,7 @@ rule smooth_B1:
 
 rule normalize_B1_to_target_flip: #not masking because we are interested in the spinal cord
     input:
+        check_csa_added_to_meta,
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth.nii.gz"
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth_norm.nii.gz"
