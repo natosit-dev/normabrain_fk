@@ -4,17 +4,17 @@ rule all:
     input:
         "data/rawdata/bids/3T/code/bidscoin/fixmeta.log",
         # "data/rawdata/bids/7T/code/bidscoin/fixmeta.log",
-        "data/derivatives/3T/qT1qMT/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_MTRmap.nii.gz",
-        "data/derivatives/3T/qT1qMT/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_MTRmap.nii.gz",
-        "data/derivatives/3T/qT1qMT/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE.nii.gz",
-        "data/derivatives/3T/qT1qMT/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE.nii.gz"
-        # "data/derivatives/3T/qT1qMT/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_MPFmap.nii.gz",
-        # "data/derivatives/3T/qT1qMT/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_MPFmap.nii.gz",
+        "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_MTRmap.nii.gz",
+        "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_MTRmap.nii.gz",
+        "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE.nii.gz",
+        "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE.nii.gz"
+        # "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_MPFmap.nii.gz",
+        # "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_MPFmap.nii.gz",
         # "data/derivatives/3T/mp2rage/sub-rfl260123normanoel/ses-1/t1wUNI_DEN_dicomUnit.nii.gz",
         # "data/derivatives/3T/mp2rage/sub-jrb250926normapoet/ses-1/t1wUNI_DEN_dicomUnit.nii.gz"
 
 include: "rules/bidsify.smk"
 include: "rules/MPM_preproc.smk"
 include: "rules/B1map.smk"
-include: "rules/qT1qMT.smk"
+include: "rules/MPM.smk"
 include: "rules/mp2rage.smk"
