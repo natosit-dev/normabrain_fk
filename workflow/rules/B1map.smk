@@ -18,11 +18,15 @@ def get_last_b1anat_run(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-anat*_TB1TFL.nii.gz'))[-1]
 
 
-rule register_b1anat_to_mp2rage:
+rule register_b1anat_to_MP2RAGE:
     input:
         check_csa_added_to_meta,
+<<<<<<< HEAD
         ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1.nii.gz"
     params:
+=======
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz",
+>>>>>>> origin/mpm
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE.lta"
@@ -40,7 +44,7 @@ rule register_b1anat_to_mp2rage:
         """
     
 
-rule apply_reg_b1map_to_mp2rage:
+rule apply_reg_b1map_to_MP2RAGE:
     input:
         check_csa_added_to_meta,
         reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE.lta"
@@ -70,11 +74,15 @@ rule copy_b1map_json_after_regtoMP2RAGE:
         shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
 
 
-rule register_b1anat_to_mpm_t1w:
+rule register_b1anat_to_MPM_t1w:
     input:
         check_csa_added_to_meta,
+<<<<<<< HEAD
         ref = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz"
     params:
+=======
+        ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos.nii.gz",
+>>>>>>> origin/mpm
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w.lta"
@@ -92,7 +100,7 @@ rule register_b1anat_to_mpm_t1w:
         """
 
 
-rule apply_reg_b1map_to_mpm_t1w:
+rule apply_reg_b1map_to_MPM_t1w:
     input:
         check_csa_added_to_meta,
         reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w.lta"
