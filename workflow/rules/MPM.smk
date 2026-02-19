@@ -232,10 +232,10 @@ rule fit_JSPqMT_CLI:
         """
 
 
-rule register_qT1_MPM_to_mp2rage:
+rule register_qT1_MPM_to_MP2RAGE:
     input:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
-        ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/qT1_msUnit.nii.gz"
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
     threads: 4
@@ -252,10 +252,10 @@ rule register_qT1_MPM_to_mp2rage:
         """
 
 
-rule apply_reg_qT1_MPM_to_mp2rage:
+rule apply_reg_qT1_MPM_to_MP2RAGE:
     input:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
-        ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/qT1_msUnit.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz",
         reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE.nii.gz"

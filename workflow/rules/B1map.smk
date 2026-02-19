@@ -18,10 +18,10 @@ def get_last_b1anat_run(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-anat*_TB1TFL.nii.gz'))[-1]
 
 
-rule register_b1anat_to_mp2rage:
+rule register_b1anat_to_MP2RAGE:
     input:
         check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz",
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE.lta"
@@ -39,7 +39,7 @@ rule register_b1anat_to_mp2rage:
         """
     
 
-rule apply_reg_b1map_to_mp2rage:
+rule apply_reg_b1map_to_MP2RAGE:
     input:
         check_csa_added_to_meta,
         moving = get_last_b1map_run,

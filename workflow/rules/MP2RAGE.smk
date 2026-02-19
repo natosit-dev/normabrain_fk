@@ -23,7 +23,7 @@ rule json_for_uncorr_q1:
     params:
         uncorr_q1 = True
     output:
-        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_q1.json"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_q1.json"
     threads:
         8
     script:
@@ -32,9 +32,9 @@ rule json_for_uncorr_q1:
 
 rule create_uncorr_q1:
     input:
-        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_q1.json"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_q1.json"
     output:
-        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz"
     threads:
         8
     container:
@@ -42,7 +42,7 @@ rule create_uncorr_q1:
     shell:
         """
         /opt/vol_proc/main {input}
-        cp "data/derivatives/{wildcards.field_strength}/mp2rage/{wildcards.subject}/{wildcards.session}/qT1_msUnit.nii.gz" {output}
+        cp "data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/qT1_msUnit.nii.gz" {output}
         """
 
 
@@ -56,7 +56,7 @@ rule json_for_mp2proc:
     params:
         uncorr_q1 = False
     output:
-        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/mp2proc.json"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2proc.json"
     threads:
         8
     script:
@@ -65,9 +65,9 @@ rule json_for_mp2proc:
 
 rule run_mp2proc:
     input:
-        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/mp2proc.json"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2proc.json"
     output:
-        "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
     threads:
         8
     container:
