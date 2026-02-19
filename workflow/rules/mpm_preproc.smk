@@ -1,8 +1,8 @@
 import glob
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["VFA_contrasts"]]),
-    seq = config["VFA_sequence"],
+    contrast = '|'.join([re.escape(x) for x in config["mpm_contrasts"]]),
+    seq = config["mpm_sequence"],
 
 def get_echos(wildcards):
     #get the list of echo files, sort it, and then return the first N echos as specified in the config file
@@ -19,7 +19,7 @@ rule SoS:
     params:
         files=lambda wildcards, input: ','.join(input.echos)
     output:
-       "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
+       "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
     conda:
         "../envs/qMT.yaml"
     threads: 2
@@ -31,10 +31,10 @@ rule SoS:
 
 rule synthstrip_mpm:
     input:
-        "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
+        "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
-        "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+        temp("data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain.nii.gz"),
+        "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 4
@@ -69,12 +69,12 @@ rule install_sct:
 
 rule spineseg_mpm:
     input:
-       "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz",
+       "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz",
        ".snakemake/scripts/install_sct.done"
     output:
-        "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_all.nii.gz",
-        temp("data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_discs.nii.gz"),
-        temp("data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_discs.json")
+        "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_all.nii.gz",
+        temp("data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_discs.nii.gz"),
+        temp("data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_discs.json")
     # container:
     #     "docker://vnmd/spinalcordtoolbox_7.2:20251215"
     threads: 8
@@ -86,11 +86,11 @@ rule spineseg_mpm:
 
 rule brain_and_spine_mask_mpm:
     input:
-       spine_seg = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_all.nii.gz",
-        brain_mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
+       spine_seg = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_totalspineseg_all.nii.gz",
+        brain_mask = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_mask.nii.gz"
     output:
-        spine_mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_spine_mask.nii.gz",
-        brain_spine_mask = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_spine_mask.nii.gz"  
+        spine_mask = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_spine_mask.nii.gz",
+        brain_spine_mask = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_brain_spine_mask.nii.gz"  
     conda:
         "../envs/fslmaths.yaml"
     shell:
@@ -100,12 +100,12 @@ rule brain_and_spine_mask_mpm:
         """
 
 
-rule register_MPM_to_t1w:
+rule register_mpm_to_t1w:
     input:
-        ref = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
-        moving = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
+        ref = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
+        moving = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz"
     output:
-        "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_registeredto{seq}t1w.lta"
+        "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_registeredto{seq}t1w.lta"
     threads: 4
     container:
         "docker://freesurfer/freesurfer:8.1.0"
@@ -120,12 +120,12 @@ rule register_MPM_to_t1w:
         """
 
 
-rule apply_reg_MPM_to_t1w:
+rule apply_reg_mpm_to_t1w:
     input:
-        moving = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz",
-        reg = "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_registeredto{seq}t1w.lta"
+        moving = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS.nii.gz",
+        reg = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_registeredto{seq}t1w.lta"
     output:
-        "data/derivatives/{field_strength}/VFA_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_registeredto{seq}t1w.nii.gz"
+        "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_SoS_registeredto{seq}t1w.nii.gz"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell: 
