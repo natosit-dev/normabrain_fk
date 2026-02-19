@@ -67,10 +67,10 @@ rule copy_b1map_json_after_regtoMP2RAGE:
         shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
 
 
-rule register_b1anat_to_mpm_t1w:
+rule register_b1anat_to_MPM_t1w:
     input:
         check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
+        ref = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w.lta"
@@ -88,7 +88,7 @@ rule register_b1anat_to_mpm_t1w:
         """
 
 
-rule apply_reg_b1map_to_mpm_t1w:
+rule apply_reg_b1map_to_MPM_t1w:
     input:
         check_csa_added_to_meta,
         moving = get_last_b1map_run,

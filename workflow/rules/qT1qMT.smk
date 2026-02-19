@@ -2,8 +2,8 @@ import json
 import glob
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["mpm_contrasts"]]),
-    seq = config["mpm_sequence"]
+    contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
+    seq = config["MPM_sequence"]
     
 def get_qMT_params(wildcards):
     json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json')[0]
@@ -38,8 +38,8 @@ def get_pdflip(wildcards):
 
 rule mtr:
     input:
-        mt_off = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
-        mt_on = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_SoS_registeredto{seq}t1w.nii.gz"
+        mt_off = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_SoS_registeredto{seq}t1w.nii.gz"
     output:
         "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_MTRmap.nii.gz"
     conda:
@@ -65,12 +65,12 @@ rule setup_fit_JSPqMT_CLI:
 rule fit_JSPqMT_CLI:
     input:
         build = "workflow/scripts/luca_qMT/build/",
-        mt_off = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
-        mt_on = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_SoS_registeredto{seq}t1w.nii.gz",
-        pdw = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
-        t1w = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
+        mt_off = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_SoS_registeredto{seq}t1w.nii.gz",
+        pdw = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_SoS_registeredto{seq}t1w.nii.gz",
+        t1w = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS.nii.gz",
         b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth_norm.nii.gz",
-        mask = "data/derivatives/{field_strength}/mpm_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS_brain_spine_mask.nii.gz"
+        mask = "data/derivatives/{field_strength}/MPM_preproc/{subject}/{session}/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_SoS_brain_spine_mask.nii.gz"
     params:
         mt_params = get_qMT_params,
         t1flip = get_t1flip,
@@ -103,7 +103,7 @@ rule fit_JSPqMT_CLI:
         """
 
 
-rule register_qT1_mpm_to_mp2rage:
+rule register_qT1_MPM_to_mp2rage:
     input:
         moving = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/qT1_msUnit.nii.gz"
@@ -123,7 +123,7 @@ rule register_qT1_mpm_to_mp2rage:
         """
 
 
-rule apply_reg_qT1_mpm_to_mp2rage:
+rule apply_reg_qT1_MPM_to_mp2rage:
     input:
         moving = "data/derivatives/{field_strength}/qT1qMT/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         ref = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/qT1_msUnit.nii.gz",

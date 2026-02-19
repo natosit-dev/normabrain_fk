@@ -14,7 +14,7 @@ rule all:
         # "data/derivatives/3T/mp2rage/sub-jrb250926normapoet/ses-1/t1wUNI_DEN_dicomUnit.nii.gz"
 
 include: "rules/bidsify.smk"
-include: "rules/VFA_preproc.smk"
+include: "rules/MPM_preproc.smk"
 include: "rules/B1map.smk"
 include: "rules/qT1qMT.smk"
 include: "rules/mp2rage.smk"
