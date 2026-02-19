@@ -6,4 +6,4 @@ results/
 3T/
 7T/
 .snakemake/
-results/
+opt_*

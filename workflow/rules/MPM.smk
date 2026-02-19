@@ -5,7 +5,7 @@ wildcard_constraints:
     contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
     seq = config["MPM_sequence"]
 
- def check_csa_added_to_meta(wildcards):
+def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def get_echos(wildcards):
@@ -56,7 +56,7 @@ rule sos:
     threads: 2
     shell:
         """
-        python3 workflow/scripts/sos_images_CLI.py {params.files} {output}
+        python3 workflow/scripts/sos_images.py {params.files} {output}
         """
 
 

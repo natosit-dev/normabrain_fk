@@ -25,7 +25,7 @@ rule sos:
     threads: 2
     shell:
         """
-        python3 workflow/scripts/sos_images_CLI.py {params.files} {output}
+        python3 workflow/scripts/sos_images.py {params.files} {output}
         """
 
 
