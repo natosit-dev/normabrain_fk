@@ -1,3 +1,4 @@
+subject_list: ["rfl-260123-normanoel", "jrb-250926-normapoet"]
 MPM_sequence: "vibeMT"
 MPM_contrasts: ["mt0", "mtw", "pdw", "t1w"]
 n_echos: 3
