@@ -31,7 +31,7 @@ rule register_b1anat_to_MP2RAGE:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE.lta"
     threads: 4
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell:
         """
         if command -v nvidia-smi; then
@@ -52,7 +52,7 @@ rule apply_reg_b1map_to_MP2RAGE:
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.nii.gz"
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell: #-H option means no resampling: MP2PROC does resampling and there's no way to turn it off
         """
         mri_synthmorph apply -H {input.reg} {params.moving} {output}
@@ -83,7 +83,7 @@ rule register_b1anat_to_MPM_t1w:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w.lta"
     threads: 4
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell:
         """
        if command -v nvidia-smi; then
@@ -104,7 +104,7 @@ rule apply_reg_b1map_to_MPM_t1w:
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w.nii.gz"
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell: #register and reslice to MPM t1w
         """
         mri_synthmorph apply {input.reg} {params.moving} {output}

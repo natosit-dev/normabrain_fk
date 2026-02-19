@@ -142,7 +142,7 @@ rule register_MPM_to_t1w:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.lta"
     threads: 4
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell:
         """
         if command -v nvcc --version && command -v nvidia-smi; then
@@ -161,7 +161,7 @@ rule apply_reg_MPM_to_t1w:
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.nii.gz"
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell: 
         """
         mri_synthmorph apply {input.reg} {input.moving} {output}
@@ -244,7 +244,7 @@ rule register_qT1_MPM_to_MP2RAGE:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
     threads: 4
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell:
         """
         if command -v nvcc --version && command -v nvidia-smi; then
@@ -264,7 +264,7 @@ rule apply_reg_qT1_MPM_to_MP2RAGE:
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE.nii.gz"
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell: #register and reslice to MP2RAGE
         """
         mri_synthmorph apply {input.reg} {input.moving} {output}
