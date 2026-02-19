@@ -68,7 +68,8 @@ rule degibbs_ihmt:
         mrdegibbs -mode 3d {input} {output}
         """
 
-rule degibbs_moco_and_maps_ihmt:
+#these maps are wrong, possibly because the volumes are organized differently than the default
+rule moco_and_maps_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz"
     output:
@@ -78,15 +79,39 @@ rule degibbs_moco_and_maps_ihmt:
         mtrd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRd.nii",
         ihmtrinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTRinv.nii",
         mtrsinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRsinv.nii",
-        mtrdinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRdinv.nii"
+        mtrdinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRdinv.nii",
+        # ihmtmap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTmap.nii",
+        # scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/process_ihMT_tmp"))
     container:
         "docker://hugodary/ihmt_proc:latest"
     shell: 
         # -m 1 means use ihMT-MoCo for motion correction (from Soustelle preprint)
         # -c is a comma separated list of desired output maps
         """
-        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT,ihMTR,MTRs,MTRd,ihMTRinv,MTRsinv,MTRdinv -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_
+        /opt/ihMT_proc/process_ihMT.sh -m 1 -k 1 -c ihMT,ihMTR,MTRs,MTRd,ihMTRinv,MTRsinv,MTRdinv -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_
         
         #rename preproc image for clarity
         mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_ihMT.nii {output.preproc}
+        """
+
+rule calculate_ihmt_map:
+    input:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
+    output:
+        ihmt_map="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_map.nii",
+        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
+        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
+        mtd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd.nii",
+        mts_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts_sum.nii"),
+        mtd_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_sum.nii")
+    container:
+        "docker://nyudiffusionmri/designer2:v2.0.15"
+    shell: 
+        """
+        mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2
+        mrconvert {input} {output.mts} -coord 3 1:2:end
+        mrconvert {input} {output.mtd} -coord 3 2:2:end
+        mrmath {output.mts} sum {output.mts_sum} -axis 3
+        mrmath {output.mtd} sum {output.mtd_sum} -axis 3
+        mrcalc {output.mts_sum} {output.mtd_sum} -subtract {output.ihmt_map}
         """
