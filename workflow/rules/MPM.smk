@@ -10,11 +10,11 @@ def check_csa_added_to_meta(wildcards):
 
 def get_echos(wildcards):
     #get the list of echo files, sort it, and then return the first N echos as specified in the config file
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))[:config["n_echos"]]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))#[:config["n_echos"]]
 
 def get_qMT_params(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json')[0]
+    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
     with open(json_path, "r") as f:
         mtw_meta = json.load(f)
         mt_params = {
@@ -31,6 +31,10 @@ def get_qMT_params(wildcards):
         }
     return mt_params
 
+def get_qMT_json(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
+
 def get_t1flip(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}t1w*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
@@ -46,12 +50,112 @@ def get_pdflip(wildcards):
     return pdw_meta["FlipAngle"]
 
 
-rule sos:
+#denoise and degibbs: 1. concat echos (4D) 2. concat contrast (5D) 3. run tMPPCA 4. split contrast (4D) 5. Bautista degibbs 6. run SOS (3D)
+
+checkpoint concat_echos:
     input:
         meta_complete = check_csa_added_to_meta,
         echos = get_echos
-    params:
-        files=lambda wildcards, input: ','.join(input.echos)
+    # params:
+    #     files=lambda wildcards, input: ','.join(input.echos)
+    output:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d.nii.gz"
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        mrcat {input.echos} {output}
+        """
+
+
+rule concat_contrast_mag:
+    input:
+        t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii.gz",
+        mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d.nii.gz",
+        mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii.gz",
+        pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii.gz"
+    conda:
+        "../envs/qMT.yaml"
+    shell: #not actually 5d because each contrast has a different number of echos
+        """
+        mrcat {input.t1w} {input.mt0} {input.mtw} {input.pdw} {output}
+        """
+
+rule denoise_contrast_mag:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii.gz"
+    output:
+        out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii.gz",
+        noisemap="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_noisemap.nii"
+    conda:
+        "../envs/qMT.yaml"
+    shell: #designer tMPPCA is killed due to memory, use mrtrix3 MPPCA instead
+        """
+        dwidenoise -noise {output.noisemap} {input} {output.out}
+        """
+
+rule split_contrast_mag:
+    input:
+        contrast="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii.gz",
+        t1w_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii.gz",
+        mt0_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d.nii.gz",
+        mtw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii.gz",
+        pdw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii.gz"
+    output:
+        t1w_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii.gz",
+        mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii.gz",
+        mtw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii.gz",
+        pdw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii.gz" 
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        t1wsize="$(mrinfo -size {input.t1w_in} | awk '{{print $4}}')"
+        t1wstart=0
+        t1wend="$((${{t1wsize}}-1))"
+        mrconvert {input.contrast} {output.t1w_out} -coord 3 ${{t1wstart}}:${{t1wend}}
+
+        mt0size="$(mrinfo -size {input.mt0_in} | awk '{{print $4}}')"
+        mt0start=$t1wsize
+        mt0end="$((${{t1wend}}+${{mt0size}}))"
+        mrconvert {input.contrast} {output.mt0_out} -coord 3 ${{mt0start}}:${{mt0end}}
+
+        mtwsize="$(mrinfo -size {input.mtw_in} | awk '{{print $4}}')"
+        mtwstart="$((${{mt0end}}+1))"
+        mtwend="$((${{mt0end}}+${{mtwsize}}))"
+        mrconvert {input.contrast} {output.mtw_out} -coord 3 ${{mtwstart}}:${{mtwend}}
+        
+        pdwsize="$(mrinfo -size {input.pdw_in} | awk '{{print $4}}')"
+        pdwstart="$((${{mtwend}}+1))"
+        pdwend="$((${{mtwend}}+${{pdwsize}}))"
+        mrconvert {input.contrast} {output.pdw_out} -coord 3 ${{pdwstart}}:${{pdwend}}
+        """
+
+#will have to create new mag 5d concats where # volumes match the # volumes in phase
+# rule concat_contrast_phase:
+#     input:
+#         t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-phase_echos4d.nii.gz",
+#         mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-phase_echos4d.nii.gz",
+#         mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-phase_echos4d.nii.gz",
+#         pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii.gz"
+#     output:
+#         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii.gz"
+#     conda:
+#         "../envs/qMT.yaml"
+#     shell:
+#         """
+#         mrcat {input.t1w} {input.mt0} {input.mtw} {input.pwd} {output}
+#         """
+
+
+
+rule sos:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d_denoise.nii.gz"
+    # params:
+    #     files=lambda wildcards, input: ','.join(input.echos)
     output:
        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz"
     conda:
@@ -59,7 +163,7 @@ rule sos:
     threads: 2
     shell:
         """
-        python3 workflow/scripts/sos_images.py {params.files} {output}
+        python3 workflow/scripts/sos_images.py {input} {output}
         """
 
 
