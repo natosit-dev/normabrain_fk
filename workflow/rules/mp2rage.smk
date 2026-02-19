@@ -15,12 +15,12 @@ def get_unit1(wildcards):
 
 rule json_for_uncorr_q1:
     input:
-        meta_complete = check_csa_added_to_meta,
+        meta_complete = check_csa_added_to_meta
+    params:
         b1map_nifti = get_last_b1map_run,
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
-        unit1_nifti = get_unit1
-    params:
+        unit1_nifti = get_unit1,
         uncorr_q1 = True
     output:
         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_q1.json"
@@ -49,11 +49,11 @@ rule create_uncorr_q1:
 rule json_for_mp2proc:
     input:
         b1map_nifti = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.nii.gz",
-        b1map_json = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.json",
+        b1map_json = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.json"
+    params:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
-    params:
         uncorr_q1 = False
     output:
         "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/mp2proc.json"
