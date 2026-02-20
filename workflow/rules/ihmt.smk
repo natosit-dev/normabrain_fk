@@ -56,6 +56,7 @@ rule denoise_ihmt:
         cp {output.scratch}/sigma.nii {output.noisemap}
         """
 
+
 rule degibbs_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz"
@@ -73,15 +74,7 @@ rule moco_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz"
     output:
-        preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii",
-        # ihmtr="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTR.nii",
-        # mtrs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii",
-        # mtrd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRd.nii",
-        # ihmtrinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTRinv.nii",
-        # mtrsinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRsinv.nii",
-        # mtrdinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRdinv.nii",
-        # ihmtmap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTmap.nii",
-        # scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/process_ihMT_tmp"))
+        preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
     container:
         "docker://hugodary/ihmt_proc:latest"
     shell: 
@@ -95,14 +88,15 @@ rule moco_ihmt:
         """
 
 
+#TO DO: make this dependent on sequence type
 rule split_contrast_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
     output:
-        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
-        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
-        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
-        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
+        mt0=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii"),
+        mts=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii"),
+        mtd_freqalt=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii"),
+        mtd_cosmod=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii")
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
@@ -142,7 +136,8 @@ rule calculate_ihmt_maps:
         mrcalc 0 {output.ihMTmap_cosmod} {input.mt0} 0 -max -div -max {output.ihMTR_cosmod}
         """
 
-rule calculate_mtrs_mtrd:
+
+rule calculate_MTRs_MTRd:
     input:
         mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
         mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
@@ -159,9 +154,9 @@ rule calculate_mtrs_mtrd:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
         """
-        mrmath {input.mts} mean {output.mts_avg}
-        mrmath {input.mtd_freqalt} mean {output.mtd_freqalt_avg}
-        mrmath {input.mtd_cosmod} mean {output.mtd_cosmod_avg}
+        mrmath {input.mts} mean {output.mts_avg} -axis 3
+        mrmath {input.mtd_freqalt} mean {output.mtd_freqalt_avg} -axis 3
+        mrmath {input.mtd_cosmod} mean {output.mtd_cosmod_avg} -axis 3
 
         mrcalc 0 1 {output.mts_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRs}
         mrcalc 0 1 {output.mtd_freqalt_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRd_freqalt}
