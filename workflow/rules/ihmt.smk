@@ -162,3 +162,5 @@ rule calculate_MTRs_MTRd:
         mrcalc 0 1 {output.mtd_freqalt_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRd_freqalt}
         mrcalc 0 1 {output.mtd_cosmod_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRd_cosmod}
         """
+
+#TO DO: update CSA header, register to MP2RAGE
