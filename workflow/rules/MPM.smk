@@ -50,8 +50,6 @@ def get_pdflip(wildcards):
     return pdw_meta["FlipAngle"]
 
 
-#denoise and degibbs: 1. concat echos (4D) 2. concat contrast (5D) 3. run tMPPCA 4. split contrast (4D) 5. Bautista degibbs 6. run SOS (3D)
-
 checkpoint concat_echos:
     input:
         meta_complete = check_csa_added_to_meta,
@@ -68,12 +66,57 @@ checkpoint concat_echos:
         """
 
 
+rule create_complex_images:
+    input:
+        mag="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d.nii.gz",
+        phase="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d.nii.gz"
+    output:
+        mag_clipped=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_clippedtophase.nii.gz"),
+        out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii.gz"
+    conda:
+        "../envs/qMT.yaml"
+    shell: #first clip mag so that it has the same number of volumes as phase, then calculate complex image
+        """
+        phasesize="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
+        magend="$((${{phasesize}}-1))"
+        mrconvert {input.mag} {output.mag_clipped} -coord 3 0:${{magend}}
+        mrcalc {output.mag_clipped} {input.phase} pi 4096 -div -mult -polar {output.out}
+        """
+
+
+rule denoise_complex:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii.gz"
+    output:
+        denoised="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_denoised.nii.gz",
+        nosemap="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_noisemap.nii"
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        dwidenoise {input} {output.denoised} -noise {output.noisemap}
+        """
+
+
+rule calculate_mag_from_complex:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_denoised.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_riciancorr.nii.gz"
+     conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        mrcalc {input} -abs {output}
+        """
+
+
 rule concat_contrast_mag:
     input:
-        t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii.gz",
-        mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d.nii.gz",
-        mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii.gz",
-        pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii.gz"
+        t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_riciancorr.nii.gz",
+        mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii.gz",
+        mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii.gz", #no phase available for mtw
+        pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_riciancorr.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii.gz"
     conda:
@@ -82,6 +125,7 @@ rule concat_contrast_mag:
         """
         mrcat {input.t1w} {input.mt0} {input.mtw} {input.pdw} {output}
         """
+
 
 rule denoise_contrast_mag:
     input:
@@ -95,6 +139,7 @@ rule denoise_contrast_mag:
         """
         dwidenoise -noise {output.noisemap} {input} {output.out}
         """
+
 
 rule split_contrast_mag:
     input:
@@ -133,23 +178,6 @@ rule split_contrast_mag:
         mrconvert {input.contrast} {output.pdw_out} -coord 3 ${{pdwstart}}:${{pdwend}}
         """
 
-
-rule create_complex_images:
-    input:
-        mag="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d.nii.gz",
-        phase="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d.nii.gz"
-    output:
-        mag_clipped=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_clippedtophase.nii.gz"),
-        out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii.gz"
-    conda:
-        "../envs/qMT.yaml"
-    shell: #first clip mag so that it has the same number of volumes as phase, then calculate complex image
-        """
-        phasesize="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
-        magend="$((${{phasesize}}-1))"
-        mrconvert {input.mag} {output.mag_clipped} -coord 3 0:${{magend}}
-        mrcalc {output.mag_clipped} {input.phase} pi 4096 -div -mult -polar {output.out}
-        """
 
 rule make_n_echos_equal:
     #clip images so that they alll have the same number of echos as the image with the least number of echos
