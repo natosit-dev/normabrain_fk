@@ -133,27 +133,62 @@ rule split_contrast_mag:
         mrconvert {input.contrast} {output.pdw_out} -coord 3 ${{pdwstart}}:${{pdwend}}
         """
 
-#will have to create new mag 5d concats where # volumes match the # volumes in phase
-# rule concat_contrast_phase:
-#     input:
-#         t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-phase_echos4d.nii.gz",
-#         mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-phase_echos4d.nii.gz",
-#         mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-phase_echos4d.nii.gz",
-#         pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii.gz"
-#     output:
-#         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii.gz"
-#     conda:
-#         "../envs/qMT.yaml"
-#     shell:
-#         """
-#         mrcat {input.t1w} {input.mt0} {input.mtw} {input.pwd} {output}
-#         """
 
+rule create_complex_images:
+    input:
+        mag="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d.nii.gz",
+        phase="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d.nii.gz"
+    output:
+        mag_clipped=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_clippedtophase.nii.gz"),
+        out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii.gz"
+    conda:
+        "../envs/qMT.yaml"
+    shell: #first clip mag so that it has the same number of volumes as phase, then calculate complex image
+        """
+        phasesize="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
+        magend="$((${{phasesize}}-1))"
+        mrconvert {input.mag} {output.mag_clipped} -coord 3 0:${{magend}}
+        mrcalc {output.mag_clipped} {input.phase} pi 4096 -div -mult -polar {output.out}
+        """
+
+rule make_n_echos_equal:
+    #clip images so that they alll have the same number of echos as the image with the least number of echos
+    input:
+        t1w_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii.gz",
+        mt0_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii.gz",
+        mtw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii.gz",
+        pdw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii.gz" 
+    output:
+        t1w_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise_clipped.nii.gz",
+        mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise_clipped.nii.gz",
+        mtw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise_clipped.nii.gz",
+        pdw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise_clipped.nii.gz"
+    conda:
+        "../envs/qMT.yaml"
+    shell: #first find smallest number of echos, then clip the other images to this number of echos
+        """
+        t1wsize="$(mrinfo -size {input.t1w_in} | awk '{{print $4}}')"
+        mt0size="$(mrinfo -size {input.mt0_in} | awk '{{print $4}}')"
+        mtwsize="$(mrinfo -size {input.mtw_in} | awk '{{print $4}}')"
+        pdwsize="$(mrinfo -size {input.pdw_in} | awk '{{print $4}}')"
+
+        sizes_array=($t1wsize $mt0size $mtwsize $pdwsize)
+        min_echos=${{sizes_array[0]}}
+        for i in "${{sizes_array[@]}}"; do
+            (( i < min_echos )) && min_echos=$i
+        done
+        end_idx="$((${{min_echos}}-1))"
+
+        mrconvert {input.t1w_in} {output.t1w_out} -coord 3 0:${{end_idx}}
+        mrconvert {input.mt0_in} {output.mt0_out} -coord 3 0:${{end_idx}}
+        mrconvert {input.mtw_in} {output.mtw_out} -coord 3 0:${{end_idx}}
+        mrconvert {input.pdw_in} {output.pdw_out} -coord 3 0:${{end_idx}}
+        """
 
 
 rule sos:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d_denoise.nii.gz"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d_denoise_clipped.nii.gz"
     # params:
     #     files=lambda wildcards, input: ','.join(input.echos)
     output:
