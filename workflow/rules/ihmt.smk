@@ -68,18 +68,18 @@ rule degibbs_ihmt:
         mrdegibbs -mode 3d {input} {output}
         """
 
-#these maps are wrong, possibly because the volumes are organized differently than the default
-rule moco_and_maps_ihmt:
+
+rule moco_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz"
     output:
         preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii",
-        ihmtr="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTR.nii",
-        mtrs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii",
-        mtrd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRd.nii",
-        ihmtrinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTRinv.nii",
-        mtrsinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRsinv.nii",
-        mtrdinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRdinv.nii",
+        # ihmtr="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTR.nii",
+        # mtrs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii",
+        # mtrd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRd.nii",
+        # ihmtrinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTRinv.nii",
+        # mtrsinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRsinv.nii",
+        # mtrdinv="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRdinv.nii",
         # ihmtmap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihMTmap.nii",
         # scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/process_ihMT_tmp"))
     container:
@@ -88,30 +88,82 @@ rule moco_and_maps_ihmt:
         # -m 1 means use ihMT-MoCo for motion correction (from Soustelle preprint)
         # -c is a comma separated list of desired output maps
         """
-        /opt/ihMT_proc/process_ihMT.sh -m 1 -k 1 -c ihMT,ihMTR,MTRs,MTRd,ihMTRinv,MTRsinv,MTRdinv -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_
+        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_
         
         #rename preproc image for clarity
         mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_ihMT.nii {output.preproc}
         """
 
-rule calculate_ihmt_map:
+
+rule split_contrast_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
     output:
-        ihmt_map="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_map.nii",
         mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
         mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
-        mtd="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd.nii",
+        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
+        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
+    container:
+        "docker://nyudiffusionmri/designer2:v2.0.15"
+    shell:
+        """
+        mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2
+        mrconvert {input} {output.mts} -coord 3 1:3:4
+        mrconvert {input} {output.mtd_freqalt} -coord 3 2:3:5
+        mrconvert {input} {output.mtd_cosmod} -coord 3 3:3:6
+        """
+        
+
+rule calculate_ihmt_maps:
+    input:
+        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
+        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
+        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
+        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
+    output:
+        ihMTmap_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap.nii.gz",
+        ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTR.nii.gz",
+        ihMTmap_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_cosmod_ihMTmap.nii.gz",
+        ihMTR_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_cosmod_ihMTR.nii.gz",
         mts_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts_sum.nii"),
-        mtd_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_sum.nii")
+        mtd_freqalt_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt_sum.nii"),
+        mtd_cosmod_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod_sum.nii")
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell: 
         """
-        mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2
-        mrconvert {input} {output.mts} -coord 3 1:2:end
-        mrconvert {input} {output.mtd} -coord 3 2:2:end
-        mrmath {output.mts} sum {output.mts_sum} -axis 3
-        mrmath {output.mtd} sum {output.mtd_sum} -axis 3
-        mrcalc {output.mts_sum} {output.mtd_sum} -subtract {output.ihmt_map}
+        mrmath {input.mts} sum {output.mts_sum} -axis 3
+        mrmath {input.mtd_freqalt} sum {output.mtd_freqalt_sum} -axis 3
+        mrmath {input.mtd_cosmod} sum {output.mtd_cosmod_sum} -axis 3
+        
+        mrcalc 0 {output.mts_sum} {output.mtd_freqalt_sum} -subtract -max {output.ihMTmap_freqalt}
+        mrcalc 0 {output.ihMTmap_freqalt} {input.mt0} 0 -max -div -max {output.ihMTR_freqalt}
+        mrcalc 0 {output.mts_sum} {output.mtd_cosmod_sum} -subtract -max {output.ihMTmap_cosmod}
+        mrcalc 0 {output.ihMTmap_cosmod} {input.mt0} 0 -max -div -max {output.ihMTR_cosmod}
+        """
+
+rule calculate_mtrs_mtrd:
+    input:
+        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
+        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
+        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
+        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
+    output:
+        MTRs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRs.nii.gz",
+        MTRd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd.nii.gz",
+        MTRd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_cosmod_MTRd.nii.gz",
+        mts_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts_avg.nii"),
+        mtd_freqalt_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt_avg.nii"),
+        mtd_cosmod_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod_avg.nii")
+    container:
+        "docker://nyudiffusionmri/designer2:v2.0.15"
+    shell:
+        """
+        mrmath {input.mts} mean {output.mts_avg}
+        mrmath {input.mtd_freqalt} mean {output.mtd_freqalt_avg}
+        mrmath {input.mtd_cosmod} mean {output.mtd_cosmod_avg}
+
+        mrcalc 0 1 {output.mts_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRs}
+        mrcalc 0 1 {output.mtd_freqalt_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRd_freqalt}
+        mrcalc 0 1 {output.mtd_cosmod_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRd_cosmod}
         """

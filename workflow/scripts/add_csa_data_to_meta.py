@@ -11,6 +11,7 @@ def add_csa_data_to_meta(bidspath: str):
     t1b1fl_pattern = 'fmap/*TB1TFL*'
     vibemt_pattern = 'anat/*vibe*_MPM*'
     mp2rage_pattern = 'anat/*MP2RAGE*'  
+    ihmt_pattern = 'anat/*ihmt*'
     #define bids directory
     bidsdir = Path(bidspath).resolve()
     #get list of subject folders
@@ -35,10 +36,10 @@ def add_csa_data_to_meta(bidspath: str):
             
             #initialize sourcedir
             sourcedir = ''
-            #get list of perfusion target files that match the pattern
-            perf_targets = sorted([match for match in session.rglob(perf_pattern) if match.suffixes[0] in ('.tsv','.nii')])
+
+            ihmt_targets = sorted([match for match in session.rglob(ihmt_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             #loop through perfusion targets
-            for target in perf_targets:
+            for target in ihmt_targets:
                 #loop through map of provence data to nifiti/tsv bids files
                 for source, row in provdata.iterrows():
                     #if the target pattern is in the name of the bids file, get the source dicom file path
@@ -61,6 +62,29 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['VascularCrushing'] = True
                 elif jsondata['VascularCrushing'] == 'false' or jsondata['VascularCrushing'] == 'NO':
                     jsondata['VascularCrushing'] = False
+                #dump new json file to json sidecar
+                with jsonfile.open('w') as jf:
+                    json.dump(jsondata, jf, indent=4)
+
+            #get list of perfusion target files that match the pattern
+            perf_targets = sorted([match for match in session.rglob(perf_pattern) if match.suffixes[0] in ('.tsv','.nii')])
+            #loop through perfusion targets
+            for target in perf_targets:
+                #loop through map of provence data to nifiti/tsv bids files
+                for source, row in provdata.iterrows():
+                    #if the target pattern is in the name of the bids file, get the source dicom file path
+                    if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
+                        sourcedir = source
+                #get datasource class from source dicom directory
+                datasource = bids.get_datasource(Path(sourcedir), plugins)
+                #get json sidecar file path for this target
+                jsonfile = target.with_suffix('').with_suffix('.json')
+                #pool metadata from source dicom and target json file
+                jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
+                #get csa data from source dicom
+                csa_data, mrprotocol, cas = return_csa(sourcedir)
+                #convert string boolean values to actual booleans
+                jsondata['sequence_version'] = str(csa_data['tSequenceFileName'])
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
