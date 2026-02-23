@@ -16,7 +16,7 @@ def get_unit1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_UNIT1.nii.gz'))[0]
 
 
-rule json_for_uncorr_q1:
+rule json_for_uncorr_qT1:
     input:
         meta_complete = check_csa_added_to_meta
     params:
@@ -24,18 +24,23 @@ rule json_for_uncorr_q1:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
-        uncorr_q1 = True
+        echo_spacing = config["mp2rage_echo_spacing"],
+        uncorr_qT1 = True
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_q1.json"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.json"
     threads:
         8
-    script:
-        "../scripts/create_json_for_mp2proc.py"
+    #script:
+        #"../scripts/create_json_for_mp2proc.py"
+    shell:
+        """
+        python3 workflow/scripts/create_json_for_mp2proc.py {params.b1map_nifti} {params.inv1_nifti} {params.inv2_nifti} {params.unit1_nifti} {output} {params.echo_spacing} {threads} {params.uncorr_qT1}
+        """
 
 
-rule create_uncorr_q1:
+rule create_uncorr_qT1:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_q1.json"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.json"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz"
     threads:
@@ -58,13 +63,18 @@ rule json_for_mp2proc:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
-        uncorr_q1 = False
+        echo_spacing = config["mp2rage_echo_spacing"],
+        uncorr_qT1 = False
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2proc.json"
     threads:
         8
-    script:
-        "../scripts/create_json_for_mp2proc.py"
+    #script:
+        #"../scripts/create_json_for_mp2proc.py"
+    shell:
+        """
+        python3 workflow/scripts/create_json_for_mp2proc.py {input.b1map_nifti} {params.inv1_nifti} {params.inv2_nifti} {params.unit1_nifti} {output} {params.echo_spacing} {threads} {params.uncorr_qT1}
+        """
 
 
 rule run_mp2proc:

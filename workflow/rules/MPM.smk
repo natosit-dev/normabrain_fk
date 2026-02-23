@@ -74,7 +74,7 @@ rule synthstrip_MPM:
     threads: 4
     shell:
         """
-        if command -v nvcc --version && command -v nvidia-smi; then
+        if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
             mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
         else 
@@ -95,7 +95,12 @@ rule install_sct:
                 wget https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/download/7.2/install_sct-7.2_linux.sh
             fi
             mv install_sct-7.2_*.sh .snakemake/scripts/
-            bash .snakemake/scripts/install_sct-7.2_*.sh -y    
+            if command -v nvidia-smi; then
+                bash .snakemake/scripts/install_sct-7.2_*.sh -yicg
+            else
+                bash .snakemake/scripts/install_sct-7.2_*.sh -yic
+            fi
+            mv install_sct_log.txt .snakemake/scripts/    
         fi
         touch .snakemake/scripts/install_sct.done
         """
@@ -114,6 +119,10 @@ rule spineseg_MPM:
     threads: 8
     shell:
         """
+        if command -v nvidia-smi; then
+            export SCT_USE_GPU=1
+            export CUDA_VISIBLE_DEVICES=0
+        fi
         sct_deepseg spine -i {input[0]}
         """
 

@@ -1,8 +1,8 @@
+import argparse
 import json
 from pathlib import Path
-from snakemake.script import snakemake
 
-def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_json: str, echo_spacing: float, threads: int, uncorr_q1: bool=False,):
+def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_json: str, echo_spacing: float, threads: int, uncorr_qT1: bool=False,):
     # with open(metadata_json_path, "r") as f:
     #     metadata = json.load(f)
     
@@ -32,26 +32,26 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
         "do_ants_smoothing_of_B1_map_in_t1wUNI_space": True,
         "do_ants_smoothing_using_median_filtering": False,
         "is_ants_smoothing_sigma_in_spacing_units": False,
-        "do_restore_bijectivity_of_qT1_along_local_B1": False if uncorr_q1 else True,
+        "do_restore_bijectivity_of_qT1_along_local_B1": False if uncorr_qT1 else True,
         "do_bound_B1_to_valid_interpolation_range": False,
         "do_round_on_export": True,
         "export_quantitative_instead_of_qualitative": False,
-        "export_interpolation_hypersurface_data_n_plot": False if uncorr_q1 else True,
+        "export_interpolation_hypersurface_data_n_plot": False if uncorr_qT1 else True,
         "show_interpolation_hypersurface_plot": False,
 
         #maps to compute
-        "compute_t1wUNI_DEN": False if uncorr_q1 else True,
-        "compute_t1wUNI_B1Corrected": False if uncorr_q1 else True,
-        "compute_t1wUNI_B1Corrected_DEN": False if uncorr_q1 else True,
+        "compute_t1wUNI_DEN": False if uncorr_qT1 else True,
+        "compute_t1wUNI_B1Corrected": False if uncorr_qT1 else True,
+        "compute_t1wUNI_B1Corrected_DEN": False if uncorr_qT1 else True,
         "compute_qT1": True,
-        "compute_qR1": False if uncorr_q1 else True,
+        "compute_qR1": False if uncorr_qT1 else True,
         "compute_EDGE": False,
         "compute_EDGE_DEN": False,
         "compute_FLAWS": False,
         "compute_FLAWS_DEN": False,
 
         #paths to input files
-        "path_INPUT_b1_faUnit": '' if uncorr_q1 else str(b1map_nifti_path),
+        "path_INPUT_b1_faUnit": '' if uncorr_qT1 else str(b1map_nifti_path),
         "path_INPUT_inversion_1_msUnit": str(inv1_nifti_path),
         "path_INPUT_inversion_2_msUnit": str(inv2_nifti_path),
         "path_INPUT_t1wUNI_dicomUnit": str(unit1_nifti_path),
@@ -141,4 +141,17 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
     with open(output_json, "w") as f:
         json.dump(mp2rage_proc_params, f)
 
-create_json_for_mp2proc(b1map_nifti=snakemake.input.b1map_nifti, inv1_nifti=snakemake.input.inv1_nifti, inv2_nifti=snakemake.input.inv2_nifti, unit1_nifti=snakemake.input.unit1_nifti, output_json=snakemake.output[0], echo_spacing=snakemake.config["mp2rage_echo_spacing"], threads=snakemake.threads, uncorr_q1=snakemake.params.uncorr_q1)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description="Create json file for use with MP2PROC, using metadata read from BIDS json sidecars and reasonable default parameters from the literature.")
+    parser.add_argument('b1map_nifti', type=str, help="Path to input B1map nifti. Should have an accompanying json sidecar with the same base name.")
+    parser.add_argument('inv1_nifti', type=str, help="Path to input INV1 MP2RAGE image. Should have an accompanying json sidecar with the same base name.")
+    parser.add_argument('inv2_nifti', type=str, help="Path to input INV2 MP2RAGE image. Should have an accompanying json sidecar with the same base name.")
+    parser.add_argument('unit1_nifti', type=str, help="Path to input UNIT1 MP2RAGE image. Should have an accompanying json sidecar with the same base name.")
+    parser.add_argument('output_json', type=str, help="Path to output json for use in MP2PROC")
+    parser.add_argument('echo_spacing', type=float, help="MP2RAGE echo spacing, must be read from the protocol PDF folder")
+    parser.add_argument("threads", type=int, help="Number of threads")
+    parser.add_argument("uncorr_qT1", type=bool, default=False, help="If true, only save qT1 without B1 correction. Default is false, calculate all maps with B1 correction.")
+    args = parser.parse_args()
+    create_json_for_mp2proc(args.b1map_nifti, args.inv1_nifti, args.inv2_nifti, args.unit1_nifti, args.output_json, args.echo_spacing, args.threads, args.uncorr_qT1)
+# create_json_for_mp2proc(b1map_nifti=snakemake.input.b1map_nifti, inv1_nifti=snakemake.input.inv1_nifti, inv2_nifti=snakemake.input.inv2_nifti, unit1_nifti=snakemake.input.unit1_nifti, output_json=snakemake.output[0], echo_spacing=snakemake.config["mp2rage_echo_spacing"], threads=snakemake.threads, uncorr_qT1=snakemake.params.uncorr_qT1)
