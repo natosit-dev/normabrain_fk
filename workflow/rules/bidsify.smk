@@ -2,7 +2,7 @@ checkpoint copy_dicoms_by_field_strength:
     input:
         expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])
     params:
-        expand("{subject_list}", subject_list=config["subject_list"])
+        subject_list=config["subject_list"]
     output:
         directory("data/rawdata/dicoms")
     conda:

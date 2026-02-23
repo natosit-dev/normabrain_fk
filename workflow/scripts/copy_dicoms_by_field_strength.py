@@ -9,10 +9,13 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str,
     rawfolder = Path(source_dicoms_folder).resolve()
     
     # List subjects folders, assuming they are the next directories in the hierarchy
-    if subject_list is None:
-        subjects = lsdirs(rawfolder, '*')
+    subjects = []
+    if subject_list is not None:
+        for sub in subject_list:
+            subject_folder = lsdirs(rawfolder, sub)[0]
+            subjects.append(subject_folder)
     else:
-        subjects = subject_list
+        subjects = lsdirs(rawfolder, '*')
 
     #loop through the subjects folders
     for subject in subjects:
@@ -26,7 +29,12 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str,
             # Read the first DICOM file to get the field strength
             first_dicom_path = list(session.rglob('*.dcm'))[0]
             first_dicom = pydicom.dcmread(first_dicom_path)
-            field_value = str(first_dicom[0x18, 0x87].value)
+            if isinstance(first_dicom[0x18, 0x87].value, str):
+                field_value = str(first_dicom[0x18, 0x87].value)
+            else:
+                first_dicom_path = list(session.rglob('*.dcm'))[1]
+                first_dicom = pydicom.dcmread(first_dicom_path)
+                field_value = str(first_dicom[0x18, 0x87].value)
             
             # Create new folder path based on field strength
             new_folder = Path(os.path.join(output_folder, field_value + 'T', 'sub-' + subject.name, 'ses-' + str(i)))
@@ -56,4 +64,4 @@ if __name__ == '__main__':
     parser.add_argument('output_folder', type=str, help="Path to the output folder where 3T and 7T folders will be created and DICOMS copied")
     parser.add_argument('subject_list', nargs="*", type=str, default=None, help="Space separated list of subject folder names. Default is all subject folders in the source DICOM folder.")
     args = parser.parse_args()
-    copy_dicoms_by_field_strength(args.source_dicoms_folder, args.output_folder)
+    copy_dicoms_by_field_strength(args.source_dicoms_folder, args.output_folder, args.subject_list)
