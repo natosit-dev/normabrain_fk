@@ -80,7 +80,7 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata['DummyScanTime_us'] = float(csa_data['sWipMemBlock.alFree[13]'])
                 jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[42]'])
                 jsondata['PartialFourier'] = float(csa_data['sWipMemBlock.alFree[9]'])
-                jsondata['TukeyShape'] = str(csa_data['sWipMemBlock.adFree[1]'])
+                jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[1]'])
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
