@@ -54,10 +54,18 @@ def add_csa_data_to_meta(bidspath: str):
                 #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
                 #Get ihMT contrast type. If it's blank set it to FreqAlt.
-                if isinstance(csa_data.get('sWipMemBlock.alFree[0]'), str):
-                    jsondata['ihMT_ContrastType'] = csa_data['sWipMemBlock.alFree[2]']
+                if isinstance(csa_data.get('sWipMemBlock.alFree[2]'), str):
+                    ContrastType = int(csa_data['sWipMemBlock.alFree[2]'])
                 else:
-                    jsondata['ContrastType'] = "FreqAlt"
+                    ContrastType = 0
+                if ContrastType == 0:
+                    jsondata['ContrastType'] = 'Frequency Alternated'
+                elif ContrastType == 1:
+                    jsondata['ContrastType'] = 'Cosine Modulated'
+                elif ContrastType == 2:
+                    jsondata['ContrastType'] = 'Frequency Alternated and Cosine Modulated'
+                elif ContrastType == 3:
+                    jsondata['ContrastType'] = "BandPass (no single)"
                 #add relevant fields from csa header to json sidecar
                 jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
                 jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[24]'])
@@ -73,7 +81,6 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[42]'])
                 jsondata['PartialFourier'] = float(csa_data['sWipMemBlock.alFree[9]'])
                 jsondata['TukeyShape'] = str(csa_data['sWipMemBlock.adFree[1]'])
-
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
