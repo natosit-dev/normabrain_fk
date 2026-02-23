@@ -39,7 +39,7 @@ rule denoise_ihmt:
         scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/ihmt_denoise_tmp"))
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
-    shell: 
+    shell: #turn off adaptive_patch for now, it takes 12 minutes per subject
         """
         #need to create dummy bvec and bval for designer to work
         vols="$(mrinfo -size {input.img} | awk '{{print $4}}')" #print number of volumes
@@ -51,7 +51,7 @@ rule denoise_ihmt:
 
         #denoise with the jespersen algorithm extension to MPPCA since it is better for multi-contrast data
         #pe_dir is not relevant for denoise but designer throws an error if it is not set, set it to j for now
-        designer -denoise -shrinkage frob -algorithm jespersen -adaptive_patch -pe_dir j -nocleanup -scratch {output.scratch} {input.img} {output.out}
+        designer -denoise -shrinkage frob -algorithm jespersen -pe_dir j -nocleanup -scratch {output.scratch} {input.img} {output.out}
         #move noisemap out of denoise_tmp and rename for clarity
         cp {output.scratch}/sigma.nii {output.noisemap}
         """
