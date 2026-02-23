@@ -53,15 +53,27 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
-                #convert string boolean values to actual booleans
-                if jsondata['BackgroundSuppression'] == 'true' or jsondata['BackgroundSuppression'] == 'YES':
-                    jsondata['BackgroundSuppression'] = True
-                elif jsondata['BackgroundSuppression'] == 'false' or jsondata['BackgroundSuppression'] == 'NO':
-                    jsondata['BackgroundSuppression'] = False
-                if jsondata['VascularCrushing'] == 'true' or jsondata['VascularCrushing'] == 'YES':
-                    jsondata['VascularCrushing'] = True
-                elif jsondata['VascularCrushing'] == 'false' or jsondata['VascularCrushing'] == 'NO':
-                    jsondata['VascularCrushing'] = False
+                #Get ihMT contrast type. If it's blank set it to FreqAlt.
+                if isinstance(csa_data.get('sWipMemBlock.alFree[0]'), str):
+                    jsondata['ihMT_ContrastType'] = csa_data['sWipMemBlock.alFree[2]']
+                else:
+                    jsondata['ContrastType'] = "FreqAlt"
+                #add relevant fields from csa header to json sidecar
+                jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
+                jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[24]'])
+                jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[25]'])
+                jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[26]'])
+                jsondata['FlipAngle'] = float(csa_data['sWipMemBlock.alFree[27]'])
+                jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[28]'])
+                jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[29]'])
+                jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[5]'])
+                jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[7]'])
+                jsondata['PulseSpoiler_usmTperm'] = float(csa_data['sWipMemBlock.alFree[40]'])
+                jsondata['DummyScanTime_us'] = float(csa_data['sWipMemBlock.alFree[13]'])
+                jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[42]'])
+                jsondata['PartialFourier'] = float(csa_data['sWipMemBlock.alFree[9]'])
+                jsondata['TukeyShape'] = str(csa_data['sWipMemBlock.adFree[1]'])
+
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
@@ -84,7 +96,14 @@ def add_csa_data_to_meta(bidspath: str):
                 #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
                 #convert string boolean values to actual booleans
-                jsondata['sequence_version'] = str(csa_data['tSequenceFileName'])
+                if jsondata['BackgroundSuppression'] == 'true' or jsondata['BackgroundSuppression'] == 'YES':
+                    jsondata['BackgroundSuppression'] = True
+                elif jsondata['BackgroundSuppression'] == 'false' or jsondata['BackgroundSuppression'] == 'NO':
+                    jsondata['BackgroundSuppression'] = False
+                if jsondata['VascularCrushing'] == 'true' or jsondata['VascularCrushing'] == 'YES':
+                    jsondata['VascularCrushing'] = True
+                elif jsondata['VascularCrushing'] == 'false' or jsondata['VascularCrushing'] == 'NO':
+                    jsondata['VascularCrushing'] = False
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
