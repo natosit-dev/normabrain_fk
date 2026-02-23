@@ -138,6 +138,7 @@ rule brain_and_spine_mask_MPM:
         "../envs/fslmaths.yaml"
     shell:
         """
+        export FSLOUTPUTTYPE='NIFTI_GZ'
         fslmaths {input.spine_seg} -bin {output.spine_mask}
         fslmaths {input.brain_mask} -add {output.spine_mask} {output.brain_spine_mask}
         """
