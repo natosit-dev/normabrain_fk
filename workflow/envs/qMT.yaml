@@ -11,6 +11,6 @@ dependencies:
   - eigen=3.4.0
   - setuptools=80.9.0
   - nlopt=2.10.0
-  - gxx_linux-64=15.1.0
+  - gxx_linux-64
   - ants=2.6.2
   - mrtrix3=3.0.7
