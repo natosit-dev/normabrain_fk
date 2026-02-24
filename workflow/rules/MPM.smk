@@ -283,7 +283,7 @@ rule spineseg_MPM:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_discs.json")
     # container:
     #     "docker://vnmd/spinalcordtoolbox_7.2:20251215"
-    threads: 8
+    threads: 16
     shell:
         """
         sct_deepseg spine -i {input[0]}
