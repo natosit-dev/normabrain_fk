@@ -246,7 +246,7 @@ rule synthstrip_MPM:
     threads: 8
     shell:
         """
-        if command -v nvcc --version && command -v nvidia-smi; then
+        if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
             mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
         else 
@@ -267,7 +267,12 @@ rule install_sct:
                 wget https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/download/7.2/install_sct-7.2_linux.sh
             fi
             mv install_sct-7.2_*.sh .snakemake/scripts/
-            bash .snakemake/scripts/install_sct-7.2_*.sh -y    
+            if command -v nvidia-smi; then
+                bash .snakemake/scripts/install_sct-7.2_*.sh -yicg
+            else
+                bash .snakemake/scripts/install_sct-7.2_*.sh -yic
+            fi
+            mv install_sct_log.txt .snakemake/scripts/    
         fi
         touch .snakemake/scripts/install_sct.done
         """
@@ -286,6 +291,10 @@ rule spineseg_MPM:
     threads: 16
     shell:
         """
+        if command -v nvidia-smi; then
+            export SCT_USE_GPU=1
+            export CUDA_VISIBLE_DEVICES=0
+        fi
         sct_deepseg spine -i {input[0]}
         """
 
@@ -301,6 +310,7 @@ rule brain_and_spine_mask_MPM:
         "../envs/fslmaths.yaml"
     shell:
         """
+        export FSLOUTPUTTYPE='NIFTI_GZ'
         fslmaths {input.spine_seg} -bin {output.spine_mask}
         fslmaths {input.brain_mask} -add {output.spine_mask} {output.brain_spine_mask}
         """
@@ -314,7 +324,7 @@ rule register_MPM_to_t1w:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.lta"
     threads: 4
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell:
         """
         if command -v nvcc --version && command -v nvidia-smi; then
@@ -333,7 +343,7 @@ rule apply_reg_MPM_to_t1w:
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.nii.gz"
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell: 
         """
         mri_synthmorph apply {input.reg} {input.moving} {output}
@@ -416,7 +426,7 @@ rule register_qT1_MPM_to_MP2RAGE:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
     threads: 4
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell:
         """
         if command -v nvcc --version && command -v nvidia-smi; then
@@ -436,7 +446,7 @@ rule apply_reg_qT1_MPM_to_MP2RAGE:
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE.nii.gz"
     container:
-        "docker://freesurfer/freesurfer:8.1.0"
+        "docker://freesurfer/synthmorph:4"
     shell: #register and reslice to MP2RAGE
         """
         mri_synthmorph apply {input.reg} {input.moving} {output}
