@@ -86,12 +86,7 @@ rule register_b1anat_to_MPM_t1w:
         "docker://freesurfer/synthmorph:4"
     shell:
         """
-       if command -v nvidia-smi; then
-            export CUDA_VISIBLE_DEVICES=0
-            mri_synthmorph register -g -m rigid -t {output} {params.moving} {input.ref}
-        else
-            mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
-        fi
+        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
         """
 
 

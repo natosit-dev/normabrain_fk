@@ -150,17 +150,14 @@ rule register_MPM_to_t1w:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.lta"
-    threads: 4
     container:
         "docker://freesurfer/synthmorph:4"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb,
+        gpu=1
     shell:
         """
-        if command -v nvcc --version && command -v nvidia-smi; then
-            export CUDA_VISIBLE_DEVICES=0
-            mri_synthmorph register -g -m rigid -t {output} {input.moving} {input.ref}
-        else
-            mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
-        fi
+        mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
         """
 
 
@@ -257,7 +254,7 @@ rule register_qT1_MPM_to_MP2RAGE:
         "docker://freesurfer/synthmorph:4"
     shell:
         """
-        if command -v nvcc --version && command -v nvidia-smi; then
+        if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
             mri_synthmorph register -g -m affine -t {output} {input.moving} {input.ref}
         else
