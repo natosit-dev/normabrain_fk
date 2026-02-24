@@ -1,3 +1,6 @@
+#TO DO: compressing and uncompressing takes a while, make intermediate images temp instead
+#implement designer without adaptive patch, may solve memory issue
+
 import json
 import glob
 
@@ -240,7 +243,7 @@ rule synthstrip_MPM:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 4
+    threads: 8
     shell:
         """
         if command -v nvcc --version && command -v nvidia-smi; then

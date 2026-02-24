@@ -136,5 +136,5 @@ rule normalize_B1_to_target_flip: #not masking because we are interested in the 
         "../envs/fslmaths.yaml"
     shell:
         """
-        fslmaths {input} -div {params.target_flip} {output} -odt float 
+        fslmaths {input[1]} -div {params.target_flip} {output} -odt float 
         """
