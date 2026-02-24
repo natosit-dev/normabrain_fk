@@ -87,6 +87,7 @@ rule register_b1anat_to_MPM_t1w:
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w.lta"
+    threads: 4
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     container:
