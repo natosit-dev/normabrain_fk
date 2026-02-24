@@ -62,6 +62,8 @@ checkpoint concat_echos:
     #     files=lambda wildcards, input: ','.join(input.echos)
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell:
@@ -77,6 +79,8 @@ rule create_complex_images:
     output:
         mag_clipped=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_clippedtophase.nii.gz"),
         out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell: #first clip mag so that it has the same number of volumes as phase, then calculate complex image
@@ -94,6 +98,8 @@ rule rician_bias_corr:
     output:
         denoised="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_riciancorr.nii.gz",
         noisemap="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_riciannoisemap.nii"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell:
@@ -107,6 +113,8 @@ rule calculate_mag_from_complex:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_riciancorr.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_riciancorr.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell:
@@ -123,6 +131,8 @@ rule concat_contrast_mag:
         pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii.gz" #no phase available
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell: #not actually 5d because each contrast has a different number of echos
@@ -137,6 +147,8 @@ rule denoise_contrast_mag:
     output:
         out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii.gz",
         noisemap="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_noisemap.nii"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell: #designer tMPPCA is killed due to memory, use mrtrix3 MPPCA instead
@@ -158,6 +170,8 @@ rule split_contrast_mag:
         mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii.gz",
         mtw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii.gz",
         pdw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii.gz" 
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell:
@@ -196,6 +210,8 @@ rule make_n_echos_equal:
         mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise_clipped.nii.gz",
         mtw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise_clipped.nii.gz",
         pdw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise_clipped.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell: #first find smallest number of echos, then clip the other images to this number of echos
@@ -226,9 +242,12 @@ rule sos:
     #     files=lambda wildcards, input: ','.join(input.echos)
     output:
        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
-    threads: 2
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         python3 workflow/scripts/sos_images.py {input} {output}
@@ -243,7 +262,9 @@ rule synthstrip_MPM:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 8
+    threads: 2
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         if command -v nvidia-smi; then
@@ -288,7 +309,9 @@ rule spineseg_MPM:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_discs.json")
     # container:
     #     "docker://vnmd/spinalcordtoolbox_7.2:20251215"
-    threads: 16
+    threads: 8
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         if command -v nvidia-smi; then
@@ -308,6 +331,8 @@ rule brain_and_spine_mask_MPM:
         brain_spine_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_spine_mask.nii.gz"  
     conda:
         "../envs/fslmaths.yaml"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
@@ -322,7 +347,8 @@ rule register_MPM_to_t1w:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.lta"
-    threads: 4
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     container:
         "docker://freesurfer/synthmorph:4"
     shell:
@@ -342,6 +368,8 @@ rule apply_reg_MPM_to_t1w:
         reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.lta"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     container:
         "docker://freesurfer/synthmorph:4"
     shell: 
@@ -354,6 +382,8 @@ rule mtr:
     input:
         mt_off = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_sos_registeredto{seq}t1w.nii.gz",
         mt_on = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_sos_registeredto{seq}t1w.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_MTRmap.nii.gz"
     conda:
@@ -395,6 +425,8 @@ rule fit_JSPqMT_CLI:
         t1map = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         r1map = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_R1map.nii.gz"
     threads: 8
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     # container:
@@ -424,12 +456,13 @@ rule register_qT1_MPM_to_MP2RAGE:
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
-    threads: 4
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     container:
         "docker://freesurfer/synthmorph:4"
     shell:
         """
-        if command -v nvcc --version && command -v nvidia-smi; then
+        if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
             mri_synthmorph register -g -m affine -t {output} {input.moving} {input.ref}
         else
@@ -445,6 +478,8 @@ rule apply_reg_qT1_MPM_to_MP2RAGE:
         reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     container:
         "docker://freesurfer/synthmorph:4"
     shell: #register and reslice to MP2RAGE

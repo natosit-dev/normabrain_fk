@@ -47,6 +47,8 @@ rule create_uncorr_qT1:
         8
     container:
         "docker://hugodary/b1corr_t1map_cpp:latest"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         /opt/vol_proc/main {input}
@@ -86,6 +88,8 @@ rule run_mp2proc:
         8
     container:
         "docker://hugodary/b1corr_t1map_cpp:latest"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         /opt/vol_proc/main {input}

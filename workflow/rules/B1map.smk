@@ -32,6 +32,8 @@ rule register_b1anat_to_MP2RAGE:
     threads: 4
     container:
         "docker://freesurfer/synthmorph:4"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         if command -v nvidia-smi; then
@@ -53,6 +55,8 @@ rule apply_reg_b1map_to_MP2RAGE:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.nii.gz"
     container:
         "docker://freesurfer/synthmorph:4"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell: #-H option means no resampling: MP2PROC does resampling and there's no way to turn it off
         """
         mri_synthmorph apply -H {input.reg} {params.moving} {output}
@@ -67,6 +71,8 @@ rule copy_b1map_json_after_regtoMP2RAGE:
          b1map_raw = get_last_b1map_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.json"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     run:
         b1map_raw_json = Path(params.b1map_raw).with_suffix("").with_suffix(".json")
         b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")
@@ -81,17 +87,13 @@ rule register_b1anat_to_MPM_t1w:
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w.lta"
-    threads: 4
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     container:
         "docker://freesurfer/synthmorph:4"
     shell:
         """
-       if command -v nvidia-smi; then
-            export CUDA_VISIBLE_DEVICES=0
-            mri_synthmorph register -g -m rigid -t {output} {params.moving} {input.ref}
-        else
-            mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
-        fi
+        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
         """
 
 
@@ -105,6 +107,8 @@ rule apply_reg_b1map_to_MPM_t1w:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w.nii.gz"
     container:
         "docker://freesurfer/synthmorph:4"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell: #register and reslice to MPM t1w
         """
         mri_synthmorph apply {input.reg} {params.moving} {output}
@@ -118,6 +122,8 @@ rule smooth_B1:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth.nii.gz")
     conda:
         "../envs/qMT.yaml"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         SmoothImage 3 {input[0]} 3x1x1 {output}
@@ -134,6 +140,8 @@ rule normalize_B1_to_target_flip: #not masking because we are interested in the 
         target_flip = get_target_flip
     conda:
         "../envs/fslmaths.yaml"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
