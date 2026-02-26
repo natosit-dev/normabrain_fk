@@ -13,6 +13,7 @@ def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def get_echos(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     #get the list of echo files and sort it
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))
 
@@ -56,29 +57,28 @@ def get_pdflip(wildcards):
 
 checkpoint concat_echos:
     input:
-        meta_complete = check_csa_added_to_meta,
+        meta_complete = check_csa_added_to_meta
+    params:
         echos = get_echos
-    # params:
-    #     files=lambda wildcards, input: ','.join(input.echos)
     output:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d.nii.gz"
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     shell:
         """
-        mrcat {input.echos} {output}
+        mrcat {params.echos} {output}
         """
 
 
 rule create_complex_images:
     input:
-        mag="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d.nii.gz",
-        phase="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d.nii.gz"
+        mag="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d.nii",
+        phase="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d.nii"
     output:
-        mag_clipped=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_clippedtophase.nii.gz"),
-        out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii.gz"
+        mag_clipped=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_clippedtophase.nii"),
+        out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -94,10 +94,10 @@ rule create_complex_images:
 
 rule rician_bias_corr:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii.gz"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii"
     output:
-        denoised="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_riciancorr.nii.gz",
-        noisemap="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_riciannoisemap.nii"
+        denoised=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_riciancorr.nii"),
+        noisemap=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_riciannoisemap.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -110,9 +110,9 @@ rule rician_bias_corr:
 
 rule calculate_mag_from_complex:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_riciancorr.nii.gz"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_riciancorr.nii"
     output:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_riciancorr.nii.gz"
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_riciancorr.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -125,12 +125,12 @@ rule calculate_mag_from_complex:
 
 rule concat_contrast_mag:
     input:
-        t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii.gz", #no phase available
-        mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii.gz",
-        mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii.gz", #no phase available
-        pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii.gz" #no phase available
+        t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii", #no phase available
+        mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii",
+        mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii", #no phase available
+        pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii" #no phase available
     output:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii.gz"
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -143,9 +143,9 @@ rule concat_contrast_mag:
 
 rule denoise_contrast_mag:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii.gz"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii"
     output:
-        out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii.gz",
+        out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii"),
         noisemap="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_noisemap.nii"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
@@ -159,17 +159,17 @@ rule denoise_contrast_mag:
 
 rule split_contrast_mag:
     input:
-        contrast="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii.gz",
+        contrast="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii",
         #same input as contrast_concat_mag
-        t1w_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii.gz", #no phase available
-        mt0_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii.gz",
-        mtw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii.gz", #no phase available
-        pdw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii.gz" #no phase available
+        t1w_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii", #no phase available
+        mt0_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii",
+        mtw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii", #no phase available
+        pdw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii" #no phase available
     output:
-        t1w_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii.gz",
-        mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii.gz",
-        mtw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii.gz",
-        pdw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii.gz" 
+        t1w_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii"),
+        mt0_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii"),
+        mtw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii"),
+        pdw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii") 
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -201,15 +201,15 @@ rule split_contrast_mag:
 rule make_n_echos_equal:
     #clip images so that they all have the same number of echos as the image with the least number of echos
     input:
-        t1w_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii.gz",
-        mt0_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii.gz",
-        mtw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii.gz",
-        pdw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii.gz" 
+        t1w_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii",
+        mt0_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii",
+        mtw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii",
+        pdw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii" 
     output:
-        t1w_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise_clipped.nii.gz",
-        mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise_clipped.nii.gz",
-        mtw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise_clipped.nii.gz",
-        pdw_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise_clipped.nii.gz"
+        t1w_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise_clipped.nii.gz"),
+        mt0_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise_clipped.nii.gz"),
+        mtw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise_clipped.nii.gz"),
+        pdw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise_clipped.nii.gz")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -238,8 +238,6 @@ rule make_n_echos_equal:
 rule sos:
     input:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d_denoise_clipped.nii.gz"
-    # params:
-    #     files=lambda wildcards, input: ','.join(input.echos)
     output:
        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz"
     resources: #limit memory by input size
@@ -263,8 +261,8 @@ rule synthstrip_MPM:
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 8
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=5000
     shell:
         """
         if command -v nvidia-smi; then
@@ -312,8 +310,8 @@ rule spineseg_MPM:
     # container:
     #     "docker://vnmd/spinalcordtoolbox_7.2:20251215"
     threads: 8
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=5000
     shell:
         """
         if command -v nvidia-smi; then
@@ -339,7 +337,7 @@ rule brain_and_spine_mask_MPM:
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
         fslmaths {input.spine_seg} -bin {output.spine_mask}
-        fslmaths {input.brain_mask} -add {output.spine_mask} {output.brain_spine_mask}
+        fslmaths {input.brain_mask} -dilM -dilM -dilM -bin -add {output.spine_mask} {output.brain_spine_mask}
         """
 
 
