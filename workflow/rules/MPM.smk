@@ -262,7 +262,7 @@ rule synthstrip_MPM:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 2
+    threads: 8
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
@@ -615,6 +615,29 @@ rule apply_reg_qT1_MPM_to_MP2RAGE_ants:
         antsApplyTransforms -d 3 -v 1 -n Linear -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
         """
 
+#rules for registration with easyreg
+
+rule register_qT1_MPM_to_MP2RAGE_easyreg:
+    input:
+        moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
+        # moving_seg = "data/derivatives/{ield_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_seg.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
+    params:
+        moving_reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE_easyreg.nii.gz",
+        ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_seg.nii.gz"
+    output:
+        moving_seg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_seg.nii.gz",
+        fwd_field = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix.nii.gz"
+    threads:
+        8
+    resources:
+        mem_mb=9300
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 1 --affine_only
+        """
 #rules for registration with synthmorph
 
 
