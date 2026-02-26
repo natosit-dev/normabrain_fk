@@ -421,10 +421,10 @@ rule register_MPM_to_t1w_synthmorph:
         ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain.nii.gz",
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.lta"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w_synthmorph.lta"
     threads: 4
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=8000
     container:
         "docker://freesurfer/synthmorph:4"
     shell:
@@ -436,9 +436,9 @@ rule register_MPM_to_t1w_synthmorph:
 rule apply_reg_MPM_to_t1w_synthmorph:
     input:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz",
-        reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.lta"
+        reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w_synthmorph.lta"
     output:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w.nii.gz"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w_synthmorph.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     container:
@@ -451,8 +451,8 @@ rule apply_reg_MPM_to_t1w_synthmorph:
 
 rule mtr:
     input:
-        mt_off = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_sos_registeredto{seq}t1w.nii.gz",
-        mt_on = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_sos_registeredto{seq}t1w.nii.gz"
+        mt_off = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_sos_registeredto{seq}t1w_ants.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_sos_registeredto{seq}t1w_ants.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     output:
@@ -470,7 +470,7 @@ rule setup_fit_JSPqMT_CLI:
         directory("workflow/scripts/luca_qMT/build/")
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
+    resources: 
         mem_mb=500
     shell:
         """
@@ -483,9 +483,9 @@ rule fit_JSPqMT_CLI:
     input:
         meta_complete = check_csa_added_to_meta,
         build = "workflow/scripts/luca_qMT/build/",
-        mt_off = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_sos_registeredto{seq}t1w.nii.gz",
-        mt_on = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_sos_registeredto{seq}t1w.nii.gz",
-        pdw = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_sos_registeredto{seq}t1w.nii.gz",
+        mt_off = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_sos_registeredto{seq}t1w_ants.nii.gz",
+        mt_on = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_sos_registeredto{seq}t1w_ants.nii.gz",
+        pdw = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_sos_registeredto{seq}t1w_ants.nii.gz",
         t1w = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos.nii.gz",
         b1map = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth_norm.nii.gz",
         mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_spine_mask.nii.gz"
