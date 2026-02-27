@@ -386,7 +386,6 @@ rule register_MPM_to_t1w_ants:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_registeredto{seq}t1w_InverseComposite.h5")
     conda:
         "../envs/qMT.yaml"
-    threads: 4
     resources: 
         mem_mb=1500
     shell:
@@ -418,7 +417,6 @@ rule register_MPM_to_t1w_synthmorph:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_registeredto{seq}t1w_synthmorph.lta"
-    threads: 4
     resources: 
         mem_mb=7000
     container:
@@ -578,7 +576,7 @@ rule register_qT1_MPM_to_MP2RAGE_ants:
     input:
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_denoised_n4.nii.gz",
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised_n4.nii.gz",
-        ref_mask = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_mask.nii.gz",
+        ref_mask = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
@@ -587,7 +585,6 @@ rule register_qT1_MPM_to_MP2RAGE_ants:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE_InverseComposite.h5")
     conda:
         "../envs/qMT.yaml"
-    threads: 4
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:

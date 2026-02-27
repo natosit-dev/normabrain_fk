@@ -76,14 +76,16 @@ rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from 
     input:
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_denoised_n4.nii.gz",
         moving = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz",
-        ref_mask = "data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz",
+        ref_mask = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4_registeredtoMP2RAGE_ants.nii.gz"),
-        temp("data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_n4_registeredtob1anat_ants.nii.gz"),
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_n4_registeredtoB1anat_ants.nii.gz"),
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
     conda:
         "../envs/qMT.yaml"
+    resources: 
+        mem_mb=700
     shell:
         """
         antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_B1registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
@@ -100,6 +102,8 @@ rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
     conda:
         "../envs/qMT.yaml"
+    resources: 
+        mem_mb=500
     shell:
         """
         antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {params.moving} -r {input.ref} -t {input.reg} -o {output}
@@ -155,16 +159,15 @@ rule register_b1anat_to_MP2RAGE_synthmorph:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
     container:
         "docker://freesurfer/synthmorph:4"
-    threads: 4
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=7000
     shell:
         """
         mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
         """
     
 
-rule apply_reg_b1map_to_MP2RAGE:
+rule apply_reg_b1map_to_MP2RAGE_synthmorph:
     input:
         check_csa_added_to_meta,
         reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
@@ -174,8 +177,8 @@ rule apply_reg_b1map_to_MP2RAGE:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_synthmorph.nii.gz"
     container:
         "docker://freesurfer/synthmorph:4"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=500
     shell: #-H option means no resampling: MP2PROC does resampling and there's no way to turn it off
         """
         mri_synthmorph apply -H {input.reg} {params.moving} {output}
@@ -227,9 +230,9 @@ rule copy_b1map_json_after_regtoMP2RAGE:
     params:
          b1map_raw = get_last_b1map_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.json"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.json"
+    resources: 
+        mem_mb=300
     run:
         b1map_raw_json = Path(params.b1map_raw).with_suffix("").with_suffix(".json")
         b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")

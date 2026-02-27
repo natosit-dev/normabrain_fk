@@ -34,7 +34,7 @@ rule json_for_uncorr_qT1:
         mem_mb=200
     shell:
         """
-        python3 workflow/scripts/create_json_for_mp2proc.py {params.b1map_nifti} {params.inv1_nifti} {params.inv2_nifti} {params.unit1_nifti} {output} {params.echo_spacing} {threads} {params.uncorr_qT1}
+        python3 workflow/scripts/create_json_for_mp2proc.py -b1map_nifti {params.b1map_nifti} -inv1_nifti {params.inv1_nifti} -inv2_nifti {params.inv2_nifti} -unit1_nifti {params.unit1_nifti} -output_json {output} -echo_spacing {params.echo_spacing} -threads {threads} -uncorr_qT1 {params.uncorr_qT1}
         """
 
 
@@ -60,24 +60,23 @@ rule json_for_mp2proc:
     input:
         meta_complete = check_csa_added_to_meta,
         b1map_nifti = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz",
-        b1map_json = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.json"
+        b1map_json = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.json"
     params:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
-        echo_spacing = config["mp2rage_echo_spacing"],
-        uncorr_qT1 = False
+        echo_spacing = config["mp2rage_echo_spacing"]
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2proc.json"
     threads:
         8
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=200
     #script:
         #"../scripts/create_json_for_mp2proc.py"
     shell:
         """
-        python3 workflow/scripts/create_json_for_mp2proc.py {input.b1map_nifti} {params.inv1_nifti} {params.inv2_nifti} {params.unit1_nifti} {output} {params.echo_spacing} {threads} {params.uncorr_qT1}
+        python3 workflow/scripts/create_json_for_mp2proc.py -b1map_nifti {input.b1map_nifti} -inv1_nifti {params.inv1_nifti} -inv2_nifti {params.inv2_nifti} -unit1_nifti {params.unit1_nifti} -output_json {output} -echo_spacing {params.echo_spacing} -threads {threads}
         """
 
 
@@ -90,8 +89,8 @@ rule run_mp2proc:
         8
     container:
         "docker://hugodary/b1corr_t1map_cpp:latest"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=5000
     shell:
         """
         /opt/vol_proc/main {input}
@@ -124,7 +123,7 @@ rule synthstrip_qT1:
 
 rule DenoiseImage_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain.nii.gz",
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}.nii.gz",
         mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised.nii.gz")
