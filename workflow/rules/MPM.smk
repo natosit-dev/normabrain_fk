@@ -62,8 +62,8 @@ checkpoint concat_echos:
         echos = get_echos
     output:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d.nii")
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=2000
     conda:
         "../envs/qMT.yaml"
     shell:
@@ -78,7 +78,7 @@ rule create_complex_images:
         phase="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d.nii"
     output:
         mag_clipped=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_clippedtophase.nii"),
-        out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii")
+        out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -94,9 +94,9 @@ rule create_complex_images:
 
 rule rician_bias_corr:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex.nii"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d.nii"
     output:
-        denoised=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_riciancorr.nii"),
+        denoised=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d_riciancorr.nii"),
         noisemap=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_riciannoisemap.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
@@ -110,7 +110,7 @@ rule rician_bias_corr:
 
 rule calculate_mag_from_complex:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_complex_riciancorr.nii"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d_riciancorr.nii"
     output:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-mag_echos4d_riciancorr.nii")
     resources: #limit memory by input size
@@ -241,11 +241,9 @@ rule sos:
     output:
        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz"
     resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+        mem_mb=500
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
         """
         python3 workflow/scripts/sos_images.py {input} {output}
@@ -256,7 +254,7 @@ rule synthstrip_MPM:
     input:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain.nii.gz"),
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain.nii.gz",
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
@@ -267,9 +265,9 @@ rule synthstrip_MPM:
         """
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
-            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
+            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} -g
         else 
-            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads}
         fi
         """
 
@@ -277,8 +275,8 @@ rule synthstrip_MPM:
 rule install_sct:
     output:
         ".snakemake/scripts/install_sct.done"
-    resources: #limit memory by input size
-        mem_mb=500
+    resources: 
+        mem_mb=2000
     shell: #Check if sct is already installed. If not, install version 7.2 for linux.
         """
         if ! command -v sct_deepseg; then
@@ -311,7 +309,7 @@ rule spineseg_MPM:
     #     "docker://vnmd/spinalcordtoolbox_7.2:20251215"
     threads: 4
     resources: 
-        mem_mb=5000
+        mem_mb=9000
     shell:
         """
         if command -v nvidia-smi; then
@@ -331,13 +329,13 @@ rule brain_and_spine_mask_MPM:
         brain_spine_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_spine_mask.nii.gz"  
     conda:
         "../envs/fslmaths.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=500
     shell:
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
         fslmaths {input.spine_seg} -bin {output.spine_mask}
-        fslmaths {input.brain_mask} -dilM -dilM -dilM -bin -add {output.spine_mask} {output.brain_spine_mask}
+        fslmaths {input.brain_mask} -add {output.spine_mask} -bin -fillh {output.brain_spine_mask}
         """
 
 
@@ -469,7 +467,7 @@ rule setup_fit_JSPqMT_CLI:
     conda:
         "../envs/qMT.yaml"
     resources: 
-        mem_mb=500
+        mem_mb=1000
     shell:
         """
         cd workflow/scripts/luca_qMT/
@@ -496,7 +494,7 @@ rule fit_JSPqMT_CLI:
         t1map = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         r1map = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_R1map.nii.gz"
     threads: 4
-    resources: #limit memory by input size
+    resources:
         mem_mb=4000
     conda:
         "../envs/qMT.yaml"
