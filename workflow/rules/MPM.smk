@@ -349,8 +349,8 @@ rule DenoiseImage_mpm:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=1000
     shell:
         """
         DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
@@ -365,8 +365,8 @@ rule N4BiasFieldCorrection_mpm:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_denoised_n4.nii.gz"
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=1000
     shell:
         """
         N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
@@ -387,8 +387,8 @@ rule register_MPM_to_t1w_ants:
     conda:
         "../envs/qMT.yaml"
     threads: 4
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=1500
     shell:
         """
         antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/preproc/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}_mt-{wildcards.mt}_part-{wildcards.part}_registeredto{wildcards.seq}t1w_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Rigid[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
@@ -401,8 +401,8 @@ rule apply_reg_MPM_to_ref_ants:
         reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_registeredto{seq}t1w_Composite.h5"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w_ants.nii.gz"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=500
     conda:
         "../envs/qMT.yaml"
     shell:
@@ -417,10 +417,10 @@ rule register_MPM_to_t1w_synthmorph:
         ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain.nii.gz",
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w_synthmorph.lta"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_registeredto{seq}t1w_synthmorph.lta"
     threads: 4
     resources: 
-        mem_mb=8000
+        mem_mb=7000
     container:
         "docker://freesurfer/synthmorph:4"
     shell:
@@ -432,11 +432,11 @@ rule register_MPM_to_t1w_synthmorph:
 rule apply_reg_MPM_to_t1w_synthmorph:
     input:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz",
-        reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w_synthmorph.lta"
+        reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_registeredto{seq}t1w_synthmorph.lta"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w_synthmorph.nii.gz"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=1000
     container:
         "docker://freesurfer/synthmorph:4"
     shell: 
