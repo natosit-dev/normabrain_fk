@@ -102,15 +102,15 @@ rule run_mp2proc:
 
 rule synthstrip_qT1:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain.nii.gz"),
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_mask.nii.gz"
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain.nii.gz"),
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 2
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    threads: 4
+    resources: 
+        mem_mb=8000
     shell:
         """
         if command -v nvidia-smi; then
@@ -124,14 +124,14 @@ rule synthstrip_qT1:
 
 rule DenoiseImage_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_denoised.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=1000
     shell:
         """
         DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
@@ -140,67 +140,14 @@ rule DenoiseImage_qT1:
 
 rule N4BiasFieldCorrection_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_denoised.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_mask.nii.gz"
-    output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_denoised_n4.nii.gz"
-    conda:
-        "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    shell:
-        """
-        N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
-        """
-
-rule synthstrip_uncorr_qT1:
-    input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz"
-    output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain.nii.gz"),
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
-    container:
-        "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 2
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    shell:
-        """
-        if command -v nvidia-smi; then
-            export CUDA_VISIBLE_DEVICES=0
-            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
-        else 
-            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
-        fi
-        """
-
-
-rule DenoiseImage_uncorr_qT1:
-    input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain.nii.gz",
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised.nii.gz",
         mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_denoised.nii.gz")
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised_n4.nii.gz"
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    shell:
-        """
-        DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
-        """
-
-
-rule N4BiasFieldCorrection_uncorr_qT1:
-    input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_denoised.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
-    output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_denoised_n4.nii.gz"
-    conda:
-        "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=1000
     shell:
         """
         N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
