@@ -520,38 +520,38 @@ rule fit_JSPqMT_CLI:
 
 #rules for registering to MP2RAGE with ANTS
 
-rule synthstrip_T1map:
-    input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz"
-    output:
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz"),
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
-    container:
-        "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 4
-    resources: #limit memory by input size
-        mem_mb=9000
-    shell:
-        """
-        if command -v nvidia-smi; then
-            export CUDA_VISIBLE_DEVICES=0
-            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
-        else 
-            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
-        fi
-        """
+# rule synthstrip_T1map:
+#     input:
+#         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz"
+#     output:
+#         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz"),
+#         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
+#     container:
+#         "docker://freesurfer/synthstrip:1.8-gpu"
+#     threads: 4
+#     resources: 
+#         mem_mb=9000
+#     shell:
+#         """
+#         if command -v nvidia-smi; then
+#             export CUDA_VISIBLE_DEVICES=0
+#             mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
+#         else 
+#             mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+#         fi
+        # """
 
 
 rule DenoiseImage_T1map:
     input:
-        input_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=500
     shell:
         """
         DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
@@ -561,13 +561,13 @@ rule DenoiseImage_T1map:
 rule N4BiasFieldCorrection_T1map:
     input:
         input_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
+        mask_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_mask.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised_n4.nii.gz"
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=500
     shell:
         """
         N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
@@ -579,7 +579,7 @@ rule register_qT1_MPM_to_MP2RAGE_ants:
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_denoised_n4.nii.gz",
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised_n4.nii.gz",
         ref_mask = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_mask.nii.gz",
-        moving_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
+        moving_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
         temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_denoised_n4_registeredto{seq}T1map.nii.gz"),
@@ -634,8 +634,9 @@ rule register_qT1_MPM_to_MP2RAGE_easyreg:
         """
         mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 1 --affine_only
         """
-#rules for registration with synthmorph
 
+
+#rules for registration with synthmorph
 
 rule register_qT1_MPM_to_MP2RAGE:
     input:

@@ -30,10 +30,8 @@ rule json_for_uncorr_qT1:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.json"
     threads:
         8
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    #script:
-        #"../scripts/create_json_for_mp2proc.py"
+    resources: 
+        mem_mb=200
     shell:
         """
         python3 workflow/scripts/create_json_for_mp2proc.py {params.b1map_nifti} {params.inv1_nifti} {params.inv2_nifti} {params.unit1_nifti} {output} {params.echo_spacing} {threads} {params.uncorr_qT1}
@@ -49,8 +47,8 @@ rule create_uncorr_qT1:
         8
     container:
         "docker://hugodary/b1corr_t1map_cpp:latest"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=3000
     shell:
         """
         /opt/vol_proc/main {input}
