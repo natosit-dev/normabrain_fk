@@ -29,12 +29,13 @@ rule synthstrip_b1anat:
     params:
         get_last_b1anat_run
     output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz"),
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz",
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
-    threads:
-        4
+    threads: 4
+    resources: 
+        mem_mb=9000
     shell:
         """
         mri_synthstrip -i {params} -o {output[0]} -m {output[1]} -t {threads}
@@ -48,6 +49,8 @@ rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
+    resources: 
+        mem_mb=500
     shell:
         """
         DenoiseImage -d 3 -n Rician -s 1 -v 1 -p 1 -r 2 -i {input.input_image} -x {input.mask_image} -o {output}
@@ -61,6 +64,8 @@ rule N4BiasFieldCorrection_b1anat: #ATTENTION: slightly different parameters fro
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz"
     conda:
         "../envs/qMT.yaml"
+    resources: 
+        mem_mb=500
     shell:
         """
         N4BiasFieldCorrection -d 3 -s 1 -v 1 -c [ 50x50x50x50, 0 ] -i {input.input_image} -x {input.mask_image} -o {output}
@@ -76,19 +81,19 @@ rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from 
     output:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4_registeredtoMP2RAGE_ants.nii.gz"),
         temp("data/derivatives/{field_strength}/mp2rage/{subject}/{session}/uncorr_qT1_brain_n4_registeredtob1anat_ants.nii.gz"),
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_registeredtoMP2RAGE_0GenericAffine.mat"
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
     conda:
         "../envs/qMT.yaml"
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-anat_registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_B1registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM/VFA
     input:
         check_csa_added_to_meta,
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz",
-        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_registeredtoMP2RAGE_0GenericAffine.mat"
+        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
     params:
         moving = get_last_b1map_run
     output:
@@ -109,25 +114,29 @@ rule register_b1anat_to_MPM_t1w_ants: #ATTENTION: slightly different parameters 
     output:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4_registeredto{seq}t1w_ants.nii.gz"),
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_denoised_n4_registeredtob1anat.nii.gz"),
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_registeredto{seq}t1w_0GenericAffine.mat"
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w_0GenericAffine.mat"
     conda:
         "../envs/qMT.yaml"
+    resources: 
+        mem_mb=1000
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-anat_registeredto{wildcards.seq}t1w_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_B1registeredto{wildcards.seq}t1w_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 rule  apply_reg_b1map_to_MPM_t1w_ants: #ATTENTION: some parameters are different from MPM/VFA
     input:
         check_csa_added_to_meta,
         ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_denoised_n4.nii.gz",
-        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_registeredto{seq}t1w_0GenericAffine.mat"
+        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w_0GenericAffine.mat"
     params:
         moving = get_last_b1map_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_ants.nii.gz"
     conda:
         "../envs/qMT.yaml"
+    resources: 
+        mem_mb=500
     shell:
         """
         antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {params.moving} -r {input.ref} -t {input.reg} -o {output}
@@ -144,9 +153,9 @@ rule register_b1anat_to_MP2RAGE_synthmorph:
         moving = get_last_b1anat_run
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
-    threads: 4
     container:
         "docker://freesurfer/synthmorph:4"
+    threads: 4
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
@@ -181,8 +190,8 @@ rule register_b1anat_to_MPM_t1w_synthmorph:
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w_synthmorph.lta"
     threads: 4
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=7000
     container:
         "docker://freesurfer/synthmorph:4"
     shell:
@@ -201,8 +210,8 @@ rule apply_reg_b1map_to_MPM_t1w_synthmorph:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_synthmorph.nii.gz"
     container:
         "docker://freesurfer/synthmorph:4"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=500
     shell: #register and reslice to MPM t1w
         """
         mri_synthmorph apply {input.reg} {params.moving} {output}
@@ -234,8 +243,8 @@ rule smooth_B1:
         temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth.nii.gz")
     conda:
         "../envs/qMT.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=500
     shell:
         """
         SmoothImage 3 {input[0]} 3x1x1 {output}
@@ -252,8 +261,8 @@ rule normalize_B1_to_target_flip: #not masking because we are interested in the 
         target_flip = get_target_flip
     conda:
         "../envs/fslmaths.yaml"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=500
     shell:
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
