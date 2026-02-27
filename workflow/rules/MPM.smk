@@ -260,9 +260,9 @@ rule synthstrip_MPM:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 8
+    threads: 4
     resources: 
-        mem_mb=5000
+        mem_mb=9000
     shell:
         """
         if command -v nvidia-smi; then
@@ -309,7 +309,7 @@ rule spineseg_MPM:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_discs.json")
     # container:
     #     "docker://vnmd/spinalcordtoolbox_7.2:20251215"
-    threads: 8
+    threads: 4
     resources: 
         mem_mb=5000
     shell:
@@ -495,9 +495,9 @@ rule fit_JSPqMT_CLI:
         mpfmap = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_MPFmap.nii.gz",
         t1map = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         r1map = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_R1map.nii.gz"
-    threads: 8
+    threads: 4
     resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+        mem_mb=4000
     conda:
         "../envs/qMT.yaml"
     # container:
@@ -530,9 +530,9 @@ rule synthstrip_T1map:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 2
+    threads: 4
     resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+        mem_mb=9000
     shell:
         """
         if command -v nvidia-smi; then
