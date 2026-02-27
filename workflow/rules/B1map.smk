@@ -21,7 +21,51 @@ def get_last_b1anat_run(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-anat*_TB1TFL.nii.gz'))[-1]
 
 
-#rules for registering to MP2RAGE with ANTs
+#rules for registering with ANTs
+
+rule synthstrip_b1anat:
+    input:
+        check_csa_added_to_meta
+    params:
+        get_last_b1anat_run
+    output:
+        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz"),
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+    container:
+        "docker://freesurfer/synthstrip:1.8-gpu"
+    threads:
+        4
+    shell:
+        """
+        mri_synthstrip -i {params} -o {output[0]} -m {output[1]} -t {threads}
+        """
+
+rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
+    input:
+        input_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+    output:
+        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised.nii.gz")
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        DenoiseImage -d 3 -n Rician -s 1 -v 1 -p 1 -r 2 -i {input.input_image} -x {input.mask_image} -o {output}
+        """
+
+rule N4BiasFieldCorrection_b1anat: #ATTENTION: slightly different parameters from MPM/VFA
+    input:
+        input_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz"
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        N4BiasFieldCorrection -d 3 -s 1 -v 1 -c [ 50x50x50x50, 0 ] -i {input.input_image} -x {input.mask_image} -o {output}
+        """
+
 
 rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from MPM/VFA
     input:
@@ -54,104 +98,6 @@ rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM
     shell:
         """
         antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {params.moving} -r {input.ref} -t {input.reg} -o {output}
-        """
-
-#rules for registering to MP2RAGE with synthmorph
-rule register_b1anat_to_MP2RAGE_synthmorph:
-    input:
-        check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz"
-    params:
-        moving = get_last_b1anat_run
-    output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
-    threads: 4
-    container:
-        "docker://freesurfer/synthmorph:4"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    shell:
-        """
-        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
-        """
-    
-
-rule apply_reg_b1map_to_MP2RAGE:
-    input:
-        check_csa_added_to_meta,
-        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
-    params:
-        moving = get_last_b1map_run
-    output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_synthmorph.nii.gz"
-    container:
-        "docker://freesurfer/synthmorph:4"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    shell: #-H option means no resampling: MP2PROC does resampling and there's no way to turn it off
-        """
-        mri_synthmorph apply -H {input.reg} {params.moving} {output}
-        """ 
-
-
-rule copy_b1map_json_after_regtoMP2RAGE:
-    input:
-        check_csa_added_to_meta,
-        b1map_registeredtoMP2RAGE = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
-    params:
-         b1map_raw = get_last_b1map_run
-    output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.json"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    run:
-        b1map_raw_json = Path(params.b1map_raw).with_suffix("").with_suffix(".json")
-        b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")
-        shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
-
-#rules for registering to MPM with ANTs
-
-rule synthstrip_b1anat:
-    input:
-        check_csa_added_to_meta
-    params:
-        get_last_b1anat_run
-    output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz"),
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
-    container:
-        "docker://freesurfer/synthstrip:1.8-gpu"
-    threads:
-        4
-    shell:
-        """
-        mri_synthstrip -i {params} -o {output[0]} -m {output[1]} -t {threads} --no-csf
-        """
-
-rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
-    input:
-        input_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
-    output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised.nii.gz")
-    conda:
-        "../envs/qMT.yaml"
-    shell:
-        """
-        DenoiseImage -d 3 -n Rician -s 1 -v 1 -p 1 -r 2 -i {input.input_image} -x {input.mask_image} -o {output}
-        """
-
-rule N4BiasFieldCorrection_b1anat: #ATTENTION: slightly different parameters from MPM/VFA
-    input:
-        input_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
-    output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz"
-    conda:
-        "../envs/qMT.yaml"
-    shell:
-        """
-        N4BiasFieldCorrection -d 3 -s 1 -v 1 -c [ 50x50x50x50, 0 ] -i {input.input_image} -x {input.mask_image} -o {output}
         """
 
 rule register_b1anat_to_MPM_t1w_ants: #ATTENTION: slightly different parameters from MPM/VFA
@@ -188,7 +134,43 @@ rule  apply_reg_b1map_to_MPM_t1w_ants: #ATTENTION: some parameters are different
         """
 
 
-# rules for registering to MPM with synthmorph
+#rules for registering with synthmorph
+
+rule register_b1anat_to_MP2RAGE_synthmorph:
+    input:
+        check_csa_added_to_meta,
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz"
+    params:
+        moving = get_last_b1anat_run
+    output:
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
+    threads: 4
+    container:
+        "docker://freesurfer/synthmorph:4"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    shell:
+        """
+        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
+        """
+    
+
+rule apply_reg_b1map_to_MP2RAGE:
+    input:
+        check_csa_added_to_meta,
+        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
+    params:
+        moving = get_last_b1map_run
+    output:
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_synthmorph.nii.gz"
+    container:
+        "docker://freesurfer/synthmorph:4"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    shell: #-H option means no resampling: MP2PROC does resampling and there's no way to turn it off
+        """
+        mri_synthmorph apply -H {input.reg} {params.moving} {output}
+        """ 
 
 rule register_b1anat_to_MPM_t1w_synthmorph:
     input:
@@ -225,6 +207,24 @@ rule apply_reg_b1map_to_MPM_t1w_synthmorph:
         """
         mri_synthmorph apply {input.reg} {params.moving} {output}
         """  
+
+
+#Post registration rules
+
+rule copy_b1map_json_after_regtoMP2RAGE:
+    input:
+        check_csa_added_to_meta,
+        b1map_registeredtoMP2RAGE = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
+    params:
+         b1map_raw = get_last_b1map_run
+    output:
+        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE.json"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    run:
+        b1map_raw_json = Path(params.b1map_raw).with_suffix("").with_suffix(".json")
+        b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")
+        shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
 
 
 rule smooth_B1:
