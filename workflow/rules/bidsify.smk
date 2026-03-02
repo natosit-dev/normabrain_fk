@@ -1,13 +1,15 @@
 checkpoint copy_dicoms_by_field_strength:
     input:
         expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])
+    params:
+        subject_list=config["subject_list"]
     output:
-        dir = directory("data/rawdata/dicoms")
+        directory("data/rawdata/dicoms")
     conda:
         "../envs/bidscoin.yaml"
     shell:
         """
-        python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output.dir}
+        python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output} {params}
         """
 
 def get_dicoms_folders(wildcards):
