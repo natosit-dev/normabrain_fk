@@ -144,7 +144,7 @@ rule calculate_MTRs_MTRd:
         mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
         mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
     output:
-        MTRs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRs.nii.gz",
+        MTRs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii.gz",
         MTRd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd.nii.gz",
         MTRd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_cosmod_MTRd.nii.gz",
         mts_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts_avg.nii"),
@@ -163,4 +163,90 @@ rule calculate_MTRs_MTRd:
         mrcalc 0 1 {output.mtd_cosmod_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRd_cosmod}
         """
 
-#TO DO: update CSA header, register to MP2RAGE
+#rules for registering to MP2RAGE with ANTs
+
+rule synthstrip_ihmt:
+    input:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd.nii.gz"
+    output:
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain.nii.gz"),
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_mask.nii.gz"
+    container:
+        "docker://freesurfer/synthstrip:1.8-gpu"
+    threads: 4
+    resources: 
+        mem_mb=9000
+    shell:
+        """
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
+        else 
+            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+        fi
+        """
+
+rule DenoiseImage_ihmt:
+    input:
+        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain.nii.gz",
+        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_mask.nii.gz"
+    output:
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_denoised.nii.gz")
+    conda:
+        "../envs/qMT.yaml"
+    resources: 
+        mem_mb=500
+    shell:
+        """
+        DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
+        """
+
+rule N4BiasFieldCorrection_ihmt:
+    input:
+        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_denoised.nii.gz",
+        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_mask.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_denoised_n4.nii.gz"
+    conda:
+        "../envs/qMT.yaml"
+    resources: 
+        mem_mb=500
+    shell:
+        """
+        N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
+        """
+
+rule register_ihmt_to_MP2RAGE_ants:
+    input:
+        ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
+        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_denoised_n4.nii.gz",
+        ref_mask="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz",
+        moving_mask="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_mask.nii.gz"
+    output:
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit_registeredtoIHMT.nii.gz"),
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
+    conda:
+        "../envs/qMT.yaml"
+    resources: 
+        mem_mb=700
+    shell:
+        """
+        antsRegistration -d 3 -v 1 --transform Affine[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_IHMTregisteredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        """
+
+rule apply_reg_ihmt_to_MP2RAGE_ants:
+    input:
+        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd.nii.gz",
+        ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
+        reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
+    output:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd_registeredtoMP2RAGE_ants.nii.gz"
+    resources: 
+        mem_mb=500
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        antsApplyTransforms -d 3 -v 1 -n Linear -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
+        """
