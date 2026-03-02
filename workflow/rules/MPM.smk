@@ -1,5 +1,4 @@
-#TO DO: compressing and uncompressing takes a while, make intermediate images temp instead
-#implement designer without adaptive patch, may solve memory issue
+#TO DO: implement designer without adaptive patch, may solve memory issue
 
 import json
 import glob
@@ -240,7 +239,7 @@ rule sos:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_echos4d_denoise_clipped.nii.gz"
     output:
        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz"
-    resources: #limit memory by input size
+    resources: 
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
@@ -442,6 +441,8 @@ rule apply_reg_MPM_to_t1w_synthmorph:
         mri_synthmorph apply {input.reg} {input.moving} {output}
         """
 
+#rules for after registration
+
 
 rule mtr:
     input:
@@ -518,31 +519,31 @@ rule fit_JSPqMT_CLI:
 
 #rules for registering to MP2RAGE with ANTS
 
-# rule synthstrip_T1map:
-#     input:
-#         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz"
-#     output:
-#         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz"),
-#         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
-#     container:
-#         "docker://freesurfer/synthstrip:1.8-gpu"
-#     threads: 4
-#     resources: 
-#         mem_mb=9000
-#     shell:
-#         """
-#         if command -v nvidia-smi; then
-#             export CUDA_VISIBLE_DEVICES=0
-#             mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
-#         else 
-#             mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
-#         fi
-        # """
+rule synthstrip_T1map:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz"
+    output:
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz"),
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
+    container:
+        "docker://freesurfer/synthstrip:1.8-gpu"
+    threads: 4
+    resources: 
+        mem_mb=9000
+    shell:
+        """
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf -g
+        else 
+            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+        fi
+        """
 
 
 rule DenoiseImage_T1map:
     input:
-        input_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
+        input_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz",
         mask_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised.nii.gz")
@@ -616,20 +617,18 @@ rule register_qT1_MPM_to_MP2RAGE_easyreg:
         # moving_seg = "data/derivatives/{ield_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_seg.nii.gz",
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
     params:
-        moving_reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE_easyreg.nii.gz",
+        moving_seg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_seg.nii.gz",
         ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_seg.nii.gz"
     output:
-        moving_seg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_seg.nii.gz",
+        moving_reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE_easyreg.nii.gz",
         fwd_field = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix.nii.gz"
-    threads:
-        8
     resources:
-        mem_mb=9300
+        mem_mb=15000
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 1 --affine_only
+        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 4 --affine_only
         """
 
 
@@ -641,8 +640,8 @@ rule register_qT1_MPM_to_MP2RAGE:
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain.nii.gz"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_synthmorph.lta"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=7000
     container:
         "docker://freesurfer/synthmorph:4"
     shell:
@@ -658,8 +657,8 @@ rule apply_reg_qT1_MPM_to_MP2RAGE:
         reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_synthmorph.lta"
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE_synthmorph.nii.gz"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    resources: 
+        mem_mb=1000
     container:
         "docker://freesurfer/synthmorph:4"
     shell: #register and reslice to MP2RAGE

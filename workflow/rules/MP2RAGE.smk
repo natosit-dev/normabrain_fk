@@ -123,7 +123,7 @@ rule synthstrip_qT1:
 
 rule DenoiseImage_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}.nii.gz",
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain.nii.gz",
         mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised.nii.gz")
