@@ -278,10 +278,10 @@ rule synthstrip_ihmt:
 
 rule DenoiseImage_ihmt:
     input:
-        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain.nii.gz",
-        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_mask.nii.gz"
+        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain.nii.gz",
+        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_denoised.nii.gz")
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -293,10 +293,10 @@ rule DenoiseImage_ihmt:
 
 rule N4BiasFieldCorrection_ihmt:
     input:
-        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_denoised.nii.gz",
-        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_mask.nii.gz"
+        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised.nii.gz",
+        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_denoised_n4.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised_n4.nii.gz"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -309,11 +309,11 @@ rule N4BiasFieldCorrection_ihmt:
 rule register_ihmt_to_MP2RAGE_ants:
     input:
         ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
-        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_denoised_n4.nii.gz",
+        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised_n4.nii.gz",
         ref_mask="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz",
-        moving_mask="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_mask.nii.gz"
+        moving_mask="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
         temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit_registeredtoIHMT.nii.gz"),
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
     conda:
@@ -327,11 +327,11 @@ rule register_ihmt_to_MP2RAGE_ants:
 
 rule apply_reg_ihmt_to_MP2RAGE_ants:
     input:
-        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap.nii.gz",
+        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
         ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
         reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_registeredtoMP2RAGE_ants.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_ants.nii.gz"
     resources: 
         mem_mb=500
     conda:
@@ -345,13 +345,13 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
 
 rule register_ihmt_to_MP2RAGE_easyreg:
     input:
-        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap.nii.gz",
+        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz"
     params:
-        moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_seg.nii.gz",
+        moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_seg.nii.gz",
         ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}_t1wUNI_B1Corrected_dicomUnit_seg.nii.gz"
     output:
-        moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_registeredtoMP2RAGE_easyreg.nii.gz",
+        moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_easyreg.nii.gz",
         fwd_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz"
     resources:
         mem_mb=15000
@@ -366,7 +366,7 @@ rule register_ihmt_to_MP2RAGE_easyreg:
 
 rule register_ihmt_to_MP2RAGE_synthmorph:
     input:
-        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap.nii.gz",
+        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE.lta"
@@ -381,11 +381,11 @@ rule register_ihmt_to_MP2RAGE_synthmorph:
 
 rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
     input:
-        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap.nii.gz",
+        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
         reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE.lta"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_registeredtoMP2RAGE_synthmorph.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_synthmorph.nii.gz"
     resources: 
         mem_mb=1000
     container:
