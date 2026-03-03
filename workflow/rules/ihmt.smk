@@ -9,51 +9,67 @@ def get_raw_ihmt(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_ihmt.nii.gz'))[0]
 
 
-rule copy_raw_ihmt_data:
-    #img, json, bvec, and bval need to have the same basename for designer to work
-    #we don't want to save dummy bvec and bval to rawdata so instead we will copy img and json
-    input:
-        check_csa_added_to_meta,
-        raw_img = get_raw_ihmt
-    output:
-        img=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.nii.gz"),
-        json=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.json")
-    run:
-        shutil.copy(input.raw_img, output.img)
-        raw_json = Path(input.raw_img).with_suffix("").with_suffix(".json")
-        shutil.copy(raw_json, output.json)
+# rule copy_raw_ihmt_data:
+#     #img, json, bvec, and bval need to have the same basename for designer to work
+#     #we don't want to save dummy bvec and bval to rawdata so instead we will copy img and json
+#     input:
+#         check_csa_added_to_meta
+#     params:
+#         raw_img = get_raw_ihmt
+#     output:
+#         img=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.nii.gz"),
+#         json=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.json")
+#     run:
+#         shutil.copy(params.raw_img, output.img)
+#         raw_json = Path(input.raw_img).with_suffix("").with_suffix(".json")
+#         shutil.copy(raw_json, output.json)
         
+
+# rule denoise_ihmt:
+#     input:
+#         img="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.nii.gz",
+#         json="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.json"
+#     output:
+#         out="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz",
+#         noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_noisemap.nii",
+#         #remove dummy bval, bvec, and scratch directory after command has finished
+#         bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.bval"),
+#         bvec_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.bvec"),
+#         bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.bval"),
+#         bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.bvec"),
+#         scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/ihmt_denoise_tmp"))
+#     container:
+#         "docker://nyudiffusionmri/designer2:v2.0.15"
+#     shell: #turn off adaptive_patch for now, it takes 12 minutes per subject
+#         """
+#         #need to create dummy bvec and bval for designer to work
+#         vols="$(mrinfo -size {input.img} | awk '{{print $4}}')" #print number of volumes
+#         vols="$((${{vols}}-1))" #subtract 1, because one of the entries has to be nonzero
+#         vols_string=$(printf "%${{vols}}s") #function to replicate following string by number of vols
+#         vols_zeros=${{vols_string// /0 }} #create string with number of 0s equal to number of vols (minus 1)
+#         echo "${{vols_zeros}}500" > {output.bval_raw} #create dummy bval file with number of entries = number of volumes
+#         echo -e "${{vols_zeros}}1\n${{vols_zeros}}1\n${{vols_zeros}}1" > {output.bvec_raw} #dummy bvec has to have 3 rows
+
+#         #denoise with the jespersen algorithm extension to MPPCA since it is better for multi-contrast data
+#         #pe_dir is not relevant for denoise but designer throws an error if it is not set, set it to j for now
+#         designer -denoise -shrinkage frob -algorithm jespersen -pe_dir j -nocleanup -scratch {output.scratch} {input.img} {output.out}
+#         #move noisemap out of denoise_tmp and rename for clarity
+#         cp {output.scratch}/sigma.nii {output.noisemap}
+#         """
 
 rule denoise_ihmt:
     input:
-        img="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.nii.gz",
-        json="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.json"
+        check_csa_added_to_meta
+    params:
+        raw_img = get_raw_ihmt
     output:
-        out="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz",
-        noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_noisemap.nii",
-        #remove dummy bval, bvec, and scratch directory after command has finished
-        bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.bval"),
-        bvec_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.bvec"),
-        bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.bval"),
-        bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.bvec"),
-        scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/ihmt_denoise_tmp"))
+        out=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz"),
+        noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_noisemap.nii"
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
-    shell: #turn off adaptive_patch for now, it takes 12 minutes per subject
+    shell:
         """
-        #need to create dummy bvec and bval for designer to work
-        vols="$(mrinfo -size {input.img} | awk '{{print $4}}')" #print number of volumes
-        vols="$((${{vols}}-1))" #subtract 1, because one of the entries has to be nonzero
-        vols_string=$(printf "%${{vols}}s") #function to replicate following string by number of vols
-        vols_zeros=${{vols_string// /0 }} #create string with number of 0s equal to number of vols (minus 1)
-        echo "${{vols_zeros}}500" > {output.bval_raw} #create dummy bval file with number of entries = number of volumes
-        echo -e "${{vols_zeros}}1\n${{vols_zeros}}1\n${{vols_zeros}}1" > {output.bvec_raw} #dummy bvec has to have 3 rows
-
-        #denoise with the jespersen algorithm extension to MPPCA since it is better for multi-contrast data
-        #pe_dir is not relevant for denoise but designer throws an error if it is not set, set it to j for now
-        designer -denoise -shrinkage frob -algorithm jespersen -pe_dir j -nocleanup -scratch {output.scratch} {input.img} {output.out}
-        #move noisemap out of denoise_tmp and rename for clarity
-        cp {output.scratch}/sigma.nii {output.noisemap}
+        dwidenoise {params.raw_img} {output.out} -noise {output.noisemap}
         """
 
 
@@ -61,7 +77,7 @@ rule degibbs_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz"
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz")
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell: #use the Bautista extension of the Kellner protocol because data is 3D not 2D
@@ -79,7 +95,7 @@ rule moco_ihmt:
         "docker://hugodary/ihmt_proc:latest"
     shell: 
         # -m 1 means use ihMT-MoCo for motion correction (from Soustelle preprint)
-        # -c is a comma separated list of desired output maps
+        # -c is a comma separated list of desired output images, we chose to only output the motion corrected image without computing any maps
         """
         /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_
         
@@ -131,9 +147,9 @@ rule calculate_ihmt_maps:
         mrmath {input.mtd_cosmod} sum {output.mtd_cosmod_sum} -axis 3
         
         mrcalc 0 {output.mts_sum} {output.mtd_freqalt_sum} -subtract -max {output.ihMTmap_freqalt}
-        mrcalc 0 {output.ihMTmap_freqalt} {input.mt0} 0 -max -div -max {output.ihMTR_freqalt}
+        mrcalc 1 0 {output.ihMTmap_freqalt} {input.mt0} 0 -max -div nan 0 -replace -max -min {output.ihMTR_freqalt}
         mrcalc 0 {output.mts_sum} {output.mtd_cosmod_sum} -subtract -max {output.ihMTmap_cosmod}
-        mrcalc 0 {output.ihMTmap_cosmod} {input.mt0} 0 -max -div -max {output.ihMTR_cosmod}
+        mrcalc 1 0 {output.ihMTmap_cosmod} {input.mt0} 0 -max -div nan 0 -replace -max -min {output.ihMTR_cosmod}
         """
 
 
@@ -158,9 +174,9 @@ rule calculate_MTRs_MTRd:
         mrmath {input.mtd_freqalt} mean {output.mtd_freqalt_avg} -axis 3
         mrmath {input.mtd_cosmod} mean {output.mtd_cosmod_avg} -axis 3
 
-        mrcalc 0 1 {output.mts_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRs}
-        mrcalc 0 1 {output.mtd_freqalt_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRd_freqalt}
-        mrcalc 0 1 {output.mtd_cosmod_avg} {input.mt0} 0 -max -div -subtract -max {output.MTRd_cosmod}
+        mrcalc 1 0 1 {output.mts_avg} {input.mt0} 0 -max -div -subtract -max -min {output.MTRs}
+        mrcalc 1 0 1 {output.mtd_freqalt_avg} {input.mt0} 0 -max -div -subtract -max -min {output.MTRd_freqalt}
+        mrcalc 1 0 1 {output.mtd_cosmod_avg} {input.mt0} 0 -max -div -subtract -max -min {output.MTRd_cosmod}
         """
 
 #rules for registering to MP2RAGE with ANTs
