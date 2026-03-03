@@ -53,12 +53,15 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
-                #Get ihMT contrast type. If it's blank set it to FreqAlt.
+                #Get ihMT contrast type. If it's blank set it to FreqAlt. If Sequence Version is crmbm_ihMT_tfl_v3.dll then set it to Basic.
+                jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
                 if isinstance(csa_data.get('sWipMemBlock.alFree[2]'), str):
                     ContrastType = int(csa_data['sWipMemBlock.alFree[2]'])
                 else:
                     ContrastType = 0
-                if ContrastType == 0:
+                if ContrastType == 0 and jsondata['SequenceVersion'] == "crmbm_ihMT_tfl_v3.dll":
+                    jsondata['ContrastType'] = 'Basic'
+                elif ContrastType == 0 and jsondata['SequenceVersion'] == "crmbm_ihMT_tfl_v3MC.dll":
                     jsondata['ContrastType'] = 'Frequency Alternated'
                 elif ContrastType == 1:
                     jsondata['ContrastType'] = 'Cosine Modulated'
@@ -67,7 +70,6 @@ def add_csa_data_to_meta(bidspath: str):
                 elif ContrastType == 3:
                     jsondata['ContrastType'] = "BandPass (no single)"
                 #add relevant fields from csa header to json sidecar
-                jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
                 jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[24]'])
                 jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[25]'])
                 jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[26]'])

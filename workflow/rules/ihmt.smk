@@ -1,3 +1,4 @@
+import json
 import glob
 import shutil
 from pathlib import Path
@@ -7,6 +8,13 @@ def check_csa_added_to_meta(wildcards):
 
 def get_raw_ihmt(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_ihmt.nii.gz'))[0]
+
+def get_ihmt_contrast_type(wildcards):
+    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_ihmt.json'))[0]
+    with open(json_path, "r") as f:
+        meta = json.load(f)
+        ihmt_contrast_type = meta["ContrastType"]
+    return ihmt_contrast_type
 
 
 # rule copy_raw_ihmt_data:
@@ -109,84 +117,150 @@ rule split_contrast_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
     output:
-        mt0=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii"),
-        mts=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii"),
-        mtd_freqalt=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii"),
-        mtd_cosmod=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii")
+        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
+        split_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split"))
+    params:
+        ihmt_contrast_type = get_ihmt_contrast_type,
+        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
+        mtd_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_basic.nii",
+        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
+        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
         """
-        mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2
-        mrconvert {input} {output.mts} -coord 3 1:3:4
-        mrconvert {input} {output.mtd_freqalt} -coord 3 2:3:5
-        mrconvert {input} {output.mtd_cosmod} -coord 3 3:3:6
+        mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2 -force
+
+        if [ "{params.ihmt_contrast_type}" == "Frequency Alternated and Cosine Modulated" ]
+        then
+            mrconvert {input} {params.mts} -coord 3 1:3:end -force
+            mrconvert {input} {params.mtd_freqalt} -coord 3 2:3:end -force
+            mrconvert {input} {params.mtd_cosmod} -coord 3 3:3:end -force
+        
+        elif [ "{params.ihmt_contrast_type}" == "Basic" ]
+        then
+            mrconvert {input} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input} {params.mtd_basic} -coord 3 2:2:end -force
+        
+        elif [ "{params.ihmt_contrast_type}" == "Frequency Alternated" ]
+        then
+            mrconvert {input} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input} {params.mtd_freqalt} -coord 3 2:2:end -force
+
+        elif [ "{params.ihmt_contrast_type}" == "Cosine Modulated" ]
+        then
+            mrconvert {input} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input} {params.mtd_cosmod} -coord 3 2:2:end -force
+
+        elif [ "{params.ihmt_contrast_type}" == "BandPass (no single)" ]
+        then
+            mrconvert {input} {params.mtd_freqalt} -coord 3 1:2:end -force
+            mrconvert {input} {params.mtd_cosmod} -coord 3 2:2:end -force
+        fi
         """
         
 
 rule calculate_ihmt_maps:
     input:
-        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
-        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
-        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
-        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
+        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
+        split_dir=directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split")
     output:
-        ihMTmap_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap.nii.gz",
-        ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTR.nii.gz",
+        sums_means_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/")),
+        MTR=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz")
+    params:
+        #input depending on contrast type
+        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
+        mtd_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_basic.nii",
+        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii",
+        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",  
+        #avg depending on contrast type
+        mts_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_ihmt_denoise_degibbs_moco_mts_avg.nii"),
+        mtd_basic_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_basic_avg.nii"),
+        mtd_cosmod_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod_avg.nii"),
+        mtd_freqalt_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt_avg.nii"),    
+        #MTR depending on contrast type
+        MTRs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii.gz",
+        MTRd_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_basic_MTRd.nii.gz",
+        MTRd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_cosmod_MTRd.nii.gz",
+        MTRd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd.nii.gz", 
+        #sum depending on contrast type
+        mts_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_ihmt_denoise_degibbs_moco_mts_sum.nii"),
+        mtd_basic_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_basic_sum.nii"),
+        mtd_cosmod_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod_sum.nii"),
+        mtd_freqalt_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt_sum.nii"),
+        #ihMTmap depending on contrast type
+        ihMTmap_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_basic_ihMTmap.nii.gz",
         ihMTmap_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_cosmod_ihMTmap.nii.gz",
+        ihMTmap_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap.nii.gz",
+        #ihMTR depending on contrast type
+        ihMTR_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_basic_ihMTR.nii.gz",
         ihMTR_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_cosmod_ihMTR.nii.gz",
-        mts_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts_sum.nii"),
-        mtd_freqalt_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt_sum.nii"),
-        mtd_cosmod_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod_sum.nii")
+        ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTR.nii.gz"      
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell: 
         """
-        mrmath {input.mts} sum {output.mts_sum} -axis 3
-        mrmath {input.mtd_freqalt} sum {output.mtd_freqalt_sum} -axis 3
-        mrmath {input.mtd_cosmod} sum {output.mtd_cosmod_sum} -axis 3
+        mkdir {output.sums_means_dir}
+        if [ -f {params.mts} ]
+        then
+            mrmath {params.mts} mean {params.mts_avg} -axis 3 -force
+            mrcalc 1 0 1 {params.mts_avg} {input.mt0} 0 -max -div -subtract -max -min {params.MTRs} -force
+            mrmath {params.mts} sum {params.mts_sum} -axis 3 -force
+            cp {params.MTRs} {output.MTR}
+        fi
+
+        if [ -f {params.mtd_basic} ]
+        then
+            mrmath {params.mtd_basic} mean {params.mtd_basic_avg} -axis 3 -force
+            mrcalc 1 0 1 {params.mtd_basic_avg} {input.mt0} 0 -max -div -subtract -max -min {params.MTRd_basic} -force
+            cp {params.MTRd_basic} {output.MTR}
+        fi
         
-        mrcalc 0 {output.mts_sum} {output.mtd_freqalt_sum} -subtract -max {output.ihMTmap_freqalt}
-        mrcalc 1 0 {output.ihMTmap_freqalt} {input.mt0} 0 -max -div nan 0 -replace -max -min {output.ihMTR_freqalt}
-        mrcalc 0 {output.mts_sum} {output.mtd_cosmod_sum} -subtract -max {output.ihMTmap_cosmod}
-        mrcalc 1 0 {output.ihMTmap_cosmod} {input.mt0} 0 -max -div nan 0 -replace -max -min {output.ihMTR_cosmod}
+        if [ -f {params.mtd_cosmod} ]
+        then
+            mrmath {params.mtd_cosmod} mean {params.mtd_cosmod_avg} -axis 3 -force
+            mrcalc 1 0 1 {params.mtd_cosmod_avg} {input.mt0} 0 -max -div -subtract -max -min {params.MTRd_cosmod} -force
+            cp {params.MTRd_cosmod} {output.MTR}
+        fi
+
+        if [ -f {params.mtd_freqalt} ]
+        then
+            mrmath {params.mtd_freqalt} mean {params.mtd_freqalt_avg} -axis 3 -force
+            mrcalc 1 0 1 {params.mtd_freqalt_avg} {input.mt0} 0 -max -div -subtract -max -min {params.MTRd_freqalt} -force
+            cp {params.MTRd_freqalt} {output.MTR}
+        fi
+
+        if [ -f {params.mts} ] && [ -f {params.mtd_basic} ]
+        then
+            mrmath {params.mtd_basic} sum {params.mtd_basic_sum} -axis 3 -force
+            mrcalc 0 {params.mts_sum} {params.mtd_basic_sum} -subtract -max {params.ihMTmap_basic} -force
+            mrcalc 1 0 {params.ihMTmap_basic} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_basic} -force
+        fi
+
+        if [ -f {params.mts} ] && [ -f {params.mtd_cosmod} ]
+        then
+            mrmath {params.mtd_cosmod} sum {params.mtd_cosmod_sum} -axis 3 -force
+            mrcalc 0 {params.mts_sum} {params.mtd_cosmod_sum} -subtract -max {params.ihMTmap_cosmod} -force
+            mrcalc 1 0 {params.ihMTmap_cosmod} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_cosmod} -force
+        fi
+
+        if [ -f {params.mts} ] && [ -f {params.mtd_freqalt} ]
+        then
+            mrmath {params.mtd_freqalt} sum {params.mtd_freqalt_sum} -axis 3 -force
+            mrcalc 0 {params.mts_sum} {params.mtd_freqalt_sum} -subtract -max {params.ihMTmap_freqalt} -force
+            mrcalc 1 0 {params.ihMTmap_freqalt} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_freqalt} -force
+        fi
         """
 
-
-rule calculate_MTRs_MTRd:
-    input:
-        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
-        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
-        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
-        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
-    output:
-        MTRs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTRs.nii.gz",
-        MTRd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_MTRd.nii.gz",
-        MTRd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_cosmod_MTRd.nii.gz",
-        mts_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mts_avg.nii"),
-        mtd_freqalt_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_freqalt_avg.nii"),
-        mtd_cosmod_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco_mtd_cosmod_avg.nii")
-    container:
-        "docker://nyudiffusionmri/designer2:v2.0.15"
-    shell:
-        """
-        mrmath {input.mts} mean {output.mts_avg} -axis 3
-        mrmath {input.mtd_freqalt} mean {output.mtd_freqalt_avg} -axis 3
-        mrmath {input.mtd_cosmod} mean {output.mtd_cosmod_avg} -axis 3
-
-        mrcalc 1 0 1 {output.mts_avg} {input.mt0} 0 -max -div -subtract -max -min {output.MTRs}
-        mrcalc 1 0 1 {output.mtd_freqalt_avg} {input.mt0} 0 -max -div -subtract -max -min {output.MTRd_freqalt}
-        mrcalc 1 0 1 {output.mtd_cosmod_avg} {input.mt0} 0 -max -div -subtract -max -min {output.MTRd_cosmod}
-        """
 
 #rules for registering to MP2RAGE with ANTs
 
 rule synthstrip_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain.nii.gz"),
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTmap_brain_mask.nii.gz"
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain.nii.gz"),
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 4
