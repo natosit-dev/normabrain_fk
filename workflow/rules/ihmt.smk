@@ -349,7 +349,7 @@ rule register_ihmt_to_MP2RAGE_easyreg:
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz"
     params:
         moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_seg.nii.gz",
-        ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}_t1wUNI_B1Corrected_dicomUnit_seg.nii.gz"
+        ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit_seg.nii.gz"
     output:
         moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_easyreg.nii.gz",
         fwd_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz"
