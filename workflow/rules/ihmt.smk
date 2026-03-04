@@ -163,7 +163,7 @@ rule split_contrast_ihmt:
 rule calculate_ihmt_maps:
     input:
         mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
-        split_dir=directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split")
+        split_dir="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split"
     output:
         sums_means_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/")),
         MTR=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz")
@@ -359,6 +359,10 @@ rule register_ihmt_to_MP2RAGE_easyreg:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+        fi
+
         mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 1 --affine_only
         """
 
