@@ -7,9 +7,11 @@ def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def get_raw_ihmt(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_ihmt.nii.gz'))[0]
 
 def get_ihmt_contrast_type(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_ihmt.json'))[0]
     with open(json_path, "r") as f:
         meta = json.load(f)
@@ -115,7 +117,8 @@ rule moco_ihmt:
 #TO DO: make this dependent on sequence type
 rule split_contrast_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii",
+        check_csa_added_to_meta
     output:
         mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
         split_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split"))
@@ -129,33 +132,33 @@ rule split_contrast_ihmt:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
         """
-        mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2 -force
+        mrconvert {input[0]} {output.mt0} -coord 3 0 -axes 0,1,2 -force
 
         if [ "{params.ihmt_contrast_type}" == "Frequency Alternated and Cosine Modulated" ]
         then
-            mrconvert {input} {params.mts} -coord 3 1:3:end -force
-            mrconvert {input} {params.mtd_freqalt} -coord 3 2:3:end -force
-            mrconvert {input} {params.mtd_cosmod} -coord 3 3:3:end -force
+            mrconvert {input[0]} {params.mts} -coord 3 1:3:end -force
+            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 2:3:end -force
+            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 3:3:end -force
         
         elif [ "{params.ihmt_contrast_type}" == "Basic" ]
         then
-            mrconvert {input} {params.mts} -coord 3 1:2:end -force
-            mrconvert {input} {params.mtd_basic} -coord 3 2:2:end -force
+            mrconvert {input[0]} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input[0]} {params.mtd_basic} -coord 3 2:2:end -force
         
         elif [ "{params.ihmt_contrast_type}" == "Frequency Alternated" ]
         then
-            mrconvert {input} {params.mts} -coord 3 1:2:end -force
-            mrconvert {input} {params.mtd_freqalt} -coord 3 2:2:end -force
+            mrconvert {input[0]} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 2:2:end -force
 
         elif [ "{params.ihmt_contrast_type}" == "Cosine Modulated" ]
         then
-            mrconvert {input} {params.mts} -coord 3 1:2:end -force
-            mrconvert {input} {params.mtd_cosmod} -coord 3 2:2:end -force
+            mrconvert {input[0]} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 2:2:end -force
 
         elif [ "{params.ihmt_contrast_type}" == "BandPass (no single)" ]
         then
-            mrconvert {input} {params.mtd_freqalt} -coord 3 1:2:end -force
-            mrconvert {input} {params.mtd_cosmod} -coord 3 2:2:end -force
+            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 1:2:end -force
+            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 2:2:end -force
         fi
         """
         
