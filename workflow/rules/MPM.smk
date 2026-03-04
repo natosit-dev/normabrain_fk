@@ -1,5 +1,3 @@
-#TO DO: implement designer without adaptive patch, may solve memory issue
-
 import json
 import glob
 
@@ -53,8 +51,48 @@ def get_pdflip(wildcards):
         pdw_meta = json.load(f)
     return pdw_meta["FlipAngle"]
 
+def t1wmag_preproc(wildcards):
+    #get preprocessed magnitude image depending on if phase is available
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    try:
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}t1w*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        mag_preproc = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_riciancorr.nii"
+    except:
+        mag_preproc = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii"
+    return mag_preproc
 
-checkpoint concat_echos:
+def mt0mag_preproc(wildcards):
+    #get preprocessed magnitude image depending on if phase is available
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    try:
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        mag_preproc = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii"
+    except:
+        mag_preproc = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d.nii"
+    return mag_preproc
+
+def mtwmag_preproc(wildcards):
+    #get preprocessed magnitude image depending on if phase is available
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    try:
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-phase_MPM.nii.gz')[0]
+        mag_preproc = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_riciancorr.nii"
+    except:
+        mag_preproc = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii"
+    return mag_preproc
+
+def pdwmag_preproc(wildcards):
+    #get preprocessed magnitude image depending on if phase is available
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    try:
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}pdw*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        mag_preproc = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_riciancorr.nii"
+    except:
+        mag_preproc = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii"
+    return mag_preproc
+
+
+rule concat_echos:
     input:
         meta_complete = check_csa_added_to_meta
     params:
@@ -124,10 +162,10 @@ rule calculate_mag_from_complex:
 
 rule concat_contrast_mag:
     input:
-        t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii", #no phase available
-        mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii",
-        mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii", #no phase available
-        pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii" #no phase available
+        t1w=t1wmag_preproc,
+        mt0=mt0mag_preproc,
+        mtw=mtwmag_preproc,
+        pdw=pdwmag_preproc
     output:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii")
     resources: #limit memory by input size
