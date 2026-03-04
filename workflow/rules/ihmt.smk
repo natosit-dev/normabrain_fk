@@ -373,7 +373,7 @@ rule register_ihmt_to_MP2RAGE_synthmorph:
     resources: 
         mem_mb=7000
     container:
-        "docker://freesurfer/synthmorph:4"
+        "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
         mri_synthmorph register -m affine -t {output} {input.moving} {input.ref}
@@ -389,7 +389,7 @@ rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
     resources: 
         mem_mb=1000
     container:
-        "docker://freesurfer/synthmorph:4"
+        "docker://freesurfer/freesurfer:8.1.0"
     shell: #register and reslice to MP2RAGE
         """
         mri_synthmorph apply {input.reg} {input.moving} {output}

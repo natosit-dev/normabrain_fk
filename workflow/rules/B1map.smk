@@ -158,7 +158,7 @@ rule register_b1anat_to_MP2RAGE_synthmorph:
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
     container:
-        "docker://freesurfer/synthmorph:4"
+        "docker://freesurfer/freesurfer:8.1.0"
     resources: 
         mem_mb=7000
     shell:
@@ -176,7 +176,7 @@ rule apply_reg_b1map_to_MP2RAGE_synthmorph:
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_synthmorph.nii.gz"
     container:
-        "docker://freesurfer/synthmorph:4"
+        "docker://freesurfer/freesurfer:8.1.0"
     resources: 
         mem_mb=500
     shell: #-H option means no resampling: MP2PROC does resampling and there's no way to turn it off
@@ -196,7 +196,7 @@ rule register_b1anat_to_MPM_t1w_synthmorph:
     resources: 
         mem_mb=7000
     container:
-        "docker://freesurfer/synthmorph:4"
+        "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
         mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
@@ -212,7 +212,7 @@ rule apply_reg_b1map_to_MPM_t1w_synthmorph:
     output:
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_synthmorph.nii.gz"
     container:
-        "docker://freesurfer/synthmorph:4"
+        "docker://freesurfer/freesurfer:8.1.0"
     resources: 
         mem_mb=500
     shell: #register and reslice to MPM t1w
