@@ -53,15 +53,15 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
-                #Get ihMT contrast type. If it's blank set it to FreqAlt. If Sequence Version is crmbm_ihMT_tfl_v3.dll then set it to Basic.
+                #Get ihMT contrast type. If it's blank and the sequence version does not include the string "MC" then set it to Basic. If it's blank and the sequence version does include the string "MC" set it to Frequency Alternated.
                 jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
                 if isinstance(csa_data.get('sWipMemBlock.alFree[2]'), str):
                     ContrastType = int(csa_data['sWipMemBlock.alFree[2]'])
                 else:
                     ContrastType = 0
-                if ContrastType == 0 and jsondata['SequenceVersion'] == "crmbm_ihMT_tfl_v3.dll":
+                if ContrastType == 0 and "MC" not in jsondata['SequenceVersion']:
                     jsondata['ContrastType'] = 'Basic'
-                elif ContrastType == 0 and jsondata['SequenceVersion'] == "crmbm_ihMT_tfl_v3MC.dll":
+                elif ContrastType == 0 and "MC" in jsondata['SequenceVersion']:
                     jsondata['ContrastType'] = 'Frequency Alternated'
                 elif ContrastType == 1:
                     jsondata['ContrastType'] = 'Cosine Modulated'

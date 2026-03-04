@@ -73,7 +73,7 @@ rule denoise_ihmt:
     params:
         raw_img = get_raw_ihmt
     output:
-        out=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz"),
+        out=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii"),
         noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_noisemap.nii"
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
@@ -85,9 +85,9 @@ rule denoise_ihmt:
 
 rule degibbs_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz")
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii")
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell: #use the Bautista extension of the Kellner protocol because data is 3D not 2D
@@ -98,7 +98,7 @@ rule degibbs_ihmt:
 
 rule moco_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii"
     output:
         preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
     container:
@@ -114,7 +114,6 @@ rule moco_ihmt:
         """
 
 
-#TO DO: make this dependent on sequence type
 rule split_contrast_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii",
