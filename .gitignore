@@ -1,6 +1,7 @@
 data/
 results/
 *__*
+*__*/
 .*
 !.gitignore
 3T/
