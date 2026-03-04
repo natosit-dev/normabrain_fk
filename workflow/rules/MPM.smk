@@ -198,10 +198,10 @@ rule split_contrast_mag:
     input:
         contrast="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii",
         #same input as contrast_concat_mag
-        t1w_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii", #no phase available
-        mt0_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii",
-        mtw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii", #no phase available
-        pdw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii" #no phase available
+        t1w_in=t1wmag_preproc,
+        mt0_in=mt0mag_preproc,
+        mtw_in=mtwmag_preproc,
+        pdw_in=pdwmag_preproc
     output:
         t1w_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii"),
         mt0_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii"),
