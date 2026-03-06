@@ -97,6 +97,7 @@ rule run_mp2proc:
         /opt/vol_proc/main {input}
         """
 
+
 rule synthseg_mp2rage:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
@@ -106,6 +107,10 @@ rule synthseg_mp2rage:
         mem_mb=15000
     container:
         "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        mri_synthseg --i {input} --o {output} --parc --robust
+        """
     
 
 #rules for registering with ANTs

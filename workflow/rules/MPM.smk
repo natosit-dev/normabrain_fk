@@ -653,10 +653,10 @@ rule register_qT1_MPM_to_MP2RAGE_easyreg:
     input:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         # moving_seg = "data/derivatives/{ield_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_seg.nii.gz",
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz",
+        ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/MP2RAGE_synthseg.nii.gz"
     params:
-        moving_seg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_seg.nii.gz",
-        ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_seg.nii.gz"
+        moving_seg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_seg.nii.gz"
     output:
         moving_reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE_easyreg.nii.gz",
         fwd_field = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix.nii.gz"
@@ -666,7 +666,7 @@ rule register_qT1_MPM_to_MP2RAGE_easyreg:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 4 --affine_only
+        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {input.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 4 --affine_only
         """
 
 
