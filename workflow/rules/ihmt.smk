@@ -163,10 +163,10 @@ rule split_contrast_ihmt:
 rule calculate_ihmt_maps:
     input:
         mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
-        split_dir=directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split")
+        split_dir="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split"
     output:
         sums_means_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/")),
-        MTR=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz")
+        MTR="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz"
     params:
         #input depending on contrast type
         mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
@@ -198,7 +198,7 @@ rule calculate_ihmt_maps:
         ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_freqalt_ihMTR.nii.gz"      
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
-    shell: 
+    shell: #output used for registration depends on which maps are available
         """
         mkdir {output.sums_means_dir}
         if [ -f {params.mts} ]
@@ -346,20 +346,22 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
 rule register_ihmt_to_MP2RAGE_easyreg:
     input:
         moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz"
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
+        ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/MP2RAGE_synthseg.nii.gz"
     params:
-        moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_seg.nii.gz",
-        ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit_seg.nii.gz"
+        moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_seg.nii.gz"
     output:
         moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_easyreg.nii.gz",
-        fwd_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz"
+        fwd_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz",
+        bak_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MP2RAGEregisteredtoIHMTmatrix.nii.gz"
     resources:
         mem_mb=15000
+    threads: 8
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 1 --affine_only
+        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {input.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --bak_field {output.bak_field} --threads 1 --affine_only
         """
 
 #rules for registering to MP2RAGE with synthmorph
