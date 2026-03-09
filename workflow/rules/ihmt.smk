@@ -353,7 +353,7 @@ rule register_ihmt_to_MP2RAGE_easyreg:
     output:
         moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_easyreg.nii.gz",
         fwd_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz",
-        bak_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MP2RAGEregisteredtoIHMTmatrix.nii.gz"
+        bak_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz"
     resources:
         mem_mb=15000
     threads: 8
