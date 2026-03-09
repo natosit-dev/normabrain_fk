@@ -8,3 +8,4 @@ results/
 7T/
 .snakemake/
 opt_*
+install_sct_log.txt
