@@ -357,15 +357,12 @@ rule register_ihmt_to_MP2RAGE_easyreg:
         fwd_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz"
     resources:
         mem_mb=15000
+    threads: 8
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        if command -v nvidia-smi; then
-            export CUDA_VISIBLE_DEVICES=0
-        fi
-
-        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads 1 --affine_only
+        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {params.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --threads {threads} --affine_only
         """
 
 #rules for registering to MP2RAGE with synthmorph

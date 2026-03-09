@@ -6,10 +6,10 @@ rule all:
         # "data/rawdata/bids/7T/code/bidscoin/fixmeta.log",
         "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_MTRmap.nii.gz",
         "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_MTRmap.nii.gz",
-        "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_ants.nii.gz",
-        "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_ants.nii.gz",
-        "data/derivatives/3T/ihmt/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_MTR_registeredtoMP2RAGE_ants.nii.gz",
-        "data/derivatives/3T/ihmt/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_MTR_registeredtoMP2RAGE_ants.nii.gz"
+        "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_easyreg.nii.gz",
+        "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_easyreg.nii.gz",
+        "data/derivatives/3T/ihmt/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_MTR_registeredtoMP2RAGE_easyreg.nii.gz",
+        "data/derivatives/3T/ihmt/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_MTR_registeredtoMP2RAGE_easyreg.nii.gz"
 
 include: "rules/bidsify.smk"
 include: "rules/B1map.smk"
