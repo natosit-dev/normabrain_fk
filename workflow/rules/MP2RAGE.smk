@@ -103,13 +103,14 @@ rule synthseg_mp2rage:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
     output:
          "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/MP2RAGE_synthseg.nii.gz"
+    threads: 8
     resources:
         mem_mb=15000
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthseg --i {input} --o {output} --parc --robust
+        mri_synthseg --i {input} --o {output} --parc --robust --threads {threads}
         """
     
 
