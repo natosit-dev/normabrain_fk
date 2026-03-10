@@ -302,10 +302,8 @@ rule synthstrip_MPM:
         """
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
-            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} -g
-        else 
-            mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads}
         fi
+        mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} -g --no-csf || mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
         """
 
 
