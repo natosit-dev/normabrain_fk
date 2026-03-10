@@ -110,7 +110,10 @@ rule synthseg_mp2rage:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthseg --i {input} --o {output} --parc --robust --threads {threads}
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+        fi
+        mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} || mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} --cpu
         """
     
 

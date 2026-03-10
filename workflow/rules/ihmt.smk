@@ -378,7 +378,7 @@ rule register_ihmt_to_MP2RAGE_synthmorph:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthmorph register -m affine -t {output} {input.moving} {input.ref}
+        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
         """
 
 rule apply_reg_ihmt_to_MP2RAGE_synthmorph:

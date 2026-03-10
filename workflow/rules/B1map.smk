@@ -163,7 +163,7 @@ rule register_b1anat_to_MP2RAGE_synthmorph:
         mem_mb=7000
     shell:
         """
-        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
+        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
         """
     
 
@@ -199,7 +199,7 @@ rule register_b1anat_to_MPM_t1w_synthmorph:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
+        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
         """
 
 
