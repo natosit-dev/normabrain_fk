@@ -113,7 +113,6 @@ rule moco_ihmt:
         """
 
 
-#TO DO: make this dependent on sequence type
 rule split_contrast_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
@@ -264,7 +263,7 @@ rule synthstrip_ihmt:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz"),
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_mask.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 4
@@ -281,7 +280,7 @@ rule synthstrip_ihmt:
 rule DenoiseImage_ihmt:
     input:
         input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz",
-        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_mask.nii.gz"
+        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised.nii.gz")
     conda:
@@ -296,9 +295,9 @@ rule DenoiseImage_ihmt:
 rule N4BiasFieldCorrection_ihmt:
     input:
         input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised.nii.gz",
-        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_mask.nii.gz"
+        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised_n4.nii.gz"
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised_n4.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -313,7 +312,7 @@ rule register_ihmt_to_MP2RAGE_ants:
         ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz",
         moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised_n4.nii.gz",
         ref_mask="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz",
-        moving_mask="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_mask.nii.gz"
+        moving_mask="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
         temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit_registeredtoIHMT.nii.gz"),
@@ -329,18 +328,26 @@ rule register_ihmt_to_MP2RAGE_ants:
 
 rule apply_reg_ihmt_to_MP2RAGE_ants:
     input:
-        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
-        ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
+        # moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
+        ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz",
         reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_registeredtoMP2RAGE_ants.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_apply_reg_ihmt_to_MP2RAGE_ants.done"
     resources: 
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
     shell:
         """
-        antsApplyTransforms -d 3 -v 1 -n Linear -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
+        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
+        for map in "${{MTmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE/{wildcards.subject}_{wildcards.session}_"$map"_registeredtoMP2RAGE.nii.gz"
+            if [ -f $moving ]; then
+                antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t {input.reg} -o $out
+            fi
+        done
+        touch {output}
         """
 
 #rules for registering to MP2RAGE with easyreg

@@ -8,8 +8,8 @@ rule all:
         "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_MTRmap.nii.gz",
         "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_ants.nii.gz",
         "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_ants.nii.gz",
-        "data/derivatives/3T/ihmt/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_MTmap_registeredtoMP2RAGE_ants.nii.gz",
-        "data/derivatives/3T/ihmt/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_MTmap_registeredtoMP2RAGE_ants.nii.gz"
+        "data/derivatives/3T/ihmt/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_apply_reg_ihmt_to_MP2RAGE_ants.done",
+        "data/derivatives/3T/ihmt/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_apply_reg_ihmt_to_MP2RAGE_ants.done"
 
 include: "rules/bidsify.smk"
 include: "rules/B1map.smk"
