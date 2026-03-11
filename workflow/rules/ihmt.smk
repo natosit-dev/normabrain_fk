@@ -340,9 +340,10 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
     shell:
         """
         MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
+        mkdir data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
         for map in "${{MTmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE/{wildcards.subject}_{wildcards.session}_"$map"_registeredtoMP2RAGE.nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants/{wildcards.subject}_{wildcards.session}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t {input.reg} -o $out
             fi
@@ -358,9 +359,9 @@ rule register_ihmt_to_MP2RAGE_easyreg:
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz",
         ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/MP2RAGE_synthseg.nii.gz"
     params:
-        moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_seg.nii.gz"
+        moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_seg.nii.gz"
     output:
-        moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_registeredtoMP2RAGE_easyreg.nii.gz",
+        # moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_registeredtoMP2RAGE_easyreg.nii.gz",
         fwd_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz",
         bak_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz"
     resources:
@@ -370,7 +371,30 @@ rule register_ihmt_to_MP2RAGE_easyreg:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {input.ref_seg} --flo_seg {params.moving_seg} --flo_reg {output.moving_reg} --fwd_field {output.fwd_field} --bak_field {output.bak_field} --threads {threads} --affine_only
+        mri_easyreg --ref {input.ref} --flo {input.moving} --ref_seg {input.ref_seg} --flo_seg {params.moving_seg} --fwd_field {output.fwd_field} --bak_field {output.bak_field} --threads {threads} --affine_only
+        """
+
+
+rule apply_reg_ihmt_to_MP2RAGE_easyreg:
+    input:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_apply_reg_ihmt_to_MP2RAGE_easyreg.done"
+    threads: 8
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
+        mkdir data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg
+        for map in "${{MTmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_"$map"_registeredtoMP2RAGE.nii.gz"
+            if [ -f $moving ]; then
+                mri_easywarp --i $moving --o $out --field {input} --threads {threads}
+            fi
+        done
+        touch {output}
         """
 
 #rules for registering to MP2RAGE with synthmorph
@@ -392,16 +416,26 @@ rule register_ihmt_to_MP2RAGE_synthmorph:
 
 rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
     input:
-        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
+        # moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
+        # ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
         reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE.lta"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_registeredtoMP2RAGE_synthmorph.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_apply_reg_ihmt_to_MP2RAGE_easyreg.done"
     resources: 
         mem_mb=1000
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell: #register and reslice to MP2RAGE
         """
-        mri_synthmorph apply {input.reg} {input.moving} {output}
+        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
+        mkdir data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph
+        for map in "${{MTmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE/{wildcards.subject}_{wildcards.session}_"$map"_registeredtoMP2RAGE.nii.gz"
+            if [ -f $moving ]; then
+                mri_synthmorph apply {input.reg} $moving $out
+            fi
+        done
+        touch {output}
+        
         """  
