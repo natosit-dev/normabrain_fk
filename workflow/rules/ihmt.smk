@@ -38,13 +38,13 @@ rule denoise_ihmt:
         img="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.nii.gz",
         json="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.json"
     output:
-        out=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz"),
+        out=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii"),
         noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_noisemap.nii",
         #remove dummy bval, bvec, and scratch directory after command has finished
         bval_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.bval"),
         bvec_raw=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_raw.bvec"),
-        bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.bval"),
-        bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.bvec"),
+        bval_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.bval"),
+        bvec_denoise=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.bvec"),
         scratch=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/ihmt_denoise_tmp"))
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
@@ -61,7 +61,7 @@ rule denoise_ihmt:
 
         #denoise with the jespersen algorithm extension to MPPCA since it is better for multi-contrast data
         #pe_dir is not relevant for denoise but designer throws an error if it is not set, set it to j for now
-        designer -denoise -algorithm jespersen -pe_dir j -nocleanup -nthreads {threads} -scratch {output.scratch} {input.img} {output.out}
+        designer -denoise -algorithm jespersen -shrinkage frob -adaptive_patch -pe_dir j -nocleanup -nthreads {threads} -scratch {output.scratch} {input.img} {output.out}
         #move noisemap out of denoise_tmp and rename for clarity
         cp {output.scratch}/sigma.nii {output.noisemap}
         """
@@ -84,9 +84,9 @@ rule denoise_ihmt:
 
 rule degibbs_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz")
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii")
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell: #use the Bautista extension of the Kellner protocol because data is 3D not 2D
@@ -97,7 +97,7 @@ rule degibbs_ihmt:
 
 rule moco_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii"
     output:
         preproc="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs_moco.nii"
     container:
