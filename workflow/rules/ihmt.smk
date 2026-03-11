@@ -167,7 +167,7 @@ rule calculate_ihmt_maps:
         split_dir=directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split")
     output:
         sums_means_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/")),
-        MTR=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz")
+        MTmap=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz")
     params:
         #input depending on contrast type
         mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mts.nii",
@@ -207,28 +207,28 @@ rule calculate_ihmt_maps:
             mrmath {params.mts} mean {params.mts_avg} -axis 3 -force
             mrcalc 1 0 1 {params.mts_avg} {input.mt0} 0 -max -div nan 0 -replace -subtract -max -min {params.MTRs} -force
             mrmath {params.mts} sum {params.mts_sum} -axis 3 -force
-            cp {params.MTRs} {output.MTR}
+            cp {params.MTRs} {output.MTmap}
         fi
 
         if [ -f {params.mtd_basic} ]
         then
             mrmath {params.mtd_basic} mean {params.mtd_basic_avg} -axis 3 -force
             mrcalc 1 0 1 {params.mtd_basic_avg} {input.mt0} 0 -max -div nan 0 -replace -subtract -max -min {params.MTRd_basic} -force
-            cp {params.MTRd_basic} {output.MTR}
-        fi
-        
-        if [ -f {params.mtd_cosmod} ]
-        then
-            mrmath {params.mtd_cosmod} mean {params.mtd_cosmod_avg} -axis 3 -force
-            mrcalc 1 0 1 {params.mtd_cosmod_avg} {input.mt0} 0 -max -div nan 0 -replace -subtract -max -min {params.MTRd_cosmod} -force
-            cp {params.MTRd_cosmod} {output.MTR}
+            cp {params.MTRd_basic} {output.MTmap}
         fi
 
         if [ -f {params.mtd_freqalt} ]
         then
             mrmath {params.mtd_freqalt} mean {params.mtd_freqalt_avg} -axis 3 -force
             mrcalc 1 0 1 {params.mtd_freqalt_avg} {input.mt0} 0 -max -div nan 0 -replace -subtract -max -min {params.MTRd_freqalt} -force
-            cp {params.MTRd_freqalt} {output.MTR}
+            cp {params.MTRd_freqalt} {output.MTmap}
+        fi
+
+        if [ -f {params.mtd_cosmod} ]
+        then
+            mrmath {params.mtd_cosmod} mean {params.mtd_cosmod_avg} -axis 3 -force
+            mrcalc 1 0 1 {params.mtd_cosmod_avg} {input.mt0} 0 -max -div nan 0 -replace -subtract -max -min {params.MTRd_cosmod} -force
+            cp {params.MTRd_cosmod} {output.MTmap}
         fi
 
         if [ -f {params.mts} ] && [ -f {params.mtd_basic} ]
@@ -236,13 +236,7 @@ rule calculate_ihmt_maps:
             mrmath {params.mtd_basic} sum {params.mtd_basic_sum} -axis 3 -force
             mrcalc 0 {params.mts_sum} {params.mtd_basic_sum} -subtract -max {params.ihMTmap_basic} -force
             mrcalc 1 0 {params.ihMTmap_basic} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_basic} -force
-        fi
-
-        if [ -f {params.mts} ] && [ -f {params.mtd_cosmod} ]
-        then
-            mrmath {params.mtd_cosmod} sum {params.mtd_cosmod_sum} -axis 3 -force
-            mrcalc 0 {params.mts_sum} {params.mtd_cosmod_sum} -subtract -max {params.ihMTmap_cosmod} -force
-            mrcalc 1 0 {params.ihMTmap_cosmod} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_cosmod} -force
+            cp {params.ihMTmap_basic} {output.MTmap}
         fi
 
         if [ -f {params.mts} ] && [ -f {params.mtd_freqalt} ]
@@ -250,6 +244,15 @@ rule calculate_ihmt_maps:
             mrmath {params.mtd_freqalt} sum {params.mtd_freqalt_sum} -axis 3 -force
             mrcalc 0 {params.mts_sum} {params.mtd_freqalt_sum} -subtract -max {params.ihMTmap_freqalt} -force
             mrcalc 1 0 {params.ihMTmap_freqalt} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_freqalt} -force
+            cp {params.ihMTmap_freqalt} {output.MTmap}
+        fi
+
+        if [ -f {params.mts} ] && [ -f {params.mtd_cosmod} ]
+        then
+            mrmath {params.mtd_cosmod} sum {params.mtd_cosmod_sum} -axis 3 -force
+            mrcalc 0 {params.mts_sum} {params.mtd_cosmod_sum} -subtract -max {params.ihMTmap_cosmod} -force
+            mrcalc 1 0 {params.ihMTmap_cosmod} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_cosmod} -force
+            cp {params.ihMTmap_cosmod} {output.MTmap}
         fi
         """
 
@@ -258,10 +261,10 @@ rule calculate_ihmt_maps:
 
 rule synthstrip_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain.nii.gz"),
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_mask.nii.gz"
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz"),
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 4
@@ -277,10 +280,10 @@ rule synthstrip_ihmt:
 
 rule DenoiseImage_ihmt:
     input:
-        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain.nii.gz",
-        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_mask.nii.gz"
+        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz",
+        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised.nii.gz")
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -292,10 +295,10 @@ rule DenoiseImage_ihmt:
 
 rule N4BiasFieldCorrection_ihmt:
     input:
-        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised.nii.gz",
-        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_mask.nii.gz"
+        input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised.nii.gz",
+        mask_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised_n4.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised_n4.nii.gz"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -307,12 +310,12 @@ rule N4BiasFieldCorrection_ihmt:
 
 rule register_ihmt_to_MP2RAGE_ants:
     input:
-        ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
-        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised_n4.nii.gz",
+        ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz",
+        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised_n4.nii.gz",
         ref_mask="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz",
-        moving_mask="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_mask.nii.gz"
+        moving_mask="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
         temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit_registeredtoIHMT.nii.gz"),
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
     conda:
@@ -326,11 +329,11 @@ rule register_ihmt_to_MP2RAGE_ants:
 
 rule apply_reg_ihmt_to_MP2RAGE_ants:
     input:
-        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
+        moving="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
         ref="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
         reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_ants.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_registeredtoMP2RAGE_ants.nii.gz"
     resources: 
         mem_mb=500
     conda:
@@ -344,13 +347,13 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
 
 rule register_ihmt_to_MP2RAGE_easyreg:
     input:
-        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
+        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz",
         ref_seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/MP2RAGE_synthseg.nii.gz"
     params:
-        moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_seg.nii.gz"
+        moving_seg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_seg.nii.gz"
     output:
-        moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_easyreg.nii.gz",
+        moving_reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_registeredtoMP2RAGE_easyreg.nii.gz",
         fwd_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix.nii.gz",
         bak_field = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz"
     resources:
@@ -367,8 +370,8 @@ rule register_ihmt_to_MP2RAGE_easyreg:
 
 rule register_ihmt_to_MP2RAGE_synthmorph:
     input:
-        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz"
+        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE.lta"
     resources: 
@@ -382,11 +385,11 @@ rule register_ihmt_to_MP2RAGE_synthmorph:
 
 rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
     input:
-        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR.nii.gz",
+        moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
         reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE.lta"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTR_registeredtoMP2RAGE_synthmorph.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_registeredtoMP2RAGE_synthmorph.nii.gz"
     resources: 
         mem_mb=1000
     container:
