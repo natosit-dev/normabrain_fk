@@ -169,3 +169,143 @@ rule N4BiasFieldCorrection_qT1:
         """
         N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
         """
+
+#put MP2RAGE in the space of other contrasts (to avoid interpolation)
+
+rule apply_reg_MP2RAGE_to_ihmt_ants:
+    input:
+        reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_ihmt_ants.done"
+    resources: 
+        mem_mb=500
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "freqalt_MTRd")
+        for map in "${{MTmaps[@]}}"; do
+            ref_init="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
+            if [ -f $ref_init ]; then #if file exists, then set ref
+                ref=$ref_init
+            fi
+        done
+
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit", "t1wUNI_B1Corrected_dicomUnit", "t1UNI_DEN_dicomUnit")
+        mkdir data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_ants
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_ants/"$map"_registeredtoIHMT.nii.gz"
+            antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r $ref -t [ {input.reg}, 1 ] -o $out
+        done
+        touch {output}
+        """
+
+
+rule apply_reg_MP2RAGE_to_MPM_ants:
+    input:
+        ref="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
+        reg="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_Composite.h5"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{seq}_ants.done"
+    resources: 
+        mem_mb=500
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit", "t1wUNI_B1Corrected_dicomUnit", "t1UNI_DEN_dicomUnit")
+        mkdir data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_ants
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_ants/"$map"_registeredto{wildcards.seq}.nii.gz"
+            antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r $ref -t [ {input.reg}, 1 ] -o $out
+        done
+        touch {output}
+        """
+
+
+rule apply_reg_MP2RAGE_to_ihmt_easyreg:
+    input:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_ihmt_easyreg.done"
+    threads: 8
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit", "t1wUNI_B1Corrected_dicomUnit", "t1UNI_DEN_dicomUnit")
+        mkdir data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_easyreg
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_easyreg/"$map"_registeredtoIHMT.nii.gz"
+            mri_easywarp --i $moving --o $out --field {input} --threads {threads}
+        done
+        touch {output}
+        """
+
+
+rule apply_reg_MP2RAGE_to_MPM_easyreg:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix_inverse.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{seq}_easyreg.done"
+    threads: 8
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit", "t1wUNI_B1Corrected_dicomUnit", "t1UNI_DEN_dicomUnit")
+        mkdir data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_easyreg
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_easyreg/"$map"_registeredto{wildcards.seq}.nii.gz"
+            mri_easywarp --i $moving --o $out --field {input} --threads {threads}
+        done
+        touch {output}
+        """
+
+
+rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
+    input:
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_inverse.lta"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_ihmt_synthmorph.done"
+    resources: 
+        mem_mb=1000
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit", "t1wUNI_B1Corrected_dicomUnit", "t1UNI_DEN_dicomUnit")
+        mkdir data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_synthmorph
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_synthmorph/"$map"_registeredtoIHMT.nii.gz"
+            mri_synthmorph apply {input} $moving $out
+        done
+        touch {output}
+        """
+
+
+rule apply_reg_MP2RAGE_to_MPM_synthmorph:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_inverse.lta"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{seq}_synthmorph.done"
+    resources: 
+        mem_mb=1000
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit", "t1wUNI_B1Corrected_dicomUnit", "t1UNI_DEN_dicomUnit")
+        mkdir data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_synthmorph
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_synthmorph/"$map"_registeredto{wildcards.seq}.nii.gz"
+            mri_synthmorph apply {input} $moving $out
+        done
+        touch {output}
+        """

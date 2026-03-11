@@ -339,7 +339,7 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
         "../envs/qMT.yaml"
     shell:
         """
-        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
         mkdir data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
         for map in "${{MTmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
@@ -385,7 +385,7 @@ rule apply_reg_ihmt_to_MP2RAGE_easyreg:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
         mkdir data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg
         for map in "${{MTmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
@@ -404,14 +404,16 @@ rule register_ihmt_to_MP2RAGE_synthmorph:
         moving = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE.lta"
+        reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE.lta",
+        reg_inv = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_inverse.lta"
     resources: 
         mem_mb=7000
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
+        mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output.reg} {input.moving} {input.ref}
+        lta_convert --inlta {output.reg} --outlta {output.reg_inv} --invert
         """
 
 rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
@@ -427,7 +429,7 @@ rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
         "docker://freesurfer/freesurfer:8.1.0"
     shell: #register and reslice to MP2RAGE
         """
-        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "freqalt_MTRd" "basic_ihMTmap" "cosmod_ihMTmap" "freqalt_ihMTmap" "basic_ihMTR" "cosmod_ihMTR" "freqalt_ihMTR")
         mkdir data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph
         for map in "${{MTmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
