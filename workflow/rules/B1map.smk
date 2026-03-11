@@ -38,7 +38,10 @@ rule synthstrip_b1anat:
         mem_mb=9000
     shell:
         """
-        mri_synthstrip -i {params} -o {output[0]} -m {output[1]} -t {threads}
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+        fi
+        mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} -g --no-csf || mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
         """
 
 rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
