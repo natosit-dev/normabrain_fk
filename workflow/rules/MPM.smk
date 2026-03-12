@@ -366,11 +366,11 @@ rule brain_and_spine_mask_MPM:
         "../envs/fslmaths.yaml"
     resources: 
         mem_mb=500
-    shell:
+    shell: #combine brain and spine masks, and fill holes
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
         fslmaths {input.spine_seg} -bin {output.spine_mask}
-        fslmaths {input.brain_mask} -add {output.spine_mask} -bin -fillh {output.brain_spine_mask}
+        fslmaths {input.brain_mask} -add {output.spine_mask} -fillh26 -dilD -dilD -ero -ero -bin {output.brain_spine_mask}
         """
 
 
