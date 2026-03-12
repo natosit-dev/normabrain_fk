@@ -717,7 +717,7 @@ rule register_MPM_to_MP2RAGE_synthmorph:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output.reg} {input.moving} {input.ref}
+        mri_synthmorph register -m rigid -t {output.reg} {input.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output.reg} {input.moving} {input.ref}
         lta_convert --inlta {output.reg} --outlta {output.reg_inv} --invert
         """
 
@@ -728,7 +728,7 @@ rule apply_reg_MPM_to_MP2RAGE_synthmorph:
         # ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz",
         reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE.lta"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{seq}_apply_reg_MPM_to_MP2RAGE_synthmorph.done"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_apply_reg_MPM_to_MP2RAGE_synthmorph.done"
     resources: 
         mem_mb=1000
     container:
@@ -741,7 +741,7 @@ rule apply_reg_MPM_to_MP2RAGE_synthmorph:
             moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
             out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
-                mri_synthmorph apply {input.reg} {input.moving} {output}
+                mri_synthmorph apply {input.reg} $moving $out
             fi
         done
         touch {output}

@@ -415,7 +415,7 @@ rule register_ihmt_to_MP2RAGE_synthmorph:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output.reg} {input.moving} {input.ref}
+        mri_synthmorph register -m rigid -t {output.reg} {input.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output.reg} {input.moving} {input.ref}
         lta_convert --inlta {output.reg} --outlta {output.reg_inv} --invert
         """
 
@@ -436,7 +436,7 @@ rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
         mkdir -p data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph
         for map in "${{MTmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE/{wildcards.subject}_{wildcards.session}_"$map"_registeredtoMP2RAGE.nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph/{wildcards.subject}_{wildcards.session}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
                 mri_synthmorph apply {input.reg} $moving $out
             fi

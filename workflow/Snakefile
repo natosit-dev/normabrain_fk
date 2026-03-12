@@ -6,16 +6,16 @@ rule all:
         # "data/rawdata/bids/7T/code/bidscoin/fixmeta.log",
         "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_MTRmap.nii.gz",
         "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_MTRmap.nii.gz",
-        "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_apply_reg_MPM_to_MP2RAGE_easyreg.done",
-        "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_apply_reg_MPM_to_MP2RAGE_easyreg.done",
-        # "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_easyreg.nii.gz",
-        # "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_easyreg.nii.gz",
-        "data/derivatives/3T/ihmt/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_apply_reg_ihmt_to_MP2RAGE_easyreg.done",
-        "data/derivatives/3T/ihmt/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_apply_reg_ihmt_to_MP2RAGE_easyreg.done",
-        "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/apply_reg_MP2RAGE_to_ihmt_easyreg.done",
-        "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_ihmt_easyreg.done",
-        "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/apply_reg_MP2RAGE_to_vibeMT_easyreg.done",
-        "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_vibeMT_easyreg.done"
+        "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_apply_reg_MPM_to_MP2RAGE_synthmorph.done",
+        "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_apply_reg_MPM_to_MP2RAGE_synthmorph.done",
+        # "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_synthmorph.nii.gz",
+        # "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE_synthmorph.nii.gz",
+        "data/derivatives/3T/ihmt/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_apply_reg_ihmt_to_MP2RAGE_synthmorph.done",
+        "data/derivatives/3T/ihmt/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_apply_reg_ihmt_to_MP2RAGE_synthmorph.done",
+        "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/apply_reg_MP2RAGE_to_ihmt_synthmorph.done",
+        "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_ihmt_synthmorph.done",
+        "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/apply_reg_MP2RAGE_to_vibeMT_synthmorph.done",
+        "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_vibeMT_synthmorph.done"
 
 include: "rules/bidsify.smk"
 include: "rules/B1map.smk"
