@@ -85,7 +85,8 @@ rule run_mp2proc:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2proc.json"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz",
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_DEN_dicomUnit.nii.gz"
     threads:
         8
     container:
