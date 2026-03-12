@@ -397,7 +397,7 @@ rule N4BiasFieldCorrection_mpm:
         input_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_denoised.nii.gz",
         mask_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_denoised_n4.nii.gz"
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_denoised_n4.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -554,27 +554,6 @@ rule fit_JSPqMT_CLI:
         """
 
 #rules for registering to MP2RAGE with ANTS
-
-rule synthstrip_T1map:
-    input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz"
-    output:
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz"),
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_mask.nii.gz"
-    container:
-        "docker://freesurfer/synthstrip:1.8-gpu"
-    threads: 4
-    resources: 
-        mem_mb=9000
-    shell:
-        """
-        if command -v nvidia-smi; then
-            export CUDA_VISIBLE_DEVICES=0
-        fi
-        mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} -g --no-csf || mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
-        """
-
-
 rule DenoiseImage_T1map:
     input:
         input_image = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz",
