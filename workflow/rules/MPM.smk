@@ -700,6 +700,8 @@ rule apply_reg_MPM_to_MP2RAGE_easyreg:
     output:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_apply_reg_MPM_to_MP2RAGE_easyreg.done"
     threads: 8
+    resources: 
+        mem_mb=1000
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:

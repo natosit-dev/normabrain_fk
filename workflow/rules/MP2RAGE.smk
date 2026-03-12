@@ -251,6 +251,8 @@ rule apply_reg_MP2RAGE_to_ihmt_easyreg:
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_ihmt_easyreg.done"
     threads: 8
+    resources: 
+        mem_mb=1000
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
