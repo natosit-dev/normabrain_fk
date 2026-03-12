@@ -265,7 +265,7 @@ rule synthstrip_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz"),
+        # temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz"),
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
@@ -277,9 +277,27 @@ rule synthstrip_ihmt:
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
         fi
-        mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} -g --no-csf || mri_synthstrip -i {input} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+        mri_synthstrip -i {input} -m {output} -t {threads} -g --no-csf || mri_synthstrip -i {input} -m {output} -t {threads} --no-csf
         """
 
+
+rule apply_brainmask_ihmt:
+    input:
+        input_image = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz",
+        brain_mask = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_ihmt_brain_mask.nii.gz"
+    output:
+        temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz")
+    conda:
+        "../envs/fslmaths.yaml"
+    resources: 
+        mem_mb=500
+    shell:
+        """
+        export FSLOUTPUTTYPE='NIFTI_GZ'
+        fslmaths {input.input_image} -mas {input.brain_mask} {output}
+        """
+
+        
 rule DenoiseImage_ihmt:
     input:
         input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz",

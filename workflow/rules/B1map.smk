@@ -29,7 +29,7 @@ rule synthstrip_b1anat:
     params:
         get_last_b1anat_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz",
+        # "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz",
         "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
@@ -41,8 +41,28 @@ rule synthstrip_b1anat:
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
         fi
-        mri_synthstrip -i {params} -o {output[0]} -m {output[1]} -t {threads} -g --no-csf || mri_synthstrip -i {params} -o {output[0]} -m {output[1]} -t {threads} --no-csf
+        mri_synthstrip -i {params} -m {output} -t {threads} -g --no-csf || mri_synthstrip -i {params} -m {output} -t {threads} --no-csf
         """
+
+
+rule apply_brainmask_b1anat:
+    input:
+        check_csa_added_to_meta,
+        brain_mask = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+    params:
+        get_last_b1anat_run
+    output:
+        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz")
+    conda:
+        "../envs/fslmaths.yaml"
+    resources: 
+        mem_mb=500
+    shell:
+        """
+        export FSLOUTPUTTYPE='NIFTI_GZ'
+        fslmaths {params} -mas {input.brain_mask} {output}
+        """
+
 
 rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
     input:
