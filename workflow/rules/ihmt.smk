@@ -51,6 +51,8 @@ def get_ihmt_contrast_type(wildcards):
 #     container:
 #         "docker://nyudiffusionmri/designer2:v2.0.15"
 #     threads: 8
+    # resources:
+    #     mem_mb=1000
 #     shell: #turn off adaptive_patch for now, it takes 12 minutes per subject
 #         """
 #         #need to create dummy bvec and bval for designer to work
@@ -76,6 +78,8 @@ rule denoise_ihmt:
     output:
         out=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii"),
         noisemap="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_noisemap.nii"
+    resources:
+        mem_mb=1000
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
@@ -89,6 +93,8 @@ rule degibbs_ihmt:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise.nii"
     output:
         temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_ihmt_denoise_degibbs.nii")
+    resources:
+        mem_mb=1000
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell: #use the Bautista extension of the Kellner protocol because data is 3D not 2D
@@ -297,7 +303,7 @@ rule apply_brainmask_ihmt:
         fslmaths {input.input_image} -mas {input.brain_mask} {output}
         """
 
-        
+
 rule DenoiseImage_ihmt:
     input:
         input_image="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap_brain.nii.gz",
@@ -402,6 +408,8 @@ rule apply_reg_ihmt_to_MP2RAGE_easyreg:
     output:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_apply_reg_ihmt_to_MP2RAGE_easyreg.done"
     threads: 8
+    resources: 
+        mem_mb=1000
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
