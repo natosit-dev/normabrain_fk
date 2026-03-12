@@ -624,7 +624,7 @@ rule register_MPM_to_MP2RAGE_ants:
         mem_mb=1500
     shell:
         """
-        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_T1map_registeredtoMP2RAGE_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Affine[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_registeredtoMP2RAGE_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Affine[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 

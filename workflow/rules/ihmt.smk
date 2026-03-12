@@ -132,33 +132,33 @@ rule split_contrast_ihmt:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
         """
-        mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2 -force
+        mrconvert {input[0]} {output.mt0} -coord 3 0 -axes 0,1,2 -force
 
         if [ "{params.ihmt_contrast_type}" == "Frequency Alternated and Cosine Modulated" ]
         then
-            mrconvert {input} {params.mts} -coord 3 1:3:end -force
-            mrconvert {input} {params.mtd_freqalt} -coord 3 2:3:end -force
-            mrconvert {input} {params.mtd_cosmod} -coord 3 3:3:end -force
+            mrconvert {input[0]} {params.mts} -coord 3 1:3:end -force
+            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 2:3:end -force
+            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 3:3:end -force
         
         elif [ "{params.ihmt_contrast_type}" == "Basic" ]
         then
-            mrconvert {input} {params.mts} -coord 3 1:2:end -force
-            mrconvert {input} {params.mtd_basic} -coord 3 2:2:end -force
+            mrconvert {input[0]} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input[0]} {params.mtd_basic} -coord 3 2:2:end -force
         
         elif [ "{params.ihmt_contrast_type}" == "Frequency Alternated" ]
         then
-            mrconvert {input} {params.mts} -coord 3 1:2:end -force
-            mrconvert {input} {params.mtd_freqalt} -coord 3 2:2:end -force
+            mrconvert {input[0]} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 2:2:end -force
 
         elif [ "{params.ihmt_contrast_type}" == "Cosine Modulated" ]
         then
-            mrconvert {input} {params.mts} -coord 3 1:2:end -force
-            mrconvert {input} {params.mtd_cosmod} -coord 3 2:2:end -force
+            mrconvert {input[0]} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 2:2:end -force
 
         elif [ "{params.ihmt_contrast_type}" == "BandPass (no single)" ]
         then
-            mrconvert {input} {params.mtd_freqalt} -coord 3 1:2:end -force
-            mrconvert {input} {params.mtd_cosmod} -coord 3 2:2:end -force
+            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 1:2:end -force
+            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 2:2:end -force
         fi
         """
         
