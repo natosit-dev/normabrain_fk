@@ -617,7 +617,7 @@ rule register_MPM_to_MP2RAGE_ants:
         temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain_denoised_n4_registeredtoMP2RAGE.nii.gz"),
         temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain_denoised_n4_registeredto{seq}T1map.nii.gz"),
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_Composite.h5",
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_registeredtoMP2RAGE_InverseComposite.h5")
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_InverseComposite.h5")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -644,8 +644,8 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         mkdir data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
         for map in "${{MPMmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.acq}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants/{wildcards.subject}_{wildcards.session}_acq-{wildcards.acq}_"$map"_registeredtoMP2RAGE.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t {input.reg} -o $out
             fi
@@ -692,8 +692,8 @@ rule apply_reg_MPM_to_MP2RAGE_easyreg:
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         mkdir data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
         for map in "${{MTmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.acq}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.acq}_"$map"_registeredtoMP2RAGE.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
                 mri_easywarp --i $moving --o $out --field {input} --threads {threads}
             fi
@@ -704,7 +704,7 @@ rule apply_reg_MPM_to_MP2RAGE_easyreg:
 
 #rules for registration with synthmorph
 
-rule register_MPM_to_MP2RAGE:
+rule register_MPM_to_MP2RAGE_synthmorph:
     input:
         moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map_brain.nii.gz",
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit_brain.nii.gz"
@@ -722,7 +722,7 @@ rule register_MPM_to_MP2RAGE:
         """
 
 
-rule apply_reg_MPM_to_MP2RAGE:
+rule apply_reg_MPM_to_MP2RAGE_synthmorph:
     input:
         # moving = "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         # ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz",
@@ -738,8 +738,8 @@ rule apply_reg_MPM_to_MP2RAGE:
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         mkdir data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
         for map in "${{MTmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.acq}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.acq}_"$map"_registeredtoMP2RAGE.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
                 mri_synthmorph apply {input.reg} {input.moving} {output}
             fi
