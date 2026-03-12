@@ -683,7 +683,7 @@ rule apply_reg_MPM_to_MP2RAGE_easyreg:
     input:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix.nii.gz"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{seq}_apply_reg_MPM_to_MP2RAGE_easyreg.done"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_apply_reg_MPM_to_MP2RAGE_easyreg.done"
     threads: 8
     container:
         "docker://freesurfer/freesurfer:8.1.0"

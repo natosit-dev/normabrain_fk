@@ -425,7 +425,7 @@ rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
         # ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_dicomUnit.nii.gz",
         reg = "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE.lta"
     output:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_apply_reg_ihmt_to_MP2RAGE_easyreg.done"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_apply_reg_ihmt_to_MP2RAGE_synthmorph.done"
     resources: 
         mem_mb=1000
     container:
