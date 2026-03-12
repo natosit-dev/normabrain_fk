@@ -705,7 +705,7 @@ rule apply_reg_MPM_to_MP2RAGE_easyreg:
     shell:
         """
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
+        mkdir -p data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg
         for map in "${{MTmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
             out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
@@ -751,10 +751,10 @@ rule apply_reg_MPM_to_MP2RAGE_synthmorph:
     shell: #register and reslice to MP2RAGE
         """
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
-        for map in "${{MTmaps[@]}}"; do
+        mkdir -p data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph
+        for map in "${{MPMmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
                 mri_synthmorph apply {input.reg} $moving $out
             fi

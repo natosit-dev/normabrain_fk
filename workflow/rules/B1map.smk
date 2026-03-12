@@ -84,7 +84,7 @@ rule N4BiasFieldCorrection_b1anat: #ATTENTION: slightly different parameters fro
         input_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised.nii.gz",
         mask_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz"
+        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 

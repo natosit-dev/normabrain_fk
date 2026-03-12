@@ -27,7 +27,7 @@ rule json_for_uncorr_qT1:
         echo_spacing = config["mp2rage_echo_spacing"],
         uncorr_qT1 = True
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.json"
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.json")
     threads:
         8
     resources: 
@@ -42,7 +42,7 @@ rule create_uncorr_qT1:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.json"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz"
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz")
     threads:
         8
     container:
@@ -178,7 +178,7 @@ rule N4BiasFieldCorrection_qT1:
         input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised.nii.gz",
         mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised_n4.nii.gz"
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised_n4.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -192,6 +192,7 @@ rule N4BiasFieldCorrection_qT1:
 
 rule apply_reg_MP2RAGE_to_ihmt_ants:
     input:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz",
         reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_ihmt_ants.done"
@@ -245,7 +246,8 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
 
 rule apply_reg_MP2RAGE_to_ihmt_easyreg:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz",
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_ihmt_easyreg.done"
     threads: 8
@@ -258,7 +260,7 @@ rule apply_reg_MP2RAGE_to_ihmt_easyreg:
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
             out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_easyreg/"$map"_registeredtoIHMT.nii.gz"
-            mri_easywarp --i $moving --o $out --field {input} --threads {threads}
+            mri_easywarp --i $moving --o $out --field {input[0]} --threads {threads}
         done
         touch {output}
         """
@@ -266,7 +268,8 @@ rule apply_reg_MP2RAGE_to_ihmt_easyreg:
 
 rule apply_reg_MP2RAGE_to_MPM_easyreg:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix_inverse.nii.gz"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix_inverse.nii.gz",
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{seq}_easyreg.done"
     threads: 8
@@ -279,7 +282,7 @@ rule apply_reg_MP2RAGE_to_MPM_easyreg:
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
             out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_easyreg/"$map"_registeredto{wildcards.seq}.nii.gz"
-            mri_easywarp --i $moving --o $out --field {input} --threads {threads}
+            mri_easywarp --i $moving --o $out --field {input[0]} --threads {threads}
         done
         touch {output}
         """
@@ -287,7 +290,8 @@ rule apply_reg_MP2RAGE_to_MPM_easyreg:
 
 rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_inverse.lta"
+        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_IHMTregisteredtoMP2RAGE_inverse.lta",
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_ihmt_synthmorph.done"
     resources: 
@@ -301,7 +305,7 @@ rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
             out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_synthmorph/"$map"_registeredtoIHMT.nii.gz"
-            mri_synthmorph apply {input} $moving $out
+            mri_synthmorph apply {input[0]} $moving $out
         done
         touch {output}
         """
@@ -309,7 +313,8 @@ rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
 
 rule apply_reg_MP2RAGE_to_MPM_synthmorph:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_inverse.lta"
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_inverse.lta",
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{seq}_synthmorph.done"
     resources: 
@@ -323,7 +328,7 @@ rule apply_reg_MP2RAGE_to_MPM_synthmorph:
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
             out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_synthmorph/"$map"_registeredto{wildcards.seq}.nii.gz"
-            mri_synthmorph apply {input} $moving $out
+            mri_synthmorph apply {input[0]} $moving $out
         done
         touch {output}
         """

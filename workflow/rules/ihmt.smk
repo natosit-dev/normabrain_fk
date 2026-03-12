@@ -166,7 +166,7 @@ rule split_contrast_ihmt:
 rule calculate_ihmt_maps:
     input:
         mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_ihmt_denoise_degibbs_moco_mt0.nii",
-        split_dir=directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split")
+        split_dir="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split"
     output:
         sums_means_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/")),
         MTmap=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_MTmap.nii.gz")
