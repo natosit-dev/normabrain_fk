@@ -159,6 +159,19 @@ rule calculate_mag_from_complex:
         mrcalc {input} -abs {output}
         """
 
+rule calculate_phase_from_complex:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d_riciancorr.nii"
+    output:
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d_riciancorr.nii")
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        mrcalc {input} -phase {output}
+        """
 
 rule concat_contrast_mag:
     input:
