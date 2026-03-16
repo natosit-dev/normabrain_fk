@@ -64,6 +64,22 @@ rule copy_denoised_qsm:
         done
         """
 
+
+rule copy_mask_qsm:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_spine_mask.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        maskfilter {input} erode {output}
+        """
+
+
 rule qsmxt:
     input:
         # "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/"
@@ -78,5 +94,8 @@ rule qsmxt:
         "docker://vnmd/qsmxt_8.2.2:20260105"
     shell:
         """
-        qsmxt data/derivatives/{wildcards.field_strength}/QSM --auto_yes
+        qsmxt data/derivatives/{wildcards.field_strength}/QSM --use_existing_masks --auto_yes
+        mkdir data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt
+        mv data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*/* data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt/
+        rm -rf data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*/*
         """

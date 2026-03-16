@@ -15,7 +15,9 @@ rule all:
         "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/apply_reg_MP2RAGE_to_ihmt_ants.done",
         "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_ihmt_ants.done",
         "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/apply_reg_MP2RAGE_to_vibeMT_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_vibeMT_ants.done"
+        "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_vibeMT_ants.done",
+        "data/derivatives/3T/QSM/derivatives/workflow/qsmxt-workflow/sub-rfl260123normanoel/ses-1/",
+        "data/derivatives/3T/QSM/derivatives/workflow/qsmxt-workflow/sub-jrb250926normapoet/ses-1/"
 
 include: "rules/bidsify.smk"
 include: "rules/B1map.smk"
