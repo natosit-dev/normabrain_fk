@@ -367,9 +367,10 @@ rule spineseg_MPM:
        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos.nii.gz",
        ".snakemake/scripts/install_sct.done"
     output:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_all.nii.gz",
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_discs.nii.gz"),
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_discs.json")
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_seg.nii.gz"),
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_spine_mask.nii.gz"
+        # temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_discs.nii.gz"),
+        # temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_discs.json")
     # container:
     #     "docker://vnmd/spinalcordtoolbox_7.2:20251215"
     threads: 4
@@ -381,16 +382,16 @@ rule spineseg_MPM:
             export SCT_USE_GPU=1
             export CUDA_VISIBLE_DEVICES=0
         fi
-        sct_deepseg spine -i {input[0]}
+        sct_deepseg spinalcord -i {input[0]}
+        cp {output[0]} {output[1]}
         """
 
 
 rule brain_and_spine_mask_MPM:
     input:
-       spine_seg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_totalspineseg_all.nii.gz",
-        brain_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_mask.nii.gz"
+       spine_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_spine_mask.nii.gz",
+       brain_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_mask.nii.gz"
     output:
-        spine_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_spine_mask.nii.gz",
         brain_spine_mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-{part}_sos_brain_spine_mask.nii.gz"  
     conda:
         "../envs/fslmaths.yaml"
@@ -399,8 +400,7 @@ rule brain_and_spine_mask_MPM:
     shell: #combine brain and spine masks, and fill holes
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
-        fslmaths {input.spine_seg} -bin {output.spine_mask}
-        fslmaths {input.brain_mask} -add {output.spine_mask} -fillh26 -dilD -dilD -ero -ero -bin {output.brain_spine_mask}
+        fslmaths {input.brain_mask} -add {input.spine_mask} -fillh26 -dilD -dilD -ero -ero -bin {output.brain_spine_mask}
         """
 
 
