@@ -126,14 +126,14 @@ rule split_contrast_ihmt:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii",
         check_csa_added_to_meta
     output:
-        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mt0.nii",
+        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mt0.nii",
         split_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}"))
     params:
         ihmt_contrast_type = get_ihmt_contrast_type,
-        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts.nii",
-        mtd_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_basic.nii",
-        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
-        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
+        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts.nii",
+        mtd_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_basic.nii",
+        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",
+        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
@@ -171,32 +171,32 @@ rule split_contrast_ihmt:
 
 rule calculate_ihmt_maps:
     input:
-        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mt0.nii",
+        mt0="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mt0.nii",
         split_dir="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}"
     output:
         sums_means_dir=temp(directory("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/")),
         MTmap=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_MTmap.nii.gz")
     params:
         #input depending on contrast type
-        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts.nii",
-        mtd_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_basic.nii",
-        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii",
-        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",  
+        mts="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts.nii",
+        mtd_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_basic.nii",
+        mtd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii",
+        mtd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/preproc/split_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_freqalt.nii",  
         #avg depending on contrast type
-        mts_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts_avg.nii"),
-        mtd_basic_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_basic_avg.nii"),
-        mtd_cosmod_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod_avg.nii"),
-        mtd_freqalt_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_freqalt_avg.nii"),    
+        mts_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts_avg.nii"),
+        mtd_basic_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_basic_avg.nii"),
+        mtd_cosmod_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod_avg.nii"),
+        mtd_freqalt_avg=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_freqalt_avg.nii"),    
         #MTR depending on contrast type
         MTRs="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_MTRs.nii.gz",
         MTRd_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_basic_MTRd.nii.gz",
         MTRd_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_cosmod_MTRd.nii.gz",
         MTRd_freqalt="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_freqalt_MTRd.nii.gz", 
         #sum depending on contrast type
-        mts_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts_sum.nii"),
-        mtd_basic_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_basic_sum.nii"),
-        mtd_cosmod_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod_sum.nii"),
-        mtd_freqalt_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_freqalt_sum.nii"),
+        mts_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts_sum.nii"),
+        mtd_basic_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_basic_sum.nii"),
+        mtd_cosmod_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod_sum.nii"),
+        mtd_freqalt_sum=temp("data/derivatives/{field_strength}/ihmt/{subject}/{session}/sums_means_acq-{ihmt_params}/{subject}_{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_freqalt_sum.nii"),
         #ihMTmap depending on contrast type
         ihMTmap_basic="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_basic_ihMTmap.nii.gz",
         ihMTmap_cosmod="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_cosmod_ihMTmap.nii.gz",
@@ -350,7 +350,7 @@ rule register_ihmt_to_MP2RAGE_ants:
         mem_mb=700
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Affine[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_IHMTregisteredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration -d 3 -v 1 --transform Affine[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_IHMTregisteredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 rule apply_reg_ihmt_to_MP2RAGE_ants:
