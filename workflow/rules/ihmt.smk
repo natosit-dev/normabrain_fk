@@ -114,10 +114,10 @@ rule moco_ihmt:
         # -m 1 means use ihMT-MoCo for motion correction (from Soustelle preprint)
         # -c is a comma separated list of desired output images, we chose to only output the motion corrected image without computing any maps
         """
-        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_
+        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/acq-{wildcards.ihmt_params}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_
         
         #rename preproc image for clarity
-        mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_ihMT.nii {output.preproc}
+        mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/acq-{wildcards.ihmt_params}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_ihMT.nii {output.preproc}
         """
 
 
