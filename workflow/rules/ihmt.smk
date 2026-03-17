@@ -118,6 +118,7 @@ rule moco_ihmt:
         
         #rename preproc image for clarity
         mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/acq-{wildcards.ihmt_params}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_ihMT.nii {output.preproc}
+        rm -rf data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/acq-{wildcards.ihmt_params}
         """
 
 
