@@ -133,7 +133,7 @@ rule rician_bias_corr:
     input:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d.nii"
     output:
-        denoised=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d_riciancorr.nii"),
+        denoised="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d_riciancorr.nii",
         noisemap=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_riciannoisemap.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
@@ -217,7 +217,7 @@ rule split_contrast_mag:
         pdw_in=pdwmag_preproc
     output:
         t1w_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii"),
-        mt0_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii"),
+        mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii",
         mtw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii"),
         pdw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii") 
     resources: #limit memory by input size

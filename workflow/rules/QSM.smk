@@ -67,7 +67,9 @@ rule copy_denoised_qsm:
 
 rule copy_mask_qsm:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_spine_mask.nii.gz"
+        mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTt1w_mt-off_part-mag_sos_brain_spine_mask.nii.gz",
+        ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_sos.nii.gz",
+        reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_registeredtovibeMTt1w_Composite.h5"
     output:
         "data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz"
     resources: #limit memory by input size
@@ -76,7 +78,8 @@ rule copy_mask_qsm:
         "../envs/qMT.yaml"
     shell:
         """
-        maskfilter {input} erode {output}
+        maskfilter {input.mask} erode {output} -force
+        antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {output} -r {input.ref} -t [ {input.reg}, 1 ] -o {output}
         """
 
 
@@ -84,7 +87,8 @@ rule qsmxt:
     input:
         # "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/"
         "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json",
-        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz"
+        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz",
+        "data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz"
     output:
         directory("data/derivatives/{field_strength}/QSM/derivatives/workflow/qsmxt-workflow/{subject}/{session}/")    
     threads: 4
