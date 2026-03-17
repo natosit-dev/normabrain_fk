@@ -5,5 +5,5 @@ snakemake --config input_dicoms_path="../test_dicoms" -np data/derivatives/3T/MP
 if command -v nvidia-smi; then
     snakemake --config input_dicoms_path="/home/rflaherty/test_dicoms" --resources mem_mb=10000 --sdm conda apptainer --cores 8 --singularity-args "--nv -e" --rerun-incomplete
 else
-    snakemake --config input_dicoms_path="../test_dicoms" --resources mem_mb=9300 --sdm conda apptainer --cores 8 --rerun-incomplete
+    snakemake --config input_dicoms_path="/home/rflaherty/test_dicoms" --resources mem_mb=9300 --sdm conda apptainer --cores 8 --rerun-incomplete
 fi
