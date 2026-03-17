@@ -86,9 +86,9 @@ rule copy_mask_qsm:
 rule qsmxt:
     input:
         # "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/"
-        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json",
-        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz",
-        "data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz"
+        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json", subject=config["subject_list_bids"], allow_missing=True),
+        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz", subject=config["subject_list_bids"], allow_missing=True),
+        expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=config["subject_list_bids"], allow_missing=True)
     output:
         directory("data/derivatives/{field_strength}/QSM/derivatives/workflow/qsmxt-workflow/{subject}/{session}/")    
     threads: 4
@@ -101,5 +101,5 @@ rule qsmxt:
         qsmxt data/derivatives/{wildcards.field_strength}/QSM --use_existing_masks --auto_yes
         mkdir data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt
         mv data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*/* data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt/
-        rm -rf data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*/*
+        rm -rf data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*
         """

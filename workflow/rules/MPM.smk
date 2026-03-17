@@ -133,7 +133,7 @@ rule rician_bias_corr:
     input:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d.nii"
     output:
-        denoised="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d_riciancorr.nii",
+        denoised=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d_riciancorr.nii"),
         noisemap=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_echos4d_riciannoisemap.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
@@ -163,7 +163,7 @@ rule calculate_phase_from_complex:
     input:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-complex_echos4d_riciancorr.nii"
     output:
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d_riciancorr.nii")
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}{contrast}_mt-{mt}_part-phase_echos4d_riciancorr.nii"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
