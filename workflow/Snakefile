@@ -13,10 +13,6 @@ rule all:
         # "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_vibeMT_ants.done"
         "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/apply_reg_MP2RAGE_to_ihMTLoSarMC6p6bsag1p6p3_ants.done",
         "data/derivatives/3T/ihmt/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-ihMTLoSarMC6p6bsag1p6p3_apply_reg_ihmt_to_MP2RAGE_ants.done",
-        # "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_ihMTMCfa6b6pBTR110rfbfwe1p6c4_ants.done",
-        # "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/apply_reg_MP2RAGE_to_ihMTMCsine6b6pBTR110rfbfwe1p6c4_ants.done",
-        # "data/derivatives/3T/ihmt/sub-jrb250926normapoet_ses-1_acq-ihMTMCfa6b6pBTR110rfbfwe1p6c4_apply_reg_ihmt_to_MP2RAGE_ants.done",
-        # "data/derivatives/3T/ihmt/sub-jrb250926normapoet_ses-1_acq-ihMTMCsine6b6pBTR110rfbfwe1p6c4_apply_reg_ihmt_to_MP2RAGE_ants.done",
         "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/apply_reg_MP2RAGE_to_ihMTv3FAalt6p6bsag1p6p3_ants.done",
         "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/apply_reg_MP2RAGE_to_ihMTv4FAltc4DLlin3dum_ants.done",
         "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/apply_reg_MP2RAGE_to_ihMTv4FAltc4lin3dumACSsep_ants.done",
