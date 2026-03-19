@@ -1,6 +1,13 @@
 import glob
 import shutil
 from pathlib import Path
+from bids import BIDSLayout
+
+layout=BIDSLayout("data/rawdata/bids/3T")
+qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+qsm_subjects = ["sub-" + x for x in qsm_subjects]
+qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+qsm_sessions = ["ses-" + x for x in qsm_sessions]
 
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -132,12 +139,12 @@ rule copy_mask_qsm:
 rule qsmxt:
     input:
         # "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/"
-        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True), #allow_missing allows mix of wildcards and config variables in file name
-        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True)
+        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True), #allow_missing allows mix of wildcards and config variables in file name
+        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
+        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
+        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
+        expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
+        # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
     output:
         directory("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/")    
     threads: 8
