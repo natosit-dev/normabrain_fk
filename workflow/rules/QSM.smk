@@ -184,7 +184,7 @@ rule qsmxt:
         "docker://vnmd/qsmxt_8.2.2:20260105"
     shell:
         """
-        qsmxt data/derivatives/{wildcards.field_strength}/QSM --premade 'body' --auto_yes
+        qsmxt data/derivatives/{wildcards.field_strength}/QSM --use_existing_masks --auto_yes
         mkdir -p data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt
         mv data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*/* data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt/
         rm -rf data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*
