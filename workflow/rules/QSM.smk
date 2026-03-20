@@ -1,9 +1,46 @@
 import glob
 import shutil
 from pathlib import Path
+from bids import BIDSLayout
+
+# layout=BIDSLayout("data/rawdata/bids/3T")
+# qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+# qsm_subjects = ["sub-" + x for x in qsm_subjects]
+# qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+# qsm_sessions = ["ses-" + x for x in qsm_sessions]
 
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+
+def qsm_nii_list(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+
+def qsm_json_list(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+
+def qsm_mask_list(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def get_inv1(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -59,7 +96,7 @@ rule copy_denoised_qsm:
         """
         vols="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
         for vol in $(seq 1 $vols); do
-            i="$((${{vols}}-1))"
+            i="$((${{vol}}-1))"
             mrconvert {input.phase} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_phase.nii.gz
             mv data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_phase.nii.gz data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_echo-${{vol}}_part-phase_MEGRE.nii.gz
             mrconvert {input.mag} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_mag.nii.gz
@@ -131,13 +168,13 @@ rule copy_mask_qsm:
 
 rule qsmxt:
     input:
-        # "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/"
-        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True), #allow_missing allows mix of wildcards and config variables in file name
-        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True)
+        qsm_nii_list,
+        qsm_json_list,
+        qsm_mask_list
+        # expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
+        # expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
+        # expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
+        # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
     output:
         directory("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/")    
     threads: 8
