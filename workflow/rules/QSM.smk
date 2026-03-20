@@ -5,6 +5,9 @@ from pathlib import Path
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
+def get_inv1(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
 
 rule copy_raw_qsm:
     input:
@@ -65,6 +68,33 @@ rule copy_denoised_qsm:
         """
 
 
+rule copy_raw_t1w_qsm:
+    input:
+        check_csa_added_to_meta
+    params:
+        inv1 = get_inv1
+    output:
+        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    run:
+        inv1_json = Path(params.inv1).with_suffix("").with_suffix(".json")
+        shutil.copy(inv1_json, str(output))
+
+        
+rule copy_uniden_qsm:
+    input:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    shell:
+        """
+        cp {input} {output}
+        """
+
+
 rule copy_mask_qsm:
     input:
         mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTt1w_mt-off_part-mag_sos_brain_spine_mask.nii.gz",
@@ -82,13 +112,32 @@ rule copy_mask_qsm:
         antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {output} -r {input.ref} -t [ {input.reg}, 1 ] -o {output}
         """
 
+# rule copy_seg_qsm:
+#     input:
+#         seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/MP2RAGE_synthseg.nii.gz",
+#         ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_sos.nii.gz",
+#         T1toMP2RAGE =  "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-vibeMT_registeredtoMP2RAGE_Composite.h5",
+#         MT0toT1 = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_registeredtovibeMTt1w_Composite.h5"
+#     output:
+#         "data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz"
+#     resources: #limit memory by input size
+#         mem_mb=lambda wc, input: 2.5 * input.size_mb
+#     conda:
+#         "../envs/qMT.yaml"
+#     shell:
+#         """
+#         antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {input.seg} -r {input.ref} -t [ {input.T1toMP2RAGE}, 1 ] -t [ {input.MT0toT1}, 1 ] -o {output}
+#         """
 
 rule qsmxt:
     input:
         # "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/"
         expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True), #allow_missing allows mix of wildcards and config variables in file name
         expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
-        expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True)
+        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
+        expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
+        expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True),
+        # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz", subject=config["subject_list_bids"], session=config["session_list"], allow_missing=True)
     output:
         directory("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/")    
     threads: 8
@@ -98,7 +147,7 @@ rule qsmxt:
         "docker://vnmd/qsmxt_8.2.2:20260105"
     shell:
         """
-        qsmxt data/derivatives/{wildcards.field_strength}/QSM --use_existing_masks --auto_yes
+        qsmxt data/derivatives/{wildcards.field_strength}/QSM --premade 'body' --auto_yes
         mkdir -p data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt
         mv data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*/* data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt/
         rm -rf data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*
