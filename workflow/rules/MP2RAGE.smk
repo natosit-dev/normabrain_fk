@@ -80,7 +80,7 @@ rule json_for_mp2proc:
 
 rule run_mp2proc:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2proc_acq-{mp2rage_params}.json"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/mp2proc.json"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz",
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz",

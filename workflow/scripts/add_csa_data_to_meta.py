@@ -28,18 +28,20 @@ def add_csa_data_to_meta(bidspath: str):
 
     #loop through subjects
     for subject in subjects:
+        print(subject)
         #get list of session folders for subject
         sessions = lsdirs(subject, 'ses-*')
         
         #loop through sessions
         for session in sessions:
-            
+            print(session)
             #initialize sourcedir
             sourcedir = ''
 
             ihmt_targets = sorted([match for match in session.rglob(ihmt_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             #loop through perfusion targets
             for target in ihmt_targets:
+                print(target)
                 #loop through map of provence data to nifiti/tsv bids files
                 for source, row in provdata.iterrows():
                     #if the target pattern is in the name of the bids file, get the source dicom file path
@@ -91,6 +93,7 @@ def add_csa_data_to_meta(bidspath: str):
             perf_targets = sorted([match for match in session.rglob(perf_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             #loop through perfusion targets
             for target in perf_targets:
+                print(target)
                 #loop through map of provence data to nifiti/tsv bids files
                 for source, row in provdata.iterrows():
                     #if the target pattern is in the name of the bids file, get the source dicom file path
@@ -120,6 +123,7 @@ def add_csa_data_to_meta(bidspath: str):
             #get list of t1b1fl target files that match the pattern
             t1b1fl_targets = sorted([match for match in session.rglob(t1b1fl_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in t1b1fl_targets:
+                print(target)
                 for source, row in provdata.iterrows():
                     if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
                         sourcedir = source
@@ -135,6 +139,7 @@ def add_csa_data_to_meta(bidspath: str):
             #get list of vibemt target files that match the pattern
             vibemt_targets = sorted([match for match in session.rglob(vibemt_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in vibemt_targets:
+                print(target)
                 for source, row in provdata.iterrows():
                     if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
                         sourcedir = source
@@ -186,6 +191,7 @@ def add_csa_data_to_meta(bidspath: str):
             #loop through mp2rage targets
             mp2rage_targets = sorted([match for match in session.rglob(mp2rage_pattern) if match.suffixes[0] in ('.tsv','.nii')])
             for target in mp2rage_targets:
+                print(target)
                 for source, row in provdata.iterrows():
                     if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
                         sourcedir = source
@@ -206,7 +212,7 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata['ro_fa1_deg'] = float(csa_data['adFlipAngleDegree[0]'])
                 jsondata['ro_fa2_deg'] = float(csa_data['adFlipAngleDegree[1]'])
                 #calculate number of shots before and after the inversion pulse based on sequence type
-                if jsondata['PulseSequenceDetails'] == "%SiemensSeq%\\tfl":
+                if jsondata['PulseSequenceDetails'] == "%SiemensSeq%\\tfl" or jsondata['PulseSequenceDetails'] == "%CustomerSeq%\\wip_963_iVIBE_tfl":
                     jsondata['n_after'] = int(csa_data['sKSpace.lPartitions']) / 2
                     jsondata['n_before'] = int(csa_data['sFastImaging.lTurboFactor']) - jsondata['n_after']
                 elif jsondata['PulseSequenceDetails'] == "%CustomerSeq%\\wip_csTFL_cstfl":
