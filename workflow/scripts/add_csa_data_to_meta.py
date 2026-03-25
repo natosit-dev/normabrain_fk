@@ -213,14 +213,14 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata['ro_fa2_deg'] = float(csa_data['adFlipAngleDegree[1]'])
                 #calculate number of shots before and after the inversion pulse based on sequence type
                 if jsondata['PulseSequenceDetails'] == "%SiemensSeq%\\tfl" or jsondata['PulseSequenceDetails'] == "%CustomerSeq%\\wip_963_iVIBE_tfl":
-                    jsondata['n_after'] = int(csa_data['sKSpace.lPartitions']) / 2
+                    jsondata['n_after'] = int(floor(float(csa_data['sKSpace.lPartitions']) / 2))
                     jsondata['n_before'] = int(csa_data['sFastImaging.lTurboFactor']) - jsondata['n_after']
                 elif jsondata['PulseSequenceDetails'] == "%CustomerSeq%\\wip_csTFL_cstfl":
-                    jsondata['n_after'] = floor(float(csa_data['sFastImaging.lTurboFactor']) / 2)
-                    jsondata['n_before'] = ceil(float(csa_data['sFastImaging.lTurboFactor']) / 2)
+                    jsondata['n_after'] = int(floor(float(csa_data['sFastImaging.lTurboFactor']) / 2))
+                    jsondata['n_before'] = int(ceil(float(csa_data['sFastImaging.lTurboFactor']) / 2))
                 elif jsondata['PulseSequenceDetails'] == "%CustomerSeq%\\cstfl_wip925b":
-                    jsondata['n_after'] = floor(float(csa_data['sWipMemBlock.alFree[2]']) / 2)
-                    jsondata['n_before'] = ceil(float(csa_data['sWipMemBlock.alFree[2]']) / 2)
+                    jsondata['n_after'] = int(floor(float(csa_data['sWipMemBlock.alFree[2]']) / 2))
+                    jsondata['n_before'] = int(ceil(float(csa_data['sWipMemBlock.alFree[2]']) / 2))
                 #save number of shots before and after inversion pulse to NumberShots field in json sidecar, for BIDS compatibility
                 jsondata['NumberShots'] = [jsondata['n_before'], jsondata['n_after']]
                 with jsonfile.open('w') as jf:

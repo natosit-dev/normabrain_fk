@@ -15,6 +15,20 @@ def get_unit1(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params}*_UNIT1.nii.gz'))[0]
 
+def get_mp2rage_qT1_stats(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
+    return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.stats', mp2rage_params=mp2rage_params_list, allow_missing=True)
+
+def get_mp2rage_qR1_stats(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
+    return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qR1_pksUnit.stats', mp2rage_params=mp2rage_params_list, allow_missing=True)
+
 
 rule json_for_uncorr_qT1:
     input:
@@ -27,7 +41,7 @@ rule json_for_uncorr_qT1:
         echo_spacing = config["mp2rage_echo_spacing"],
         uncorr_qT1 = True
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_acq-{mp2rage_params}.json")
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.json")
     threads:
         8
     resources: 
@@ -40,9 +54,9 @@ rule json_for_uncorr_qT1:
 
 rule create_uncorr_qT1:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_acq-{mp2rage_params}.json"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.json"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_acq-{mp2rage_params}.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz")
     threads:
         8
     container:
@@ -52,15 +66,15 @@ rule create_uncorr_qT1:
     shell:
         """
         /opt/vol_proc/main {input}
-        cp "data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/qT1_msUnit.nii.gz" {output}
+        cp "data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/qT1_msUnit.nii.gz" {output}
         """
 
 
 rule json_for_mp2proc:
     input:
         meta_complete = check_csa_added_to_meta,
-        b1map_nifti = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz",
-        b1map_json = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.json"
+        b1map_nifti = "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz",
+        b1map_json = "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.json"
     params:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
@@ -99,9 +113,9 @@ rule run_mp2proc:
 
 rule synthseg_mp2rage:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
     output:
-         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/MP2RAGE_synthseg.nii.gz"
+         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz"
     threads: 8
     resources:
         mem_mb=15000
@@ -114,16 +128,48 @@ rule synthseg_mp2rage:
         fi
         mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} || mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} --cpu
         """
-    
+
+
+checkpoint mp2rage_stats:
+    input:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.stats",
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.stats"
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit")
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz --sum data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".stats --excludeid 0
+        done
+        """  
+
+
+rule mp2rage_tsv:
+    input:
+        get_mp2rage_qT1_stats,
+        get_mp2rage_qR1_stats
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/qT1_stats.tsv",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/qR1_stats.tsv"   
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        asegstats2table -i {input}  -t {output} --meas mean --common-segs --no-segno 0
+        """
+
 
 #rules for registering with ANTs
 
 rule synthstrip_qT1:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}.nii.gz"
     output:
         # temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain.nii.gz"),
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_mask.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 4
@@ -140,10 +186,10 @@ rule synthstrip_qT1:
 
 rule apply_brainmask_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}.nii.gz",
-        brain_mask = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}.nii.gz",
+        brain_mask = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain.nii.gz")
     conda:
         "../envs/fslmaths.yaml"
     resources: 
@@ -157,10 +203,10 @@ rule apply_brainmask_qT1:
 
 rule DenoiseImage_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -173,10 +219,10 @@ rule DenoiseImage_qT1:
 
 rule N4BiasFieldCorrection_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain_denoised.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain_denoised_n4.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain_denoised_n4.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -193,7 +239,7 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz",
         reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{ihmt_params}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_ants.done"
     resources: 
         mem_mb=500
     conda:
@@ -209,10 +255,10 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         done
 
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_ants
+        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_ihmt_ants
         for map in "${{MP2RAGEmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_ants/"$map"_registeredto{wildcards.ihmt_params}.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_ihmt_ants/"$map"_registeredto{wildcards.ihmt_params}.nii.gz"
             antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r $ref -t [ {input.reg}, 1 ] -o $out
         done
         touch {output}
@@ -224,7 +270,7 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
         ref="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
         reg="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_Composite.h5"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{seq}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{seq}_ants.done"
     resources: 
         mem_mb=500
     conda:
@@ -232,10 +278,10 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
     shell:
         """
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_ants
+        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}_ants
         for map in "${{MP2RAGEmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_ants/"$map"_registeredto{wildcards.seq}.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}_ants/"$map"_registeredto{wildcards.seq}.nii.gz"
             antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t [ {input.reg}, 1 ] -o $out
         done
         touch {output}
@@ -245,9 +291,9 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
 rule apply_reg_MP2RAGE_to_ihmt_easyreg:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{ihmt_params}_easyreg.done"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_easyreg.done"
     threads: 8
     resources: 
         mem_mb=1000
@@ -256,10 +302,10 @@ rule apply_reg_MP2RAGE_to_ihmt_easyreg:
     shell:
         """
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_easyreg
+        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_ihmt_easyreg
         for map in "${{MP2RAGEmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_easyreg/"$map"_registeredto{wildcards.ihmt_params}.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_ihmt_easyreg/"$map"_registeredto{wildcards.ihmt_params}.nii.gz"
             mri_easywarp --i $moving --o $out --field {input[0]} --threads {threads}
         done
         touch {output}
@@ -269,19 +315,19 @@ rule apply_reg_MP2RAGE_to_ihmt_easyreg:
 rule apply_reg_MP2RAGE_to_MPM_easyreg:
     input:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix_inverse.nii.gz",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{seq}_easyreg.done"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{seq}_easyreg.done"
     threads: 8
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_easyreg
+        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}_easyreg
         for map in "${{MP2RAGEmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_easyreg/"$map"_registeredto{wildcards.seq}.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_easyreg/acq-{wildcards.mp2rage_params}/"$map"_registeredto{wildcards.seq}.nii.gz"
             mri_easywarp --i $moving --o $out --field {input[0]} --threads {threads}
         done
         touch {output}
@@ -291,9 +337,9 @@ rule apply_reg_MP2RAGE_to_MPM_easyreg:
 rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
     input:
         "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE_inverse.lta",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{ihmt_params}_synthmorph.done"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_synthmorph.done"
     resources: 
         mem_mb=1000
     container:
@@ -301,10 +347,10 @@ rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
     shell:
         """
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_synthmorph
+        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_ihmt_synthmorph
         for map in "${{MP2RAGEmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_ihmt_synthmorph/"$map"_registeredto{wildcards.ihmt_params}.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_ihmt_synthmorph/"$map"_registeredto{wildcards.ihmt_params}.nii.gz"
             mri_synthmorph apply {input[0]} $moving $out
         done
         touch {output}
@@ -314,9 +360,9 @@ rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
 rule apply_reg_MP2RAGE_to_MPM_synthmorph:
     input:
         "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_inverse.lta",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/apply_reg_MP2RAGE_to_{seq}_synthmorph.done"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{seq}_synthmorph.done"
     resources: 
         mem_mb=1000
     container:
@@ -324,10 +370,10 @@ rule apply_reg_MP2RAGE_to_MPM_synthmorph:
     shell:
         """
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_synthmorph
+        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}_synthmorph
         for map in "${{MP2RAGEmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/registered_to_{wildcards.seq}_synthmorph/"$map"_registeredto{wildcards.seq}.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}_synthmorph/"$map"_registeredto{wildcards.seq}.nii.gz"
             mri_synthmorph apply {input[0]} $moving $out
         done
         touch {output}

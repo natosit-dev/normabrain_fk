@@ -93,8 +93,8 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
         #inversion efficiency and M0 vary across the brain, set them to 1 for now
         "inversion_efficiency"                          : 1.0,
         "M0"                                            : 1.0,
-        "n_before"                                      : inv1_meta["n_before"],
-        "n_after"                                       : inv1_meta["n_after"],
+        "n_before"                                      : int(inv1_meta["n_before"]),
+        "n_after"                                       : int(inv1_meta["n_after"]),
         "array_qT1_msUnit"                              : [3996, 100.0, 4095.0],
 
         #parameters for synthetic EDGE images
