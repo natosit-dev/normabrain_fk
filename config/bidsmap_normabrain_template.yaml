@@ -1244,13 +1244,13 @@ DICOM:
     bids:
       <<: *leaveout_bids_dicom
       rec: REPORT
-  # - attributes:
-  #     <<: *leaveout_attributes_dicom
-  #     ImageType: .*'DERIVED'.*
-  #     ProtocolName: (?i)((?!MP2RAGE).)*     # Make an exception for DERIVED 3D MP2RAGE UNI-images
-  #   bids:
-  #     <<: *leaveout_bids_dicom
-  #     rec: DERIVED
+  - attributes:
+      <<: *leaveout_attributes_dicom
+      ImageType: .*'DERIVED'.*
+      ProtocolName: (?i)((?!MP2RAGE).)*     # Make an exception for DERIVED 3D MP2RAGE UNI-images
+    bids:
+      <<: *leaveout_bids_dicom
+      rec: DERIVED
 
 
 Presentation:
