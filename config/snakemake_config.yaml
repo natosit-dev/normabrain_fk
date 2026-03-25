@@ -1,4 +1,4 @@
-subject_list_dicom: "rfl-260123-normanoel jrb-250926-normapoet 2173-001-260316-normaihmt"
+subject_list_dicom: "rfl-260123-normanoel jrb-250926-normapoet 2173-001-260316-normaihmt 2173-002-260324-normamp2rage"
 session_list: ["ses-1"]
 MPM_sequence: "vibeMT"
 MPM_contrasts: ["mt0", "mtw", "pdw", "t1w"]
