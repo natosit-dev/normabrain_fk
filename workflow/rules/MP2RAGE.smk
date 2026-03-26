@@ -143,8 +143,13 @@ rule recon_all:
         """
         mkdir -p data/derivatives/{wildcards.field_strength}/freesurfer/
         export SUBJECTS_DIR=data/derivatives/{wildcards.field_strength}/freesurfer/
-        export FS_LICENSE=.snakemake/scripts/license.txt
-        recon-all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params} -i {input} -hires -parallel -3T
+        cp .snakemake/scripts/license $HOME
+        export FS_LICENSE=$HOME/license
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+            export UseGPU=1
+        fi
+        recon-all -cw256 -parallel -3T -i {input} -all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params}
         """
     
 # checkpoint mp2rage_stats:
