@@ -111,7 +111,7 @@ rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from 
         mem_mb=700
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_B1registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/{wildcards.subject}_{wildcards.session}_B1registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM/VFA
