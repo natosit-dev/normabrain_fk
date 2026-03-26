@@ -143,6 +143,7 @@ rule recon_all:
         """
         mkdir -p data/derivatives/{wildcards.field_strength}/freesurfer/
         export SUBJECTS_DIR=data/derivatives/{wildcards.field_strength}/freesurfer/
+        export FS_LICENSE=.snakemake/scripts/license.txt
         recon-all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params} -i {input} -hires -parallel -3T
         """
     
