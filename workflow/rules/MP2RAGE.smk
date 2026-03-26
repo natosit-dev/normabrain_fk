@@ -141,7 +141,8 @@ rule recon_all:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        export SUBJECTS_DIR={output}
+        mkdir -p data/derivatives/{wildcards.field_strength}/freesurfer/
+        export SUBJECTS_DIR=data/derivatives/{wildcards.field_strength}/freesurfer/
         recon-all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params} -i {input} -hires -parallel -3T
         """
     
