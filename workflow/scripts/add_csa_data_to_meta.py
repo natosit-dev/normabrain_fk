@@ -61,9 +61,7 @@ def add_csa_data_to_meta(bidspath: str):
                     ContrastType = int(csa_data['sWipMemBlock.alFree[2]'])
                 else:
                     ContrastType = 0
-                if ContrastType == 0 and "MC" not in jsondata['SequenceVersion']:
-                    jsondata['ContrastType'] = 'Basic'
-                elif ContrastType == 0 and "MC" in jsondata['SequenceVersion']:
+                if ContrastType == 0:
                     jsondata['ContrastType'] = 'Frequency Alternated'
                 elif ContrastType == 1:
                     jsondata['ContrastType'] = 'Cosine Modulated'

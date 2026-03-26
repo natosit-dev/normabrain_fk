@@ -246,7 +246,7 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         "../envs/qMT.yaml"
     shell:
         """
-        MTmaps=("MTRs" "basic_MTRd" "cosmod_MTRd" "freqalt_MTRd")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd")
         for map in "${{MTmaps[@]}}"; do
             ref_init="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
             if [ -f $ref_init ]; then #if file exists, then set ref
