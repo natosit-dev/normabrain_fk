@@ -46,6 +46,27 @@ def get_inv1(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
 
+def t1w_nii_list(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+
+def t1w_json_list(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+
+
 rule copy_raw_qsm:
     input:
         check_csa_added_to_meta  
@@ -170,10 +191,9 @@ rule qsmxt:
     input:
         qsm_nii_list,
         qsm_json_list,
-        qsm_mask_list
-        # expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
-        # expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
-        # expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True),
+        qsm_mask_list,
+        t1w_nii_list,
+        t1w_json_list
         # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
     output:
         directory("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/")    
@@ -184,7 +204,7 @@ rule qsmxt:
         "docker://vnmd/qsmxt_8.2.2:20260105"
     shell:
         """
-        qsmxt data/derivatives/{wildcards.field_strength}/QSM --use_existing_masks --auto_yes
+        qsmxt data/derivatives/{wildcards.field_strength}/QSM --use_existing_masks --do_qsm --do_swi --do_t2starmap --do_r2starmap --qsm_algorithm 'nextqsm' --auto_yes
         mkdir -p data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt
         mv data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*/* data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt/
         rm -rf data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*
