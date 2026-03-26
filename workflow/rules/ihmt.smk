@@ -344,7 +344,7 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
         mkdir -p data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
         for map in "${{MTmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map"_registeredtoMP2RAGE.nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map"_registeredtoMP2RAGE{wildcards.mp2rage_params}.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t {input.reg} -o $out
             fi

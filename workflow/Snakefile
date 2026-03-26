@@ -4,6 +4,7 @@ configfile: "config/snakemake_config.yaml"
 rule all:
     input:
         "data/rawdata/bids/3T/code/bidscoin/fixmeta.log",
+        "data/derivatives/3T/freesurfer/sub-2173002260324normamp2rage_ses-1_acq-mp2ragewipsag0p9c6DL6500us",
         # "data/derivatives/3T/MP2RAGE/sub-2173002260324normamp2rage/ses-1/qT1_stats.tsv",
         # "data/rawdata/bids/7T/code/bidscoin/fixmeta.log",
         # "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_apply_reg_MPM_to_MP2RAGE_ants.done",

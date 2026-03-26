@@ -129,9 +129,21 @@ rule synthseg_mp2rage:
         mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} || mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} --cpu
         """
 
-# rule recon_all:
-#     input:
-#         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+rule recon_all:
+    input:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+    output:
+        directory("data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}")
+    threads: 8
+    resources:
+        mem_mb=15000
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        export SUBJECTS_DIR={output}
+        recon-all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params} -i {input} -hires -parallel {threads} -3T
+        """
     
 # checkpoint mp2rage_stats:
 #     input:
