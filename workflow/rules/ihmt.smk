@@ -324,7 +324,7 @@ rule register_ihmt_to_MP2RAGE_ants:
         mem_mb=700
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Affine[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration -d 3 -v 1 --transform Affine[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_IHMTregisteredtoMP2RAGE{wildcards.mp2rage_params}_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 rule apply_reg_ihmt_to_MP2RAGE_ants:

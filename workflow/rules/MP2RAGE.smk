@@ -129,39 +129,42 @@ rule synthseg_mp2rage:
         mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} || mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} --cpu
         """
 
+# rule recon_all:
+#     input:
+#         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+    
+# checkpoint mp2rage_stats:
+#     input:
+#         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz"
+#     output:
+#         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.stats",
+#         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.stats"
+#     container:
+#         "docker://freesurfer/freesurfer:8.1.0"
+#     shell:
+#         """
+#         export FS_LICENSE=.snakemake/scripts/license.txt
+#         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit")
+#         for map in "${{MP2RAGEmaps[@]}}"; do
+#             mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz --sum data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".stats --excludeid 0
+#         done
+#         """  
 
-checkpoint mp2rage_stats:
-    input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz"
-    output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.stats",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.stats"
-    container:
-        "docker://freesurfer/freesurfer:8.1.0"
-    shell:
-        """
-        export FS_LICENSE=.snakemake/scripts/license.txt
-        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit")
-        for map in "${{MP2RAGEmaps[@]}}"; do
-            mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz --sum data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".stats --excludeid 0
-        done
-        """  
 
-
-rule mp2rage_tsv:
-    input:
-        get_mp2rage_qT1_stats,
-        get_mp2rage_qR1_stats
-    output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/qT1_stats.tsv",
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/qR1_stats.tsv"   
-    container:
-        "docker://freesurfer/freesurfer:8.1.0"
-    shell:
-        """
-        export FS_LICENSE=.snakemake/scripts/license.txt
-        asegstats2table -i {input}  -t {output} --meas mean --common-segs --no-segno 0
-        """
+# rule mp2rage_tsv:
+#     input:
+#         get_mp2rage_qT1_stats,
+#         get_mp2rage_qR1_stats
+#     output:
+#         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/qT1_stats.tsv",
+#         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/qR1_stats.tsv"   
+#     container:
+#         "docker://freesurfer/freesurfer:8.1.0"
+#     shell:
+#         """
+#         export FS_LICENSE=.snakemake/scripts/license.txt
+#         asegstats2table -i {input}  -t {output} --meas mean --common-segs --no-segno 0
+#         """
 
 
 #rules for registering with ANTs
