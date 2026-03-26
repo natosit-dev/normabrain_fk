@@ -140,6 +140,7 @@ checkpoint mp2rage_stats:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
+        export FS_LICENSE=.snakemake/scripts/license.txt
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit")
         for map in "${{MP2RAGEmaps[@]}}"; do
             mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz --sum data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".stats --excludeid 0
@@ -158,6 +159,7 @@ rule mp2rage_tsv:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
+        export FS_LICENSE=.snakemake/scripts/license.txt
         asegstats2table -i {input}  -t {output} --meas mean --common-segs --no-segno 0
         """
 
