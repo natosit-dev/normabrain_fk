@@ -143,8 +143,8 @@ rule recon_all:
         """
         mkdir -p data/derivatives/{wildcards.field_strength}/freesurfer/
         export SUBJECTS_DIR=data/derivatives/{wildcards.field_strength}/freesurfer/
-        cp .snakemake/scripts/license $HOME
-        export FS_LICENSE=$HOME/license
+        cp .snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
             export UseGPU=1
