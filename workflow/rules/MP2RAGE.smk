@@ -142,7 +142,7 @@ rule recon_all:
     shell:
         """
         export SUBJECTS_DIR={output}
-        recon-all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params} -i {input} -hires -parallel {threads} -3T
+        recon-all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params} -i {input} -hires -parallel -3T
         """
     
 # checkpoint mp2rage_stats:
