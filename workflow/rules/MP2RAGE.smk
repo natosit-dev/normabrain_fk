@@ -261,9 +261,9 @@ rule N4BiasFieldCorrection_qT1:
 rule apply_reg_MP2RAGE_to_ihmt_ants:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz",
-        reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE_0GenericAffine.mat"
+        reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_{ihmt_params}_ants.done"
     resources: 
         mem_mb=500
     conda:
@@ -292,9 +292,9 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
 rule apply_reg_MP2RAGE_to_MPM_ants:
     input:
         ref="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
-        reg="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_Composite.h5"
+        reg="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{seq}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/registered_to_{seq}_ants/apply_reg_MP2RAGE_to_{seq}_ants.done"
     resources: 
         mem_mb=500
     conda:

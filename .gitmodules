@@ -1,3 +1,6 @@
 [submodule "workflow/scripts/luca_qMT"]
 	path = workflow/scripts/luca_qMT
 	url = https://github.com/lsoustelle/qMT.git
+[submodule "workflow/scripts/tMPPCA"]
+	path = workflow/scripts/tMPPCA
+	url = git@github.com:lsoustelle/tMPPCA.git
