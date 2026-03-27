@@ -141,9 +141,9 @@ rule recon_all:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
-        mkdir -p data/derivatives/{wildcards.field_strength}/freesurfer/
-        export SUBJECTS_DIR=data/derivatives/{wildcards.field_strength}/freesurfer/
-        cp .snakemake/scripts/.license $HOME
+        mkdir -p $HOME/data/derivatives/{wildcards.field_strength}/freesurfer/
+        export SUBJECTS_DIR=$HOME/data/derivatives/{wildcards.field_strength}/freesurfer/
+        cp $HOME/.snakemake/scripts/.license $HOME
         export FS_LICENSE=$HOME/.license
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
