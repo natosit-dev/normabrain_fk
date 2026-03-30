@@ -129,9 +129,25 @@ rule synthseg_mp2rage:
         mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} || mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} --cpu
         """
 
-rule recon_all:
+rule crop_mp2rage_256:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+    output:
+        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_cropped.nii.gz")
+    resources:
+        mem_mb=1000
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        size="$(mrinfo -size {input} | awk '{print $3}')"
+        start="$((${{size}}-256))"
+        mrgrid {input} crop -axis 2 ${{start}}:end {output} -force
+        """
+
+rule recon_all:
+    input:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_cropped.nii.gz"
     output:
         directory("data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}")
     threads: 8
@@ -149,7 +165,10 @@ rule recon_all:
             export CUDA_VISIBLE_DEVICES=0
             export UseGPU=1
         fi
-        recon-all -cw256 -parallel -3T -i {input} -all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params}
+        mri_convert -oni 256 -onj 256 -onk 256 {input} {input}
+        recon-all -hires -parallel -3T -i {input} -all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params}
+        mri_convert {output}/mri/aparc+aseg.mgz {output}/mri/aparc+aseg.nii.gz
+        mri_convert {output}/mri/orig.mgz {output}/mri/orig.nii.gz
         """
     
 # checkpoint mp2rage_stats:
