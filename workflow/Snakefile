@@ -4,36 +4,7 @@ configfile: "config/snakemake_config.yaml"
 rule all:
     input:
         "data/rawdata/bids/3T/code/bidscoin/fixmeta.log",
-        # "data/derivatives/3T/freesurfer/sub-2173002260324normamp2rage_ses-1_acq-mp2ragewipsag0p9c6DL6500us",
-        # "data/derivatives/3T/MP2RAGE/sub-2173002260324normamp2rage/ses-1/qT1_stats.tsv",
-        # "data/rawdata/bids/7T/code/bidscoin/fixmeta.log",
-        "data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_apply_reg_MPM_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/MPM/sub-jrb250926normapoet/ses-1/sub-jrb250926normapoet_ses-1_acq-vibeMT_apply_reg_MPM_to_MP2RAGEt1mp2rsag1isocs5_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/acq-mp2ragewipsag1isocs5/registered_to_vibeMT_ants/apply_reg_MP2RAGE_to_vibeMT_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-jrb250926normapoet/ses-1/acq-t1mp2rsag1isocs5/registered_to_vibeMT_ants/apply_reg_MP2RAGE_to_vibeMT_ants.done",
-        # "data/derivatives/3T/QSM/derivatives/qsmxt/",
-        "data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTLoSarMC6p6bsag1p6p3_ants.done",
-        "data/derivatives/3T/ihmt/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-ihMTLoSarMC6p6bsag1p6p3_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv3FAalt6p6bsag1p6p3_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltc4DLlin3dum_run-1_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltc4DLlin3dum_run-2_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltc4lin3dumACSsep_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltc4lin6dum_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltc4rfb3dum_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltc4rfb3dumTF80_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltc4sfb3dum_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltc4ssp3dum_ants.done",
-        "data/derivatives/3T/MP2RAGE/sub-2173001260316normaihmt/ses-1/acq-mp2ragewipsag1isocs5/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_ihMTv4FAltp3lin3dum_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv3FAalt6p6bsag1p6p3_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltc4DLlin3dum_run-1_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltc4DLlin3dum_run-2_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltc4lin3dumACSsep_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltc4lin6dum_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltc4rfb3dum_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltc4rfb3dumTF80_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltc4sfb3dum_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltc4ssp3dum_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done",
-        "data/derivatives/3T/ihmt/sub-2173001260316normaihmt/ses-1/sub-2173001260316normaihmt_ses-1_acq-ihMTv4FAltp3lin3dum_apply_reg_ihmt_to_MP2RAGEmp2ragewipsag1isocs5_ants.done"
+        "data/derivatives/3T/freesurfer/sub-2173002260324normamp2rage_ses-1_acq-mp2ragewipsag0p9c6DL6500us"
 
 include: "rules/bidsify.smk"
 include: "rules/B1map.smk"

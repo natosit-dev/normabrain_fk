@@ -140,7 +140,7 @@ rule crop_mp2rage_256:
         "../envs/qMT.yaml"
     shell:
         """
-        size="$(mrinfo -size {input} | awk '{print $3}')"
+        size="$(mrinfo -size {input} | awk '{{print $3}}')"
         start="$((${{size}}-256))"
         mrgrid {input} crop -axis 2 ${{start}}:end {output} -force
         """
