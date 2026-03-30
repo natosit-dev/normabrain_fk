@@ -140,7 +140,7 @@ rule crop_mp2rage_256:
         "../envs/qMT.yaml"
     shell:
         """
-        size="$(mrinfo -size {input} | awk '{print $3}')"
+        size="$(mrinfo -size {input} | awk '{{print $3}}')"
         start="$((${{size}}-256))"
         mrgrid {input} crop -axis 2 ${{start}}:end {output} -force
         """
@@ -149,7 +149,10 @@ rule recon_all:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_cropped.nii.gz"
     output:
-        directory("data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}")
+        aparc_mgz="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
+        aparc_nii="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.nii.gz",
+        orig_mgz="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/orig.mgz",
+        orig_nii="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/orig.nii.gz"
     threads: 8
     resources:
         mem_mb=15000
@@ -167,26 +170,47 @@ rule recon_all:
         fi
         mri_convert -oni 256 -onj 256 -onk 256 {input} {input}
         recon-all -hires -parallel -3T -i {input} -all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params}
-        mri_convert {output}/mri/aparc+aseg.mgz {output}/mri/aparc+aseg.nii.gz
-        mri_convert {output}/mri/orig.mgz {output}/mri/orig.nii.gz
+        mri_convert {output.aparc_mgz} {output.aparc_nii}
+        mri_convert {output.orig_mgz} {output.orig_nii}
         """
-    
-# checkpoint mp2rage_stats:
-#     input:
-#         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz"
-#     output:
-#         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.stats",
-#         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.stats"
-#     container:
-#         "docker://freesurfer/freesurfer:8.1.0"
-#     shell:
-#         """
-#         export FS_LICENSE=.snakemake/scripts/license.txt
-#         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit")
-#         for map in "${{MP2RAGEmaps[@]}}"; do
-#             mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz --sum data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".stats --excludeid 0
-#         done
-#         """  
+
+
+rule resize_aparc_to_uncropped:
+    input:
+        seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg_resize.mgz"
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    resources:
+        mem_mb=1000
+    shell:
+        """
+        size_i="$(python -c 'import surfa as sf \nimage = sf.load_volume({input.ref}) \nprint(image.shape[0])')"
+        size_j="$(python -c 'import surfa as sf \nimage = sf.load_volume({input.ref}) \nprint(image.shape[1])')"
+        size_k="$(python -c 'import surfa as sf \nimage = sf.load_volume({input.ref}) \nprint(image.shape[2])')"
+        mri_convert -oni $size_i -onj $size_j -onk $size_k {input.seg} {output}
+        """
+
+
+rule mp2rage_stats:
+    input:
+        "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg_resize.mgz"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.stats",
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.stats"
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit")
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz --sum data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".stats --excludeid 0
+        done
+        """  
 
 
 # rule mp2rage_tsv:
