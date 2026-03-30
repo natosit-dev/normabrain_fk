@@ -177,7 +177,7 @@ rule recon_all:
 
 rule resize_aparc_to_uncropped:
     input:
-        seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz",
+        seg = "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
         "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg_resize.mgz"
