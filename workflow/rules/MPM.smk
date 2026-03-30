@@ -173,93 +173,19 @@ rule calculate_phase_from_complex:
         mrcalc {input} -phase {output}
         """
 
-rule concat_contrast_mag:
+
+rule make_n_echos_equal:
+    #clip images so that they all have the same number of echos as the image with the least number of echos
     input:
-        t1w=t1wmag_preproc,
-        mt0=mt0mag_preproc,
-        mtw=mtwmag_preproc,
-        pdw=pdwmag_preproc
-    output:
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii")
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    conda:
-        "../envs/qMT.yaml"
-    shell: #not actually 5d because each contrast has a different number of echos
-        """
-        mrcat {input.t1w} {input.mt0} {input.mtw} {input.pdw} {output}
-        """
-
-
-rule denoise_contrast_mag:
-    input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii"
-    output:
-        out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii"),
-        noisemap="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_noisemap.nii"
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    conda:
-        "../envs/qMT.yaml"
-    shell: #designer tMPPCA is killed due to memory, use mrtrix3 MPPCA instead
-        """
-        dwidenoise -noise {output.noisemap} {input} {output.out}
-        """
-
-
-rule split_contrast_mag:
-    input:
-        contrast="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii",
-        #same input as contrast_concat_mag
         t1w_in=t1wmag_preproc,
         mt0_in=mt0mag_preproc,
         mtw_in=mtwmag_preproc,
         pdw_in=pdwmag_preproc
     output:
-        t1w_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii"),
-        mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii",
-        mtw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii"),
-        pdw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii") 
-    resources: #limit memory by input size
-        mem_mb=lambda wc, input: 2.5 * input.size_mb
-    conda:
-        "../envs/qMT.yaml"
-    shell:
-        """
-        t1wsize="$(mrinfo -size {input.t1w_in} | awk '{{print $4}}')"
-        t1wstart=0
-        t1wend="$((${{t1wsize}}-1))"
-        mrconvert {input.contrast} {output.t1w_out} -coord 3 ${{t1wstart}}:${{t1wend}}
-
-        mt0size="$(mrinfo -size {input.mt0_in} | awk '{{print $4}}')"
-        mt0start=$t1wsize
-        mt0end="$((${{t1wend}}+${{mt0size}}))"
-        mrconvert {input.contrast} {output.mt0_out} -coord 3 ${{mt0start}}:${{mt0end}}
-
-        mtwsize="$(mrinfo -size {input.mtw_in} | awk '{{print $4}}')"
-        mtwstart="$((${{mt0end}}+1))"
-        mtwend="$((${{mt0end}}+${{mtwsize}}))"
-        mrconvert {input.contrast} {output.mtw_out} -coord 3 ${{mtwstart}}:${{mtwend}}
-        
-        pdwsize="$(mrinfo -size {input.pdw_in} | awk '{{print $4}}')"
-        pdwstart="$((${{mtwend}}+1))"
-        pdwend="$((${{mtwend}}+${{pdwsize}}))"
-        mrconvert {input.contrast} {output.pdw_out} -coord 3 ${{pdwstart}}:${{pdwend}}
-        """
-
-
-rule make_n_echos_equal:
-    #clip images so that they all have the same number of echos as the image with the least number of echos
-    input:
-        t1w_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii",
-        mt0_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii",
-        mtw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii",
-        pdw_in="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii" 
-    output:
-        t1w_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise_clipped.nii"),
-        mt0_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise_clipped.nii"),
-        mtw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise_clipped.nii"),
-        pdw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise_clipped.nii")
+        t1w_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_clipped.nii"),
+        mt0_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_clipped.nii"),
+        mtw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_clipped.nii"),
+        pdw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_clipped.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -283,6 +209,108 @@ rule make_n_echos_equal:
         mrconvert {input.mtw_in} {output.mtw_out} -coord 3 0:${{end_idx}}
         mrconvert {input.pdw_in} {output.pdw_out} -coord 3 0:${{end_idx}}
         """
+
+
+rule concat_contrast_mag:
+    input:
+        t1w="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_clipped.nii",
+        mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_clipped.nii",
+        mtw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_clipped.nii",
+        pdw="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_clipped.nii"
+    output:
+        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii")
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        mrcat {input.t1w} {input.mt0} {input.mtw} {input.pdw} {output} -axis 4
+        """
+
+
+rule denoise_contrast_mag:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d.nii"
+    output:
+        out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii"),
+        noisemap="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_noisemap.nii"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    threads: 8
+    conda:
+        "../envs/tMPPCA.yaml"
+    shell:
+        """ 
+        python -c 'import nibabel
+from tmppca import tmppca_cpp
+        
+data = nibabel.load("{input}")
+denoised, sigma, P, snr_gain = tmppca_cpp.denoise_tmppca(data.get_fdata(), window=[5, 5, 5])
+nibabel.save(nibabel.Nifti1Image(denoised, data.affine), "{output.out}")
+nibabel.save(nibabel.Nifti1Image(sigma, data.affine), "{output.noisemap}")'
+        """
+
+
+rule split_contrast_mag:
+    input:
+        "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii"
+    output:
+        t1w=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii"),
+        mt0="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii",
+        mtw=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii"),
+        pdw=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii")
+    resources:
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        mrconvert {input} -coord 4 0 -axes 0,1,2,3 {output.t1w}
+        mrconvert {input} -coord 4 1 -axes 0,1,2,3 {output.mt0}
+        mrconvert {input} -coord 4 2 -axes 0,1,2,3 {output.mtw}
+        mrconvert {input} -coord 4 3 -axes 0,1,2,3 {output.pdw}
+        """
+
+# rule split_contrast_mag:
+#     input:
+#         contrast="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii",
+#         #same input as contrast_concat_mag
+#         t1w_in=t1wmag_preproc,
+#         mt0_in=mt0mag_preproc,
+#         mtw_in=mtwmag_preproc,
+#         pdw_in=pdwmag_preproc
+#     output:
+#         t1w_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_denoise.nii"),
+#         mt0_out="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_denoise.nii",
+#         mtw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_denoise.nii"),
+#         pdw_out=temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_denoise.nii") 
+#     resources: #limit memory by input size
+#         mem_mb=lambda wc, input: 2.5 * input.size_mb
+#     conda:
+#         "../envs/qMT.yaml"
+#     shell:
+#         """
+#         t1wsize="$(mrinfo -size {input.t1w_in} | awk '{{print $4}}')"
+#         t1wstart=0
+#         t1wend="$((${{t1wsize}}-1))"
+#         mrconvert {input.contrast} {output.t1w_out} -coord 3 ${{t1wstart}}:${{t1wend}}
+
+#         mt0size="$(mrinfo -size {input.mt0_in} | awk '{{print $4}}')"
+#         mt0start=$t1wsize
+#         mt0end="$((${{t1wend}}+${{mt0size}}))"
+#         mrconvert {input.contrast} {output.mt0_out} -coord 3 ${{mt0start}}:${{mt0end}}
+
+#         mtwsize="$(mrinfo -size {input.mtw_in} | awk '{{print $4}}')"
+#         mtwstart="$((${{mt0end}}+1))"
+#         mtwend="$((${{mt0end}}+${{mtwsize}}))"
+#         mrconvert {input.contrast} {output.mtw_out} -coord 3 ${{mtwstart}}:${{mtwend}}
+        
+#         pdwsize="$(mrinfo -size {input.pdw_in} | awk '{{print $4}}')"
+#         pdwstart="$((${{mtwend}}+1))"
+#         pdwend="$((${{mtwend}}+${{pdwsize}}))"
+#         mrconvert {input.contrast} {output.pdw_out} -coord 3 ${{pdwstart}}:${{pdwend}}
+#         """
 
 
 rule sos:

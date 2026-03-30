@@ -1,0 +1,17 @@
+name: tmppca
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.15
+  - numpy=2.4.3
+  - scipy=1.17.1
+  - nibabel=5.4.0
+  - pybind11=3.0.2
+  - eigen=3.4.0
+  - cmake=4.3.0
+  - gxx_linux-64=15.2.0
+  - openmp=8.0.1
+  - scikit-build-core=0.12.1
+  - ninja=1.13.2
+  - pip:
+    - -e ../../workflow/scripts/tMPPCA
