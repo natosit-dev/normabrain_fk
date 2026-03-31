@@ -41,7 +41,7 @@ rule json_for_uncorr_qT1:
         echo_spacing = config["mp2rage_echo_spacing"],
         uncorr_qT1 = True
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.json")
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.json"
     threads:
         8
     resources: 
@@ -56,7 +56,7 @@ rule create_uncorr_qT1:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.json"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz")
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz"
     threads:
         8
     container:
@@ -133,7 +133,7 @@ rule crop_mp2rage_256:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_cropped.nii.gz")
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_cropped.nii.gz"
     resources:
         mem_mb=1000
     conda:
