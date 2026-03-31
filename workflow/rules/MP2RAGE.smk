@@ -187,9 +187,9 @@ rule resize_aparc_to_uncropped:
         mem_mb=1000
     shell:
         """
-        size_i="$(python -c 'import surfa as sf \nimage = sf.load_volume({input.ref}) \nprint(image.shape[0])')"
-        size_j="$(python -c 'import surfa as sf \nimage = sf.load_volume({input.ref}) \nprint(image.shape[1])')"
-        size_k="$(python -c 'import surfa as sf \nimage = sf.load_volume({input.ref}) \nprint(image.shape[2])')"
+        size_i="$(mri_head -read {input.ref} | grep -oP '(?<=width = )\d+')"
+        size_j="$(mri_head -read {input.ref} | grep -oP '(?<=height = )\d+')"
+        size_k="$(mri_head -read {input.ref} | grep -oP '(?<=depth = )\d+')"
         mri_convert -oni $size_i -onj $size_j -onk $size_k {input.seg} {output}
         """
 
