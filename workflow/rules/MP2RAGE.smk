@@ -171,6 +171,7 @@ rule recon_all:
             export UseGPU=1
         fi
         mri_convert -oni 256 -onj 256 -onk 256 {input} {input}
+        rm -rf $SUBJECTS_DIR/{wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params}
         recon-all -hires -parallel -3T -i {input} -all -s {wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params}
         mri_convert {output.aparc_mgz} {output.aparc_nii}
         mri_convert {output.orig_mgz} {output.orig_nii}
