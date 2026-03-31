@@ -187,6 +187,8 @@ rule resize_aparc_to_uncropped:
         mem_mb=1000
     shell:
         """
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
         size_i="$(mri_head -read {input.ref} | grep -oP '(?<=width = )\d+')"
         size_j="$(mri_head -read {input.ref} | grep -oP '(?<=height = )\d+')"
         size_k="$(mri_head -read {input.ref} | grep -oP '(?<=depth = )\d+')"
