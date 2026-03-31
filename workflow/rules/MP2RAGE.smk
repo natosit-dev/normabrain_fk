@@ -131,9 +131,9 @@ rule synthseg_mp2rage:
 
 rule crop_mp2rage_256:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_cropped.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_cropped.nii.gz"
     resources:
         mem_mb=1000
     conda:
@@ -143,6 +143,7 @@ rule crop_mp2rage_256:
         size="$(mrinfo -size {input} | awk '{{print $3}}')"
         start="$((${{size}}-256))"
         mrgrid {input} crop -axis 2 ${{start}}:end {output} -force
+        mrgrid {output} crop -axis 1 0:255 {output} -force
         """
 
 rule recon_all:
@@ -175,43 +176,47 @@ rule recon_all:
         """
 
 
-rule resize_aparc_to_uncropped:
-    input:
-        seg = "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
-    output:
-        "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg_resize.mgz"
-    container:
-        "docker://freesurfer/freesurfer:8.1.0"
-    resources:
-        mem_mb=1000
-    shell:
-        """
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
-        size_i="$(mri_head -read {input.ref} | grep -oP '(?<=width = )\d+')"
-        size_j="$(mri_head -read {input.ref} | grep -oP '(?<=height = )\d+')"
-        size_k="$(mri_head -read {input.ref} | grep -oP '(?<=depth = )\d+')"
-        mri_convert -oni $size_i -onj $size_j -onk $size_k {input.seg} {output}
-        """
+# rule resize_aparc_to_uncropped:
+#     input:
+#         seg = "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
+#         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
+#     output:
+#         "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg_resize.mgz"
+#     container:
+#         "docker://freesurfer/freesurfer:8.1.0"
+#     resources:
+#         mem_mb=1000
+#     shell:
+#         """
+#         cp $HOME/.snakemake/scripts/.license $HOME
+#         export FS_LICENSE=$HOME/.license
+#         size_i="$(mri_head -read {input.ref} | grep -oP '(?<=width = )\d+')"
+#         size_j="$(mri_head -read {input.ref} | grep -oP '(?<=height = )\d+')"
+#         size_k="$(mri_head -read {input.ref} | grep -oP '(?<=depth = )\d+')"
+#         mri_convert -oni $size_i -onj $size_j -onk $size_k {input.seg} {output}
+#         """
 
 
 rule mp2rage_stats:
     input:
-        "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg_resize.mgz"
+        seg="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
+        qT1="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit_cropped.nii.gz",
+        qR1="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit_cropped.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.stats",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.stats"
+        qT1="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.stats",
+        qR1="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.stats"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
         """
         cp $HOME/.snakemake/scripts/.license $HOME
         export FS_LICENSE=$HOME/.license
-        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit")
-        for map in "${{MP2RAGEmaps[@]}}"; do
-            mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz --sum data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".stats --excludeid 0
-        done
+        
+        mri_convert -oni 256 -onj 256 -onk 256 {input.qT1} {input.qT1}
+        mri_convert -oni 256 -onj 256 -onk 256 {input.qR1} {input.qR1}
+
+        mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.qT1} --sum {output.qT1} --excludeid 0
+        mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.qR1} --sum {output.qR1} --excludeid 0
         """  
 
 
