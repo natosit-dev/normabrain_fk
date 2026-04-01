@@ -244,7 +244,7 @@ rule apply_reg_first_mp2rage_acq:
         acq_array=( {params} )
         first_acq="${{acq_array[0]}}"
         if [ -f data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/registeredto${{first_acq}}_0GenericAffine.mat ]; then    
-            antsApplyTransforms -d 3 -v 1 -n Linear -i {input[1]} -r data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/$first_acq/{wildcards.mp2rage_map}.nii.gz -t data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/registeredto${{first_acq}}_0GenericAffine.mat -o {output}
+            antsApplyTransforms -d 3 -v 1 -n Linear -i {input[1]} -r data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-$first_acq/{wildcards.mp2rage_map}.nii.gz -t data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/registeredto${{first_acq}}_0GenericAffine.mat -o {output}
         else
             cp {input[1]} {output}
         fi
