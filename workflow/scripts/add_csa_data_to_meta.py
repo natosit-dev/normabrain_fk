@@ -28,13 +28,11 @@ def add_csa_data_to_meta(bidspath: str):
 
     #loop through subjects
     for subject in subjects:
-        print(subject)
         #get list of session folders for subject
         sessions = lsdirs(subject, 'ses-*')
         
         #loop through sessions
         for session in sessions:
-            print(session)
             #initialize sourcedir
             sourcedir = ''
 

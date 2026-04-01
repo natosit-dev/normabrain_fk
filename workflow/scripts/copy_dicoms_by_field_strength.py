@@ -25,6 +25,7 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str,
         i=0
         #Loop through the sessions folders
         for session in sessions:
+            print(session)
             i=i+1 #change session name from date to index
             # Read the first DICOM file to get the field strength
             first_dicom_path = list(session.rglob('*.dcm'))[0]
