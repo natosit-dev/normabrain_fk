@@ -1,4 +1,6 @@
 import glob
+from pathlib import Path
+from bids import BIDSLayout
 
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -15,20 +17,69 @@ def get_unit1(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.mp2rage_params}*_UNIT1.nii.gz'))[0]
 
-def get_mp2rage_qT1_stats(wildcards):
+# def get_mp2rage_qT1_stats(wildcards):
+#     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+#     bidspath = Path(csa_complete).parents[2]
+#     layout=BIDSLayout(bidspath)
+#     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
+#     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.stats', mp2rage_params=mp2rage_params_list, allow_missing=True)
+
+# def get_mp2rage_qR1_stats(wildcards):
+#     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+#     bidspath = Path(csa_complete).parents[2]
+#     layout=BIDSLayout(bidspath)
+#     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
+#     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qR1_pksUnit.stats', mp2rage_params=mp2rage_params_list, allow_missing=True)
+
+def get_uniden(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
-    return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.stats', mp2rage_params=mp2rage_params_list, allow_missing=True)
+    return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_DEN_dicomUnit.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
 
-def get_mp2rage_qR1_stats(wildcards):
+def get_mp2rage_acqs(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
-    return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qR1_pksUnit.stats', mp2rage_params=mp2rage_params_list, allow_missing=True)
+    return mp2rage_params_list
 
+def seg_first_acq_mp2rage(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
+    return expand('data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz', mp2rage_params=first_acq, allow_missing=True)
+
+def mp2rage_statslist(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    statslist = []
+    mapslist = ["qT1", "qR1"]
+    subjectlist=layout.get_subject(suffix="MP2RAGE")
+    for subject in subjectlist:
+        sessionlist = layout.get_session(suffix="MP2RAGE", subject=subject)
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for acq in acqlist:
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/MP2RAGE_{mp2rage_map}.stats")
+    return statslist
+
+def freesurfer_subjectlist(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    fs_subjectlist = []
+    subjectlist=layout.get_subject(suffix="MP2RAGE")
+    for subject in subjectlist:
+        sessionlist = layout.get_session(suffix="MP2RAGE", subject=subject)
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for acq in acqlist:
+                fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
+    return fs_subjectlist
 
 rule json_for_uncorr_qT1:
     input:
@@ -130,9 +181,67 @@ rule synthseg_mp2rage:
         mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} || mri_synthseg --i {input} --o {output} --parc --robust --threads {threads} --cpu
         """
 
+
+rule register_mp2rage_acqs:
+    input:
+        get_uniden
+    params:
+        get_mp2rage_acqs
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2rage_acqs_registration.done"
+    conda:
+        "../envs/qMT.yaml"
+    resources: 
+        mem_mb=1000
+    shell:
+        """
+        img_array=( {input} )
+        acq_array=( {params} )
+
+        if [ "${{#img_array[@]}}" -gt 1 ]; then
+            first_acq="${{acq_array[0]}}"
+            first_img="${{img_array[0]}}"
+            img_array_clipped=("${{img_array[@]:1}}")
+            
+            i=0
+            for img in "${{img_array_clipped[@]}}"; do
+                i=$((i+1))
+                acq="${{acq_array[$i]}}"
+                
+                antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ ${{first_img}}, ${{img}}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/$acq/registeredto${{first_acq}}_ -x [ data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/$first_acq/uncorr_qT1_brain_mask.nii.gz, data/derivatives/{wildcards.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/$acq/uncorr_qT1_brain_mask.nii.gz ] --random-seed 1
+            done
+        fi
+        touch {output}
+        """
+
+
+rule apply_reg_first_mp2rage_acq:
+    input:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2rage_acqs_registration.done",
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}.nii.gz"
+    params:
+        get_mp2rage_acqs
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_coreg.nii.gz"
+     resources: 
+        mem_mb=500
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        acq_array=( {params} )
+        first_acq="${{acq_array[0]}}"
+        if [ -f data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/registeredto${{first_acq}}_GenericAffine0.mat ]; then    
+            antsApplyTransforms -d 3 -v 1 -n Linear -i {input[1]} -r data/derivatives/{wildcads.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/$first_acq/{wildcads.mp2rage_map}.nii.gz -t data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/registeredto${{first_acq}}_GenericAffine0.mat -o {output}
+        else
+            cp {input[1]} {output}
+        fi
+        """
+
+
 rule crop_mp2rage_256:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_coreg.nii.gz"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_cropped.nii.gz"
     resources:
@@ -146,6 +255,7 @@ rule crop_mp2rage_256:
         mrgrid {input} crop -axis 2 ${{start}}:end {output} -force
         mrgrid {output} crop -axis 1 0:255 {output} -force
         """
+
 
 rule recon_all:
     input:
@@ -178,35 +288,12 @@ rule recon_all:
         """
 
 
-# rule resize_aparc_to_uncropped:
-#     input:
-#         seg = "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
-#         ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
-#     output:
-#         "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg_resize.mgz"
-#     container:
-#         "docker://freesurfer/freesurfer:8.1.0"
-#     resources:
-#         mem_mb=1000
-#     shell:
-#         """
-#         cp $HOME/.snakemake/scripts/.license $HOME
-#         export FS_LICENSE=$HOME/.license
-#         size_i="$(mri_head -read {input.ref} | grep -oP '(?<=width = )\d+')"
-#         size_j="$(mri_head -read {input.ref} | grep -oP '(?<=height = )\d+')"
-#         size_k="$(mri_head -read {input.ref} | grep -oP '(?<=depth = )\d+')"
-#         mri_convert -oni $size_i -onj $size_j -onk $size_k {input.seg} {output}
-#         """
-
-
 rule mp2rage_stats:
     input:
-        seg="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
-        qT1="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit_cropped.nii.gz",
-        qR1="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit_cropped.nii.gz"
+        seg=seg_first_acq_mp2rage,
+        mp2rage_map="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_cropped.nii.gz"
     output:
-        qT1="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.stats",
-        qR1="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.stats"
+        "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/stats/MP2RAGE_{mp2rage_map}.stats"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -214,28 +301,32 @@ rule mp2rage_stats:
         cp $HOME/.snakemake/scripts/.license $HOME
         export FS_LICENSE=$HOME/.license
         
-        mri_convert -oni 256 -onj 256 -onk 256 {input.qT1} {input.qT1}
-        mri_convert -oni 256 -onj 256 -onk 256 {input.qR1} {input.qR1}
+        mri_convert -oni 257 -onj 257 -onk 257 {input.qT1} {input.mp2rage_map}
 
-        mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.qT1} --sum {output.qT1} --excludeid 0
-        mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.qR1} --sum {output.qR1} --excludeid 0
+        mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.qT1} --sum {output} --excludeid 0
         """  
 
 
-# rule mp2rage_tsv:
-#     input:
-#         get_mp2rage_qT1_stats,
-#         get_mp2rage_qR1_stats
-#     output:
-#         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/qT1_stats.tsv",
-#         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/qR1_stats.tsv"   
-#     container:
-#         "docker://freesurfer/freesurfer:8.1.0"
-#     shell:
-#         """
-#         export FS_LICENSE=.snakemake/scripts/license.txt
-#         asegstats2table -i {input}  -t {output} --meas mean --common-segs --no-segno 0
-#         """
+rule mp2rage_tsv:
+    input:
+        mp2rage_statslist
+    params:
+        freesurfer_subjectlist
+    output:
+        "data/derivatives/{field_strength}/freesurfer/{mp2rage_map}_stats.tsv"  
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        export SUBJECTS_DIR=$HOME/data/derivatives/{wildcards.field_strength}/freesurfer/
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        asegstats2table --subjects {params} --statsfile MP2RAGE_{wildcards.mp2rage_map}.stats -t {output} --meas mean --common-segs --no-segno 0
+        """
+
+
+
 
 
 #rules for registering with ANTs
