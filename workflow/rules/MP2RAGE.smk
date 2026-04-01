@@ -38,6 +38,13 @@ def get_uniden(wildcards):
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_DEN_dicomUnit.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
 
+def get_mp2rage_brain_masks(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
+    return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
+
 def get_mp2rage_acqs(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
@@ -185,7 +192,8 @@ rule synthseg_mp2rage:
 
 rule register_mp2rage_acqs:
     input:
-        get_uniden
+        img=get_uniden,
+        mask=get_mp2rage_brain_masks
     params:
         get_mp2rage_acqs
     output:
@@ -196,20 +204,23 @@ rule register_mp2rage_acqs:
         mem_mb=1000
     shell:
         """
-        img_array=( {input} )
+        img_array=( {input.img} )
         acq_array=( {params} )
+        mask_array=( {input.mask} )
 
         if [ "${{#img_array[@]}}" -gt 1 ]; then
             first_acq="${{acq_array[0]}}"
             first_img="${{img_array[0]}}"
+            first_mask="${{mask_array[0]}}"
             img_array_clipped=("${{img_array[@]:1}}")
             
             i=0
             for img in "${{img_array_clipped[@]}}"; do
                 i=$((i+1))
                 acq="${{acq_array[$i]}}"
+                mask="${{mask_array[$i]}}"
                 
-                antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ ${{first_img}}, ${{img}}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-$acq/registeredto${{first_acq}}_ -x [ data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/$first_acq/uncorr_qT1_brain_mask.nii.gz, data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/$acq/uncorr_qT1_brain_mask.nii.gz ] --random-seed 1
+                antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ ${{first_img}}, ${{img}}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-$acq/registeredto${{first_acq}}_ -x [ ${{first_mask}}, ${{mask}} ] --random-seed 1
             done
         fi
         touch {output}
