@@ -301,9 +301,9 @@ rule mp2rage_stats:
         cp $HOME/.snakemake/scripts/.license $HOME
         export FS_LICENSE=$HOME/.license
         
-        mri_convert -oni 257 -onj 257 -onk 257 {input.qT1} {input.mp2rage_map}
+        mri_convert -oni 257 -onj 257 -onk 257 {input.mp2rage_map} {input.mp2rage_map}
 
-        mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.qT1} --sum {output} --excludeid 0
+        mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.mp2rage_map} --sum {output} --excludeid 0
         """  
 
 
