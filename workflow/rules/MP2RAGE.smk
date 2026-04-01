@@ -223,7 +223,7 @@ rule apply_reg_first_mp2rage_acq:
         get_mp2rage_acqs
     output:
         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_coreg.nii.gz"
-     resources: 
+    resources: 
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
