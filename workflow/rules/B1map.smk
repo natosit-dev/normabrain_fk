@@ -29,8 +29,8 @@ rule synthstrip_b1anat:
     params:
         get_last_b1anat_run
     output:
-        # "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz",
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+        # "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain.nii.gz",
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 4
@@ -48,11 +48,11 @@ rule synthstrip_b1anat:
 rule apply_brainmask_b1anat:
     input:
         check_csa_added_to_meta,
-        brain_mask = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+        brain_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     params:
         get_last_b1anat_run
     output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz")
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain.nii.gz")
     conda:
         "../envs/fslmaths.yaml"
     resources: 
@@ -66,10 +66,10 @@ rule apply_brainmask_b1anat:
 
 rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
     input:
-        input_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised.nii.gz")
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -81,10 +81,10 @@ rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
 
 rule N4BiasFieldCorrection_b1anat: #ATTENTION: slightly different parameters from MPM/VFA
     input:
-        input_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz")
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -97,14 +97,14 @@ rule N4BiasFieldCorrection_b1anat: #ATTENTION: slightly different parameters fro
 
 rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from MPM/VFA
     input:
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_denoised_n4.nii.gz",
-        moving = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz",
-        ref_mask = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz",
-        moving_mask = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_denoised_n4.nii.gz",
+        moving = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4.nii.gz",
+        ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz",
+        moving_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_acq-anat_brain_denoised_n4_registeredtoMP2RAGE_ants.nii.gz"),
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_n4_registeredtoB1anat_ants.nii.gz"),
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4_registeredtoMP2RAGE_ants.nii.gz"),
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_n4_registeredtoB1anat_ants.nii.gz"),
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -117,12 +117,12 @@ rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from 
 rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM/VFA
     input:
         check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz",
-        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
+        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz",
+        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
     params:
         moving = get_last_b1map_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -134,14 +134,14 @@ rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM
 
 rule register_b1anat_to_MPM_t1w_ants: #ATTENTION: slightly different parameters from MPM/VFA
     input:
-        ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_denoised_n4.nii.gz",
-        moving = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4.nii.gz",
-        ref_mask ="data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_mask.nii.gz",
-        moving_mask = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_mask.nii.gz"
+        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_denoised_n4.nii.gz",
+        moving = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4.nii.gz",
+        ref_mask ="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_mask.nii.gz",
+        moving_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-anat_brain_denoised_n4_registeredto{seq}t1w_ants.nii.gz"),
-        temp("data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_denoised_n4_registeredtob1anat.nii.gz"),
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w_0GenericAffine.mat"
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4_registeredto{seq}t1w_ants.nii.gz"),
+        temp("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_denoised_n4_registeredtob1anat.nii.gz"),
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w_0GenericAffine.mat"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -154,12 +154,12 @@ rule register_b1anat_to_MPM_t1w_ants: #ATTENTION: slightly different parameters 
 rule apply_reg_b1map_to_MPM_t1w_ants: #ATTENTION: some parameters are different from MPM/VFA
     input:
         check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_denoised_n4.nii.gz",
-        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w_0GenericAffine.mat"
+        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_sos_brain_denoised_n4.nii.gz",
+        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w_0GenericAffine.mat"
     params:
         moving = get_last_b1map_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_ants.nii.gz"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w_ants.nii.gz"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -175,11 +175,11 @@ rule apply_reg_b1map_to_MPM_t1w_ants: #ATTENTION: some parameters are different 
 rule register_b1anat_to_MP2RAGE_synthmorph:
     input:
         check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/uncorr_qT1.nii.gz"
+        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/uncorr_qT1.nii.gz"
     params:
         moving = get_last_b1anat_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_synthmorph.lta"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     resources: 
@@ -193,11 +193,11 @@ rule register_b1anat_to_MP2RAGE_synthmorph:
 rule apply_reg_b1map_to_MP2RAGE_synthmorph:
     input:
         check_csa_added_to_meta,
-        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredtoMP2RAGE_synthmorph.lta"
+        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_synthmorph.lta"
     params:
         moving = get_last_b1map_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_synthmorph.nii.gz"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_synthmorph.nii.gz"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     resources: 
@@ -210,11 +210,11 @@ rule apply_reg_b1map_to_MP2RAGE_synthmorph:
 rule register_b1anat_to_MPM_t1w_synthmorph:
     input:
         check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-{seq}t1w_mt-off_part-mag_sos.nii.gz"
+        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_sos.nii.gz"
     params:
         moving = get_last_b1anat_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w_synthmorph.lta"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w_synthmorph.lta"
     threads: 4
     resources: 
         mem_mb=7000
@@ -229,11 +229,11 @@ rule register_b1anat_to_MPM_t1w_synthmorph:
 rule apply_reg_b1map_to_MPM_t1w_synthmorph:
     input:
         check_csa_added_to_meta,
-        reg = "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_B1registeredto{seq}t1w_synthmorph.lta"
+        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w_synthmorph.lta"
     params:
         moving = get_last_b1map_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_synthmorph.nii.gz"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w_synthmorph.nii.gz"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     resources: 
@@ -249,11 +249,11 @@ rule apply_reg_b1map_to_MPM_t1w_synthmorph:
 rule copy_b1map_json_after_regtoMP2RAGE:
     input:
         check_csa_added_to_meta,
-        b1map_registeredtoMP2RAGE = "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
+        b1map_registeredtoMP2RAGE = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
     params:
          b1map_raw = get_last_b1map_run
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.json"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.json"
     resources: 
         mem_mb=300
     run:
@@ -264,9 +264,9 @@ rule copy_b1map_json_after_regtoMP2RAGE:
 
 rule smooth_B1:
     input:
-       "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_ants.nii.gz" 
+       "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w_ants.nii.gz" 
     output:
-        temp("data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth.nii.gz")
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w_smooth.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -280,9 +280,9 @@ rule smooth_B1:
 rule normalize_B1_to_target_flip: #not masking because we are interested in the spinal cord
     input:
         check_csa_added_to_meta,
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth.nii.gz"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w_smooth.nii.gz"
     output:
-        "data/derivatives/{field_strength}/B1map/{subject}/{session}/{subject}_{session}_acq-famp_registeredto{seq}t1w_smooth_norm.nii.gz"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w_smooth_norm.nii.gz"
     params:
         target_flip = get_target_flip
     conda:

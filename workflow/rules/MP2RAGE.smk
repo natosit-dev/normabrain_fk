@@ -50,7 +50,7 @@ def seg_first_acq_mp2rage(wildcards):
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
-    return expand('data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz', mp2rage_params=first_acq, allow_missing=True)
+    return expand('data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz', mp2rage_params=first_acq, allow_missing=True)
 
 def mp2rage_statslist(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -92,7 +92,7 @@ rule json_for_uncorr_qT1:
         echo_spacing = config["mp2rage_echo_spacing"],
         uncorr_qT1 = True
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.json"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1.json"
     threads:
         8
     resources: 
@@ -105,9 +105,9 @@ rule json_for_uncorr_qT1:
 
 rule create_uncorr_qT1:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.json"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1.json"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz"
     threads:
         8
     container:
@@ -124,15 +124,15 @@ rule create_uncorr_qT1:
 rule json_for_mp2proc:
     input:
         meta_complete = check_csa_added_to_meta,
-        b1map_nifti = "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz",
-        b1map_json = "data/derivatives/{field_strength}/B1map/{subject}/{session}/acq-{mp2rage_params}/{subject}_{session}_acq-famp_registeredtoMP2RAGE_ants.json"
+        b1map_nifti = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz",
+        b1map_json = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.json"
     params:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
         echo_spacing = config["mp2rage_echo_spacing"]
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/mp2proc.json"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/mp2proc.json"
     threads:
         8
     resources: 
@@ -145,12 +145,12 @@ rule json_for_mp2proc:
 
 rule run_mp2proc:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/mp2proc.json"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/mp2proc.json"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qR1_pksUnit.nii.gz",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_DEN_dicomUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qR1_pksUnit.nii.gz",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_DEN_dicomUnit.nii.gz"
     threads:
         8
     container:
@@ -165,9 +165,9 @@ rule run_mp2proc:
 
 rule synthseg_mp2rage:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
     output:
-         "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz"
+         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz"
     threads: 8
     resources:
         mem_mb=15000
@@ -188,7 +188,7 @@ rule register_mp2rage_acqs:
     params:
         get_mp2rage_acqs
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2rage_acqs_registration.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/mp2rage_acqs_registration.done"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -217,12 +217,12 @@ rule register_mp2rage_acqs:
 
 rule apply_reg_first_mp2rage_acq:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/mp2rage_acqs_registration.done",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/mp2rage_acqs_registration.done",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{mp2rage_map}.nii.gz"
     params:
         get_mp2rage_acqs
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_coreg.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{mp2rage_map}_coreg.nii.gz"
     resources: 
         mem_mb=500
     conda:
@@ -231,8 +231,8 @@ rule apply_reg_first_mp2rage_acq:
         """
         acq_array=( {params} )
         first_acq="${{acq_array[0]}}"
-        if [ -f data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/registeredto${{first_acq}}_GenericAffine0.mat ]; then    
-            antsApplyTransforms -d 3 -v 1 -n Linear -i {input[1]} -r data/derivatives/{wildcads.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/$first_acq/{wildcads.mp2rage_map}.nii.gz -t data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/registeredto${{first_acq}}_GenericAffine0.mat -o {output}
+        if [ -f data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registeredto${{first_acq}}_GenericAffine0.mat ]; then    
+            antsApplyTransforms -d 3 -v 1 -n Linear -i {input[1]} -r data/derivatives/{wildcads.field_strength}/MP2RAGE/{wildcards.subject}/{wildcards.session}/$first_acq/{wildcads.mp2rage_map}.nii.gz -t data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registeredto${{first_acq}}_GenericAffine0.mat -o {output}
         else
             cp {input[1]} {output}
         fi
@@ -241,9 +241,9 @@ rule apply_reg_first_mp2rage_acq:
 
 rule crop_mp2rage_256:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_coreg.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{mp2rage_map}_coreg.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_cropped.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{mp2rage_map}_cropped.nii.gz"
     resources:
         mem_mb=1000
     conda:
@@ -259,12 +259,12 @@ rule crop_mp2rage_256:
 
 rule recon_all:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_cropped.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_cropped.nii.gz"
     output:
-        aparc_mgz="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
-        aparc_nii="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/aparc+aseg.nii.gz",
-        orig_mgz="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/orig.mgz",
-        orig_nii="data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/mri/orig.nii.gz"
+        aparc_mgz="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz",
+        aparc_nii="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg.nii.gz",
+        orig_mgz="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz",
+        orig_nii="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.nii.gz"
     threads: 8
     resources:
         mem_mb=15000
@@ -333,10 +333,10 @@ rule mp2rage_tsv:
 
 rule synthstrip_qT1:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}.nii.gz"
     output:
-        # temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/{qT1}_brain.nii.gz"),
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain_mask.nii.gz"
+        # temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/{qT1}_brain.nii.gz"),
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
     threads: 4
@@ -353,10 +353,10 @@ rule synthstrip_qT1:
 
 rule apply_brainmask_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}.nii.gz",
-        brain_mask = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}.nii.gz",
+        brain_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}_brain.nii.gz")
     conda:
         "../envs/fslmaths.yaml"
     resources: 
@@ -370,10 +370,10 @@ rule apply_brainmask_qT1:
 
 rule DenoiseImage_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}_brain.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain_denoised.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -386,10 +386,10 @@ rule DenoiseImage_qT1:
 
 rule N4BiasFieldCorrection_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain_denoised.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}_brain_denoised.nii.gz",
+        mask_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{qT1}_brain_denoised_n4.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}_brain_denoised_n4.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -403,10 +403,10 @@ rule N4BiasFieldCorrection_qT1:
 
 rule apply_reg_MP2RAGE_to_ihmt_ants:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz",
-        reg="data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz",
+        reg="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_{ihmt_params}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_{ihmt_params}_ants.done"
     resources: 
         mem_mb=500
     conda:
@@ -434,10 +434,10 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
 
 rule apply_reg_MP2RAGE_to_MPM_ants:
     input:
-        ref="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_T1map.nii.gz",
-        reg="data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5"
+        ref="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_T1map.nii.gz",
+        reg="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/registered_to_{seq}_ants/apply_reg_MP2RAGE_to_{seq}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registered_to_{seq}_ants/apply_reg_MP2RAGE_to_{seq}_ants.done"
     resources: 
         mem_mb=500
     conda:
@@ -457,10 +457,10 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
 
 rule apply_reg_MP2RAGE_to_ihmt_easyreg:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGEmatrix_inverse.nii.gz",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_easyreg.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_easyreg.done"
     threads: 8
     resources: 
         mem_mb=1000
@@ -481,10 +481,10 @@ rule apply_reg_MP2RAGE_to_ihmt_easyreg:
 
 rule apply_reg_MP2RAGE_to_MPM_easyreg:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGEmatrix_inverse.nii.gz",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_registeredtoMP2RAGEmatrix_inverse.nii.gz",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{seq}_easyreg.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{seq}_easyreg.done"
     threads: 8
     container:
         "docker://freesurfer/freesurfer:8.1.0"
@@ -503,10 +503,10 @@ rule apply_reg_MP2RAGE_to_MPM_easyreg:
 
 rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
     input:
-        "data/derivatives/{field_strength}/ihmt/{subject}/{session}/{subject}_{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE_inverse.lta",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE_inverse.lta",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_synthmorph.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_synthmorph.done"
     resources: 
         mem_mb=1000
     container:
@@ -526,10 +526,10 @@ rule apply_reg_MP2RAGE_to_ihmt_synthmorph:
 
 rule apply_reg_MP2RAGE_to_MPM_synthmorph:
     input:
-        "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-{seq}_registeredtoMP2RAGE_inverse.lta",
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
+        "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_registeredtoMP2RAGE_inverse.lta",
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/qT1_msUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{seq}_synthmorph.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{seq}_synthmorph.done"
     resources: 
         mem_mb=1000
     container:
