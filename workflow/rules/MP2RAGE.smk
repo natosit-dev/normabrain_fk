@@ -291,9 +291,9 @@ rule recon_all:
 rule mp2rage_stats:
     input:
         seg=seg_first_acq_mp2rage,
-        mp2rage_map="data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/acq-{mp2rage_params}/{mp2rage_map}_cropped.nii.gz"
+        mp2rage_map="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{mp2rage_map}_cropped.nii.gz"
     output:
-        "data/derivatives/{field_strength}/freesurfer/{subject}_{session}_acq-{mp2rage_params}/stats/MP2RAGE_{mp2rage_map}.stats"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/stats/MP2RAGE_{mp2rage_map}.stats"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
