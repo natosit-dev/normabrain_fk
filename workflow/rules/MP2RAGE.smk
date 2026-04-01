@@ -43,7 +43,8 @@ def get_mp2rage_acqs(wildcards):
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
-    return mp2rage_params_list
+    mp2rage_params_array = " ".join(mp2rage_params_list)
+    return mp2rage_params_array
 
 def seg_first_acq_mp2rage(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -265,7 +266,7 @@ rule recon_all:
         aparc_nii="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg.nii.gz",
         orig_mgz="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz",
         orig_nii="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.nii.gz"
-    threads: 8
+    threads: 4
     resources:
         mem_mb=15000
     container:
