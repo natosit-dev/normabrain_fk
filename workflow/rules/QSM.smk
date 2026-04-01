@@ -44,7 +44,7 @@ def qsm_mask_list(wildcards):
 
 def get_inv1(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
 
 def t1w_nii_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -76,9 +76,9 @@ rule copy_raw_qsm:
         qsm_folder = Path(str(output)).parent
         qsm_folder.mkdir(exist_ok=True, parents=True)
 
-        phase_list = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-vibeMTmt0*_mt-off_part-phase_MPM.nii.gz'))
+        phase_list = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-phase_MPM.nii.gz'))
         num_phase = len(phase_list)
-        mag_list_clipped = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-vibeMTmt0*_mt-off_part-mag_MPM.nii.gz'))[:num_phase]
+        mag_list_clipped = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-mag_MPM.nii.gz'))[:num_phase]
         raw_list = phase_list + mag_list_clipped
         i=0
         for img in phase_list:
@@ -118,10 +118,10 @@ rule copy_denoised_qsm:
         vols="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
         for vol in $(seq 1 $vols); do
             i="$((${{vol}}-1))"
-            mrconvert {input.phase} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_phase.nii.gz
-            mv data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_phase.nii.gz data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_echo-${{vol}}_part-phase_MEGRE.nii.gz
-            mrconvert {input.mag} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_mag.nii.gz
-            mv data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_mag.nii.gz data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_echo-${{vol}}_part-mag_MEGRE.nii.gz
+            mrconvert {input.phase} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/tmp_phase.nii.gz
+            mv data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/tmp_phase.nii.gz data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_echo-${{vol}}_part-phase_MEGRE.nii.gz
+            mrconvert {input.mag} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/tmp_mag.nii.gz
+            mv data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/tmp_mag.nii.gz data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_echo-${{vol}}_part-mag_MEGRE.nii.gz
         done
         """
 

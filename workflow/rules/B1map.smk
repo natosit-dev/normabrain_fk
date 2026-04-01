@@ -7,18 +7,18 @@ def check_csa_added_to_meta(wildcards):
 
 def get_target_flip(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp*_TB1TFL.json'))[-1] #select last run
+    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-famp*_TB1TFL.json'))[-1] #select last run
     with open(json_path, "r") as f:
         b1map_meta = json.load(f)
     return b1map_meta["target_fa_deg"] * 10
 
 def get_last_b1map_run(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-famp*_TB1TFL.nii.gz'))[-1]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-famp*_TB1TFL.nii.gz'))[-1]
 
 def get_last_b1anat_run(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/fmap/{wildcards.subject}_{wildcards.session}_acq-anat*_TB1TFL.nii.gz'))[-1]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-anat*_TB1TFL.nii.gz'))[-1]
 
 
 #rules for registering with ANTs
@@ -111,7 +111,7 @@ rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from 
         mem_mb=700
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/acq-{wildcards.mp2rage_params}/{wildcards.subject}_{wildcards.session}_B1registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/sub-{wildcards.subject}_ses-{wildcards.session}_B1registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM/VFA
@@ -148,7 +148,7 @@ rule register_b1anat_to_MPM_t1w_ants: #ATTENTION: slightly different parameters 
         mem_mb=1000
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_B1registeredto{wildcards.seq}t1w_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_B1registeredto{wildcards.seq}t1w_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 rule apply_reg_b1map_to_MPM_t1w_ants: #ATTENTION: some parameters are different from MPM/VFA

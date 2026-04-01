@@ -8,11 +8,11 @@ def check_csa_added_to_meta(wildcards):
 
 def get_raw_ihmt(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.nii.gz'))[0] #get first run
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.nii.gz'))[0] #get first run
 
 def get_ihmt_contrast_type(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0]
+    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0]
     with open(json_path, "r") as f:
         meta = json.load(f)
         ihmt_contrast_type = meta["ContrastType"]
@@ -114,11 +114,11 @@ rule moco_ihmt:
         # -m 1 means use ihMT-MoCo for motion correction (from Soustelle preprint)
         # -c is a comma separated list of desired output images, we chose to only output the motion corrected image without computing any maps
         """
-        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/acq-{wildcards.ihmt_params}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_
+        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.ihmt_params}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_
         
         #rename preproc image for clarity
-        mv data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/acq-{wildcards.ihmt_params}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_ihMT.nii {output.preproc}
-        rm -rf data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/acq-{wildcards.ihmt_params}
+        mv data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.ihmt_params}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_ihMT.nii {output.preproc}
+        rm -rf data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.ihmt_params}
         """
 
 
@@ -324,7 +324,7 @@ rule register_ihmt_to_MP2RAGE_ants:
         mem_mb=700
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Affine[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_IHMTregisteredtoMP2RAGE{wildcards.mp2rage_params}_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration -d 3 -v 1 --transform Affine[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_IHMTregisteredtoMP2RAGE{wildcards.mp2rage_params}_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 rule apply_reg_ihmt_to_MP2RAGE_ants:
@@ -341,10 +341,10 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
     shell:
         """
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
-        mkdir -p data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants
+        mkdir -p data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_ants
         for map in "${{MTmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_ants/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map"_registeredtoMP2RAGE{wildcards.mp2rage_params}.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_ants/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_"$map"_registeredtoMP2RAGE{wildcards.mp2rage_params}.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t {input.reg} -o $out
             fi
@@ -389,10 +389,10 @@ rule apply_reg_ihmt_to_MP2RAGE_easyreg:
     shell:
         """
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
-        mkdir -p data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg
+        mkdir -p data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_easyreg
         for map in "${{MTmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map"_registeredtoMP2RAGE.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_easyreg/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
                 mri_easywarp --i $moving --o $out --field {input} --threads {threads}
             fi
@@ -433,10 +433,10 @@ rule apply_reg_ihmt_to_MP2RAGE_synthmorph:
     shell: #register and reslice to MP2RAGE
         """
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
-        mkdir -p data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph
+        mkdir -p data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_synthmorph
         for map in "${{MTmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/ihmt/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph/{wildcards.subject}_{wildcards.session}_acq-{wildcards.ihmt_params}_"$map"_registeredtoMP2RAGE.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_synthmorph/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_"$map"_registeredtoMP2RAGE.nii.gz"
             if [ -f $moving ]; then
                 mri_synthmorph apply {input.reg} $moving $out
             fi

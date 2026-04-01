@@ -12,11 +12,11 @@ def check_csa_added_to_meta(wildcards):
 def get_echos(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     #get the list of echo files and sort it
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))
 
 def get_qMT_params(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
+    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
     with open(json_path, "r") as f:
         mtw_meta = json.load(f)
         mt_params = {
@@ -35,18 +35,18 @@ def get_qMT_params(wildcards):
 
 def get_qMT_json(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
 
 def get_t1flip(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}t1w*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         t1w_meta = json.load(f)
     return t1w_meta["FlipAngle"]
 
 def get_pdflip(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}pdw*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw*_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         pdw_meta = json.load(f)
     return pdw_meta["FlipAngle"]
@@ -55,7 +55,7 @@ def t1wmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}t1w*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_echos4d.nii"
@@ -65,7 +65,7 @@ def mt0mag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mt0*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0_mt-off_part-mag_echos4d.nii"
@@ -75,7 +75,7 @@ def mtwmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*_echo-1_flip-*_mt-on_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw_mt-on_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw_mt-on_part-mag_echos4d.nii"
@@ -85,7 +85,7 @@ def pdwmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}pdw*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii"
@@ -455,7 +455,7 @@ rule register_MPM_to_t1w_ants:
         mem_mb=1500
     shell:
         """
-        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/preproc/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}_mt-{wildcards.mt}_part-{wildcards.part}_registeredto{wildcards.seq}t1w_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Rigid[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/preproc/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}_mt-{wildcards.mt}_part-{wildcards.part}_registeredto{wildcards.seq}t1w_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Rigid[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 
@@ -652,7 +652,7 @@ rule register_MPM_to_MP2RAGE_ants:
         mem_mb=1500
     shell:
         """
-        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_registeredtoMP2RAGE{wildcards.mp2rage_params}_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Affine[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        antsRegistration --verbose 1 --dimensionality 3 --float 0 --write-composite-transform 1 --collapse-output-transforms 1 --output [ data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_registeredtoMP2RAGE{wildcards.mp2rage_params}_, {output[0]}, {output[1]} ] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] --initial-moving-transform [ {input.ref}, {input.moving}, 1 ] --transform Affine[ 0.1 ] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-6, 50 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 4x2x1x0vox --masks [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
 
@@ -670,10 +670,10 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
     shell:
         """
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE{wildcards.mp2rage_params}_ants
+        mkdir -p data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE{wildcards.mp2rage_params}_ants
         for map in "${{MPMmaps[@]}}"; do
-            moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE{wildcards.mp2rage_params}_ants/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE{wildcards.mp2rage_params}.nii.gz"
+            moving="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE{wildcards.mp2rage_params}_ants/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE{wildcards.mp2rage_params}.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t {input.reg} -o $out
             fi
@@ -720,10 +720,10 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
 #     shell:
 #         """
 #         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
-#         mkdir -p data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg
+#         mkdir -p data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_easyreg
 #         for map in "${{MTmaps[@]}}"; do
-#             moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
-#             out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_easyreg/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
+#             moving="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
+#             out="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_easyreg/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
 #             if [ -f $moving ]; then
 #                 mri_easywarp --i $moving --o $out --field {input} --threads {threads}
 #             fi
@@ -766,10 +766,10 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
 #     shell: #register and reslice to MP2RAGE
 #         """
 #         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
-#         mkdir -p data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph
+#         mkdir -p data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_synthmorph
 #         for map in "${{MPMmaps[@]}}"; do
-#             moving="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
-#             out="data/derivatives/{wildcards.field_strength}/MPM/{wildcards.subject}/{wildcards.session}/registered_to_MP2RAGE_synthmorph/{wildcards.subject}_{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
+#             moving="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
+#             out="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/registered_to_MP2RAGE_synthmorph/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_"$map"_registeredtoMP2RAGE.nii.gz"
 #             if [ -f $moving ]; then
 #                 mri_synthmorph apply {input.reg} $moving $out
 #             fi
