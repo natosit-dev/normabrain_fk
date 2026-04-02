@@ -58,7 +58,7 @@ def seg_first_acq_mp2rage(wildcards):
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
-    return expand('data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg.mgz', mp2rage_params=first_acq, allow_missing=True)
+    return expand('data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg.nii.gz', mp2rage_params=first_acq, allow_missing=True)
 
 def mp2rage_statslist(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -262,10 +262,13 @@ rule crop_mp2rage_256:
         "../envs/qMT.yaml"
     shell:
         """
-        size="$(mrinfo -size {input} | awk '{{print $3}}')"
-        start="$((${{size}}-256))"
-        mrgrid {input} crop -axis 2 ${{start}}:end {output} -force
+        size_2="$(mrinfo -size {input} | awk '{{print $3}}')"
+        start_2="$((${{size_2}}-256))"
+        mrgrid {input} crop -axis 2 ${{start_2}}:end {output} -force
         mrgrid {output} crop -axis 1 0:255 {output} -force
+        size_0="$(mrinfo -size {input} | awk '{{print $1}}')"
+        pad_size_0="$(((256-${size_0})/2))"
+        mrgrid {output} pad -axis 0 ${{pad_size_0}},${{pad_size_0}} {output} -force
         """
 
 
@@ -292,7 +295,7 @@ rule recon_all:
             export CUDA_VISIBLE_DEVICES=0
             export UseGPU=1
         fi
-        mri_convert -oni 256 -onj 256 -onk 256 {input} {input}
+        # mri_convert --conform_min -oni 256 -onj 256 -onk 256 {input} {input}
         rm -rf $SUBJECTS_DIR/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}
         recon-all -hires -parallel -3T -i {input} -all -s sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}
         mri_convert {output.aparc_mgz} {output.aparc_nii}
@@ -300,9 +303,25 @@ rule recon_all:
         """
 
 
-rule mp2rage_stats:
+rule reslice_segmentation:
     input:
         seg=seg_first_acq_mp2rage,
+        ref="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit_coreg.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz"
+    resources:
+        mem_mb=1000
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        mrgrid {input.seg} regrid -template {input.ref} -interp nearest {output} -force
+        """
+    
+
+rule mp2rage_stats:
+    input:
+        seg="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz",
         mp2rage_map="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{mp2rage_map}_cropped.nii.gz"
     output:
         "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/stats/MP2RAGE_{mp2rage_map}.stats"
@@ -313,7 +332,7 @@ rule mp2rage_stats:
         cp $HOME/.snakemake/scripts/.license $HOME
         export FS_LICENSE=$HOME/.license
         
-        mri_convert -oni 257 -onj 257 -onk 257 {input.mp2rage_map} {input.mp2rage_map}
+        # mri_convert -oni 257 -onj 257 -onk 257 {input.mp2rage_map} {input.mp2rage_map}
 
         mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.mp2rage_map} --sum {output} --excludeid 0
         """  
