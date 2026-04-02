@@ -8,17 +8,18 @@ def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def mp2rage_echo_spacing(wildcards):
-    protocol_name = str({wildcards.subject}).replace("sub-", "").lstrip("0123456789.-")
+    protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
     protocol_name_pattern = "*" + protocol_name + "*/*.xml"
-    search_path = Path(config["protocol_path"]) / str({wildcards.field_strength})
+    search_path = Path(config["protocol_path"]) / wildcards.field_strength
     xml_path_list = sorted(search_path.rglob(protocol_name_pattern, case_sensitive=False))
     if len(xml_path_list) > 0:
+        xml_path = xml_path_list[0]
         xml_tree = etree.parse(xml_path)
         xml_root = xml_tree.getroot()
         echo_spacing_unit = xml_root.xpath(".//SubStep[ProtHeaderInfo[HeaderProtPath[contains(text(), 'mp2r')]]]/Card/ProtParameter[Label[contains(text(), 'Echo Spacing')]]/ValueAndUnit")[0].text
         numeric_const_pattern = '[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
         rx = re.compile(numeric_const_pattern, re.VERBOSE)
-        echo_spacing = float(rx.findall(value_unit)[0])
+        echo_spacing = float(rx.findall( echo_spacing_unit )[0])
     else:
         echo_spacing = 7.4
     return echo_spacing
