@@ -334,7 +334,7 @@ rule reslice_segmentation:
         "../envs/qMT.yaml"
     shell:
         """
-        mrgrid {input.seg} regrid -template {input.ref} -interp nearest {output} -force
+        mrgrid {input.seg} regrid -template {input.ref} -strides {input.ref} -interp nearest {output} -force
         """
     
 
