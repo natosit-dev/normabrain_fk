@@ -267,7 +267,7 @@ rule crop_mp2rage_256:
         mrgrid {input} crop -axis 2 ${{start_2}}:end {output} -force
         mrgrid {output} crop -axis 1 0:255 {output} -force
         size_0="$(mrinfo -size {input} | awk '{{print $1}}')"
-        pad_size_0="$(((256-${size_0})/2))"
+        pad_size_0="$(((256-${{size_0}})/2))"
         mrgrid {output} pad -axis 0 ${{pad_size_0}},${{pad_size_0}} {output} -force
         """
 
