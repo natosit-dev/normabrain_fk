@@ -3,4 +3,3 @@ session_list: ["ses-1"]
 MPM_sequence: "vibeMT"
 MPM_contrasts: ["mt0", "mtw", "pdw", "t1w"]
 n_echos: 3
-mp2rage_echo_spacing: 7.4
