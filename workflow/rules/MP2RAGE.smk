@@ -364,9 +364,6 @@ rule mp2rage_tsv:
         """
 
 
-
-
-
 #rules for registering with ANTs
 
 rule synthstrip_qT1:
