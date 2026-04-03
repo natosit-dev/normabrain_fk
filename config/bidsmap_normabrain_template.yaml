@@ -655,7 +655,7 @@ DICOM:
       PostLabelingDelay:
       BackgroundSuppression: 
       M0Type: "Separate / Included / Estimate / Absent"
-      RepetitionTimePreparation:
+      RepetitionTimePreparation: <RepetitionTime>
       VascularCrushing: <ASLCrusherFlag>
       LabelingDuration: <ASLPulseTrainDuration>
       AcquisitionVoxelSize:
@@ -671,10 +671,9 @@ DICOM:
       dir: AP
     meta: 
       <<: *perf_meta
-      RepetitionTimePreparation: <RepetitionTime>
       ArterialSpinLabelingType: PCASL
-      PostLabelingDelay: 1296
-      BackgroundSuppression: 'false'
+      # PostLabelingDelay: 1296
+      BackgroundSuppression: 'true'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
@@ -687,10 +686,9 @@ DICOM:
       dir: PA
     meta: 
       <<: *perf_meta
-      RepetitionTimePreparation: <RepetitionTime>
       ArterialSpinLabelingType: PCASL
-      PostLabelingDelay: 1296
-      BackgroundSuppression: 'false'
+      # PostLabelingDelay: 1296
+      BackgroundSuppression: 'true'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
@@ -703,10 +701,9 @@ DICOM:
       rec: subtraction
     meta:
       <<: *perf_meta
-      RepetitionTimePreparation: <RepetitionTime>
       ArterialSpinLabelingType: PCASL
-      PostLabelingDelay: 1296
-      BackgroundSuppression: 'false'
+      # PostLabelingDelay: 1296
+      BackgroundSuppression: 'true'
       M0Type: Included
       TotalAcquiredPairs: 9
   - attributes:
@@ -719,12 +716,83 @@ DICOM:
       rec: rcbf
     meta:
       <<: *perf_meta
-      RepetitionTimePreparation: <RepetitionTime>
       ArterialSpinLabelingType: PCASL
-      PostLabelingDelay: 1296
-      BackgroundSuppression: 'false'
+      # PostLabelingDelay: 1296
+      BackgroundSuppression: 'true'
       M0Type: Included
       TotalAcquiredPairs: 9
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl.*singleTI
+    bids: *perf_dicoment_group1
+    meta: 
+      <<: *perf_meta
+      ArterialSpinLabelingType: PCASL
+      BackgroundSuppression: 'true'
+      M0Type: Included
+      TotalAcquiredPairs: 10
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl.*singleTI
+      ImageType: .*SUBTRACTION.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: subtraction
+    meta: 
+      <<: *perf_meta
+      ArterialSpinLabelingType: PCASL
+      BackgroundSuppression: 'true'
+      M0Type: Included
+      TotalAcquiredPairs: 10
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl.*singleTI*
+      ImageType: .*RCBF.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: rcbf
+    meta: 
+      <<: *perf_meta
+      ArterialSpinLabelingType: PCASL
+      BackgroundSuppression: 'true'
+      M0Type: Included
+      TotalAcquiredPairs: 10
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl.*multiti
+    bids: *perf_dicoment_group1
+    meta: 
+      <<: *perf_meta
+      ArterialSpinLabelingType: PCASL
+      BackgroundSuppression: 'true'
+      M0Type: Included
+      TotalAcquiredPairs: 16
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl.*multiti
+      ImageType: .*SUBTRACTION.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: subtraction
+    meta: 
+      <<: *perf_meta
+      ArterialSpinLabelingType: PCASL
+      BackgroundSuppression: 'true'
+      M0Type: Included
+      TotalAcquiredPairs: 16
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*pcasl.*multiti
+      ImageType: .*RCBF.*
+    bids: 
+      <<: *perf_dicoment_group1
+      rec: rcbf
+    meta: 
+      <<: *perf_meta
+      ArterialSpinLabelingType: PCASL
+      BackgroundSuppression: 'true'
+      M0Type: Included
+      TotalAcquiredPairs: 16
   - attributes:
       <<: *perf_dicomattr
       ProtocolName: (?i).*(ASL|asl|Perfusion|perfusion).*
@@ -1247,7 +1315,7 @@ DICOM:
   - attributes:
       <<: *leaveout_attributes_dicom
       ImageType: .*'DERIVED'.*
-      ProtocolName: (?i)((?!MP2RAGE|mp2r).)*     # Make an exception for DERIVED 3D MP2RAGE UNI-images
+      ProtocolName: (?i)((?!MP2RAGE|mp2r|asl|ASL).)*     # Make an exception for DERIVED 3D MP2RAGE and ASL images
     bids:
       <<: *leaveout_bids_dicom
       rec: DERIVED
