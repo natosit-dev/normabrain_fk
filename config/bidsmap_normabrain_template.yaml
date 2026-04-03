@@ -652,7 +652,7 @@ DICOM:
       suffix: asl
     meta: &perf_meta
       ArterialSpinLabelingType: "CASL / PCASL / PASL"
-      PostLabelingDelay:
+      # PostLabelingDelay:
       BackgroundSuppression: 
       M0Type: "Separate / Included / Estimate / Absent"
       RepetitionTimePreparation: <RepetitionTime>
