@@ -365,7 +365,7 @@ rule mp2rage_tsv:
     params:
         freesurfer_subjectlist
     output:
-        "data/derivatives/{field_strength}/freesurfer/{mp2rage_map}_stats.tsv"  
+        "data/derivatives/{field_strength}/freesurfer/MP2RAGE_{mp2rage_map}_stats.tsv"  
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
