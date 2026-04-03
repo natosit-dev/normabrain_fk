@@ -746,7 +746,7 @@ DICOM:
       TotalAcquiredPairs: 10
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*(pcasl).*(singleTI).**
+      ProtocolName: (?i).*(pcasl).*(singleTI).*
       ImageType: .*RCBF.*
     bids: 
       <<: *perf_dicoment_group1
