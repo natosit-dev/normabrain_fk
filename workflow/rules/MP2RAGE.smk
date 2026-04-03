@@ -106,7 +106,9 @@ def freesurfer_subjectlist(wildcards):
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for acq in acqlist:
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
-    return fs_subjectlist
+    fs_subjectarray = " ".join(fs_subjectlist)
+    return fs_subjectarray
+
 
 rule json_for_uncorr_qT1:
     input:
