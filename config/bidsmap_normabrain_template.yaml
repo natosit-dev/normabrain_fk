@@ -723,7 +723,7 @@ DICOM:
       TotalAcquiredPairs: 9
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*pcasl.*singleTI
+      ProtocolName: (?i).*(pcasl).*(singleTI).*
     bids: *perf_dicoment_group1
     meta: 
       <<: *perf_meta
@@ -733,7 +733,7 @@ DICOM:
       TotalAcquiredPairs: 10
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*pcasl.*singleTI
+      ProtocolName: (?i).*(pcasl).*(singleTI).*
       ImageType: .*SUBTRACTION.*
     bids: 
       <<: *perf_dicoment_group1
@@ -746,7 +746,7 @@ DICOM:
       TotalAcquiredPairs: 10
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*pcasl.*singleTI*
+      ProtocolName: (?i).*(pcasl).*(singleTI).**
       ImageType: .*RCBF.*
     bids: 
       <<: *perf_dicoment_group1
@@ -759,7 +759,7 @@ DICOM:
       TotalAcquiredPairs: 10
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*pcasl.*multiti
+      ProtocolName: (?i).*(pcasl).*(multiti).*
     bids: *perf_dicoment_group1
     meta: 
       <<: *perf_meta
@@ -769,7 +769,7 @@ DICOM:
       TotalAcquiredPairs: 16
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*pcasl.*multiti
+      ProtocolName: (?i).*(pcasl).*(multiti).*
       ImageType: .*SUBTRACTION.*
     bids: 
       <<: *perf_dicoment_group1
@@ -782,7 +782,7 @@ DICOM:
       TotalAcquiredPairs: 16
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*pcasl.*multiti
+      ProtocolName: (?i).*(pcasl).*(multiti).*
       ImageType: .*RCBF.*
     bids: 
       <<: *perf_dicoment_group1
