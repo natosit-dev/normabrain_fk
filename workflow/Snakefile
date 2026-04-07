@@ -4,7 +4,8 @@ configfile: "config/snakemake_config.yaml"
 rule all:
     input:
         "data/rawdata/bids/3T/code/bidscoin/fixmeta.log",
-        "data/derivatives/3T/freesurfer/sub-2173002260324normamp2rage_ses-1_acq-mp2ragewipsag0p9c6DL6500us"
+        "data/derivatives/3T/freesurfer/MP2RAGE_qR1_pksUnit_stats.tsv",
+        "data/derivatives/3T/freesurfer/MP2RAGE_qT1_msUnit_stats.tsv"
 
 include: "rules/bidsify.smk"
 include: "rules/B1map.smk"
