@@ -170,78 +170,78 @@ rule apply_reg_b1map_to_MPM_t1w_ants: #ATTENTION: some parameters are different 
         """
 
 
-#rules for registering with synthmorph
+# #rules for registering with synthmorph
 
-rule register_b1anat_to_MP2RAGE_synthmorph:
-    input:
-        check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/uncorr_qT1.nii.gz"
-    params:
-        moving = get_last_b1anat_run
-    output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_synthmorph.lta"
-    container:
-        "docker://freesurfer/freesurfer:8.1.0"
-    resources: 
-        mem_mb=7000
-    shell:
-        """
-        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
-        """
+# rule register_b1anat_to_MP2RAGE_synthmorph:
+#     input:
+#         check_csa_added_to_meta,
+#         ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/uncorr_qT1.nii.gz"
+#     params:
+#         moving = get_last_b1anat_run
+#     output:
+#         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_synthmorph.lta"
+#     container:
+#         "docker://freesurfer/freesurfer:8.1.0"
+#     resources: 
+#         mem_mb=7000
+#     shell:
+#         """
+#         mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
+#         """
     
 
-rule apply_reg_b1map_to_MP2RAGE_synthmorph:
-    input:
-        check_csa_added_to_meta,
-        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_synthmorph.lta"
-    params:
-        moving = get_last_b1map_run
-    output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_synthmorph.nii.gz"
-    container:
-        "docker://freesurfer/freesurfer:8.1.0"
-    resources: 
-        mem_mb=500
-    shell: #-H option means no resampling: MP2PROC does resampling and there's no way to turn it off
-        """
-        mri_synthmorph apply -H {input.reg} {params.moving} {output}
-        """ 
+# rule apply_reg_b1map_to_MP2RAGE_synthmorph:
+#     input:
+#         check_csa_added_to_meta,
+#         reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_synthmorph.lta"
+#     params:
+#         moving = get_last_b1map_run
+#     output:
+#         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_synthmorph.nii.gz"
+#     container:
+#         "docker://freesurfer/freesurfer:8.1.0"
+#     resources: 
+#         mem_mb=500
+#     shell: #-H option means no resampling: MP2PROC does resampling and there's no way to turn it off
+#         """
+#         mri_synthmorph apply -H {input.reg} {params.moving} {output}
+#         """ 
 
-rule register_b1anat_to_MPM_t1w_synthmorph:
-    input:
-        check_csa_added_to_meta,
-        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_sos.nii.gz"
-    params:
-        moving = get_last_b1anat_run
-    output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w_synthmorph.lta"
-    threads: 4
-    resources: 
-        mem_mb=7000
-    container:
-        "docker://freesurfer/freesurfer:8.1.0"
-    shell:
-        """
-        mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
-        """
+# rule register_b1anat_to_MPM_t1w_synthmorph:
+#     input:
+#         check_csa_added_to_meta,
+#         ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w_mt-off_part-mag_sos.nii.gz"
+#     params:
+#         moving = get_last_b1anat_run
+#     output:
+#         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w_synthmorph.lta"
+#     threads: 4
+#     resources: 
+#         mem_mb=7000
+#     container:
+#         "docker://freesurfer/freesurfer:8.1.0"
+#     shell:
+#         """
+#         mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {params.moving} {input.ref}
+#         """
 
 
-rule apply_reg_b1map_to_MPM_t1w_synthmorph:
-    input:
-        check_csa_added_to_meta,
-        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w_synthmorph.lta"
-    params:
-        moving = get_last_b1map_run
-    output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w_synthmorph.nii.gz"
-    container:
-        "docker://freesurfer/freesurfer:8.1.0"
-    resources: 
-        mem_mb=500
-    shell: #register and reslice to MPM t1w
-        """
-        mri_synthmorph apply {input.reg} {params.moving} {output}
-        """  
+# rule apply_reg_b1map_to_MPM_t1w_synthmorph:
+#     input:
+#         check_csa_added_to_meta,
+#         reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w_synthmorph.lta"
+#     params:
+#         moving = get_last_b1map_run
+#     output:
+#         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w_synthmorph.nii.gz"
+#     container:
+#         "docker://freesurfer/freesurfer:8.1.0"
+#     resources: 
+#         mem_mb=500
+#     shell: #register and reslice to MPM t1w
+#         """
+#         mri_synthmorph apply {input.reg} {params.moving} {output}
+#         """  
 
 
 #Post registration rules
