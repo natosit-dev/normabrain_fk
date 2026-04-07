@@ -724,16 +724,6 @@ DICOM:
   - attributes:
       <<: *perf_dicomattr
       ProtocolName: (?i).*(pcasl).*(singleTI).*
-    bids: *perf_dicoment_group1
-    meta: 
-      <<: *perf_meta
-      ArterialSpinLabelingType: PCASL
-      BackgroundSuppression: 'true'
-      M0Type: Included
-      TotalAcquiredPairs: 10
-  - attributes:
-      <<: *perf_dicomattr
-      ProtocolName: (?i).*(pcasl).*(singleTI).*
       ImageType: .*SUBTRACTION.*
     bids: 
       <<: *perf_dicoment_group1
@@ -759,14 +749,14 @@ DICOM:
       TotalAcquiredPairs: 10
   - attributes:
       <<: *perf_dicomattr
-      ProtocolName: (?i).*(pcasl).*(multiti).*
+      ProtocolName: (?i).*(pcasl).*(singleTI).*
     bids: *perf_dicoment_group1
     meta: 
       <<: *perf_meta
       ArterialSpinLabelingType: PCASL
       BackgroundSuppression: 'true'
       M0Type: Included
-      TotalAcquiredPairs: 16
+      TotalAcquiredPairs: 10
   - attributes:
       <<: *perf_dicomattr
       ProtocolName: (?i).*(pcasl).*(multiti).*
@@ -787,6 +777,16 @@ DICOM:
     bids: 
       <<: *perf_dicoment_group1
       rec: rcbf
+    meta: 
+      <<: *perf_meta
+      ArterialSpinLabelingType: PCASL
+      BackgroundSuppression: 'true'
+      M0Type: Included
+      TotalAcquiredPairs: 16
+  - attributes:
+      <<: *perf_dicomattr
+      ProtocolName: (?i).*(pcasl).*(multiti).*
+    bids: *perf_dicoment_group1
     meta: 
       <<: *perf_meta
       ArterialSpinLabelingType: PCASL
