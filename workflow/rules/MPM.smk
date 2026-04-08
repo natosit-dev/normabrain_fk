@@ -144,7 +144,7 @@ rule create_complex_images:
         """
         phasesize="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
         magstart="$((${{magsize}}-${{phasesize}}))"
-        mrconvert {input.mag} {output.mag_clipped} -coord 3 ${magstart}:end
+        mrconvert {input.mag} {output.mag_clipped} -coord 3 ${{magstart}}:end
         mrcalc {output.mag_clipped} {input.phase} pi 4096 -div -mult -polar {output.out}
         """
 
