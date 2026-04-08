@@ -293,6 +293,7 @@ rule DenoiseImage_ihmt:
         DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
         """
 
+
 rule N4BiasFieldCorrection_ihmt:
     input:
         input_image="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised.nii.gz",
@@ -307,6 +308,7 @@ rule N4BiasFieldCorrection_ihmt:
         """
         N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
         """
+
 
 rule register_ihmt_to_MP2RAGE_ants:
     input:
@@ -327,9 +329,9 @@ rule register_ihmt_to_MP2RAGE_ants:
         antsRegistration -d 3 -v 1 --transform Affine[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_IHMTregisteredtoMP2RAGE{wildcards.mp2rage_params}_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
+
 rule apply_reg_ihmt_to_MP2RAGE_ants:
     input:
-        # moving="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_MTmap.nii.gz",
         ref="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_DEN_dicomUnit.nii.gz",
         reg="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat"
     output:
