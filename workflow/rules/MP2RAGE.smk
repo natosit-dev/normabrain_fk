@@ -114,7 +114,7 @@ def ihmt_statslist(wildcards):
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for acq in acqlist:
-                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" acq + "/stats/stats.done")
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" acq + "/stats/ihmt_stats.done")
                 # statslist.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "acq-" acq + "_seg_stats.done")
     return statslist
 
@@ -465,7 +465,7 @@ rule ihmt_stats:
         # "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done",
         # check_csa_added_to_meta
     output:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/stats/stats.done"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/stats/ihmt_stats.done"
     # params:
     #     get_mp2rage_acqs
     container:
@@ -483,7 +483,7 @@ rule ihmt_stats:
         for map in "${{MTmaps[@]}}"; do
             ihmt="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_${{map}}.nii.gz"
             # stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/stats/{wildcards.ihmt_params}_${{map}}.stats"
-            stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}/stats/${{map}}.stats"
+            stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}/stats/ihmt_${{map}}.stats"
             if [ -f $ihmt ]; then
                 mri_segstats --seg $seg --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $ihmt --sum $stats --excludeid 0
             fi
@@ -510,8 +510,9 @@ rule ihmt_tsv:
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
         
         for map in "${{MTmaps[@]}}"; do
-            asegstats2table --subjects {params} --statsfile ${{map}}.stats -t {output} --meas mean --common-segs --no-segno 0 --skip
+            asegstats2table --subjects {params} --statsfile ihmt_${{map}}.stats -t data/derivatives/{wildcards.field_strength}/freesurfer/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
         done
+        touch {output}
         """
     
 
