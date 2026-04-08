@@ -114,7 +114,7 @@ def ihmt_statslist(wildcards):
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for acq in acqlist:
-                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" acq + "/stats/ihmt_stats.done")
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/ihmt_stats.done")
                 # statslist.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "acq-" acq + "_seg_stats.done")
     return statslist
 
