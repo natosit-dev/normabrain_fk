@@ -411,11 +411,11 @@ rule apply_reg_seg_to_ihmt_ants:
         acq_array=( {params} )
         first_acq="${{acq_array[0]}}"
 
-        antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {input.seg} -r $ref -t [ {input.reg}, 1 ] -o data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/mri/aparc+aseg_registeredto{wildcards.ihmt_params}.nii.gz"
+        antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {input.seg} -r $ref -t [ {input.reg}, 1 ] -o data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/mri/aparc+aseg_registeredto{wildcards.ihmt_params}.nii.gz
         touch {output}
         """
 
-        
+
 #rules for registering with ANTs
 
 rule synthstrip_qT1:
