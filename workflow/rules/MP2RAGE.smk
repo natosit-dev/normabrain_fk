@@ -418,7 +418,8 @@ rule apply_reg_seg_to_ihmt_ants:
 
 rule ihmt_stats:
     input:
-        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done"
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done",
+        check_csa_added_to_meta
     output:
         "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg_stats.done"
     params:
