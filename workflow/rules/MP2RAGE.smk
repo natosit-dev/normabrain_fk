@@ -435,7 +435,7 @@ rule apply_reg_seg_to_ihmt_ants:
     # params:
     #     get_mp2rage_acqs
     output:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/mri/aparc+aseg.nii.gz"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/mri/aparc+aseg_registeredtoIHMT.nii.gz"
         # "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done"
     resources: 
         mem_mb=500
@@ -461,7 +461,7 @@ rule apply_reg_seg_to_ihmt_ants:
 
 rule ihmt_stats:
     input:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/mri/aparc+aseg.nii.gz"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/mri/aparc+aseg_registeredtoIHMT.nii.gz"
         # "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done",
         # check_csa_added_to_meta
     output:
