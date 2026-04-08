@@ -91,6 +91,26 @@ def pdwmag_preproc(wildcards):
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw_mt-off_part-mag_echos4d.nii"
     return mag_preproc
 
+def mpm_to_mp2rage(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    apply_reg_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for mp2rage in mp2rage_acqlist:
+                apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-{seq}_apply_reg_MPM_to_MP2RAGE" + mp2rage + "_ants.done")
+    return apply_reg_list
+
 
 rule concat_echos:
     input:
@@ -707,6 +727,17 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
                 antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t {input.reg} -o $out
             fi
         done
+        touch {output}
+        """
+
+
+rule gather_MPM_to_MP2RAGE_ants:
+    input:
+        ihmt_to_mp2rage
+    output:
+        "data/derivatives/{field_strength}/MPM/{seq}_to_MP2RAGE.done"
+    shell:
+        """
         touch {output}
         """
 

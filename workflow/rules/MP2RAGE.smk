@@ -179,6 +179,26 @@ def mp2rage_to_ihmt(wildcards):
                     apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage + "/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_" + ihmt + "_ants.done")
     return apply_reg_list
 
+def mp2rage_to_mpm(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    apply_reg_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for mp2rage in mp2rage_acqlist:
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage + "/registered_to_{seq}_ants/apply_reg_MP2RAGE_to_{seq}_ants.done")
+    return apply_reg_list
+
 
 rule json_for_uncorr_qT1:
     input:
@@ -653,6 +673,17 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
             out="data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}_ants/"$map"_registeredto{wildcards.seq}.nii.gz"
             antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t [ {input.reg}, 1 ] -o $out
         done
+        touch {output}
+        """
+
+
+rule gather_MP2RAGE_to_MPM_ants:
+    input:
+        mp2rage_to_mpm
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_{seq}.done"
+    shell:
+        """
         touch {output}
         """
 
