@@ -17,68 +17,68 @@ def qsm_nii_list(wildcards):
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    # qsm_subjects = ["sub-" + x for x in qsm_subjects]
     qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_sessions = ["ses-" + x for x in qsm_sessions]
-    return expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    # qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def qsm_json_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    # qsm_subjects = ["sub-" + x for x in qsm_subjects]
     qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_sessions = ["ses-" + x for x in qsm_sessions]
-    return expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    # qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def qsm_mask_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    # qsm_subjects = ["sub-" + x for x in qsm_subjects]
     qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_sessions = ["ses-" + x for x in qsm_sessions]
-    return expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    # qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def get_inv1(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
 
 def t1w_nii_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    # qsm_subjects = ["sub-" + x for x in qsm_subjects]
     qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_sessions = ["ses-" + x for x in qsm_sessions]
-    return expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    # qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def t1w_json_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_subjects = ["sub-" + x for x in qsm_subjects]
+    # qsm_subjects = ["sub-" + x for x in qsm_subjects]
     qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
-    qsm_sessions = ["ses-" + x for x in qsm_sessions]
-    return expand("data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    # qsm_sessions = ["ses-" + x for x in qsm_sessions]
+    return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 
 rule copy_raw_qsm:
     input:
         check_csa_added_to_meta  
     output:
-        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.json"
+        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.json"
     run: #python code, not shell
         qsm_folder = Path(str(output)).parent
         qsm_folder.mkdir(exist_ok=True, parents=True)
 
-        phase_list = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-vibeMTmt0*_mt-off_part-phase_MPM.nii.gz'))
+        phase_list = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-phase_MPM.nii.gz'))
         num_phase = len(phase_list)
-        mag_list_clipped = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_acq-vibeMTmt0*_mt-off_part-mag_MPM.nii.gz'))[:num_phase]
+        mag_list_clipped = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-mag_MPM.nii.gz'))[:num_phase]
         raw_list = phase_list + mag_list_clipped
         i=0
         for img in phase_list:
@@ -104,11 +104,11 @@ rule copy_raw_qsm:
 
 rule copy_denoised_qsm:
     input:
-        phase = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-phase_echos4d_riciancorr.nii",
-        mag = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_echos4d_denoise.nii"
+        phase = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-phase_echos4d_riciancorr.nii",
+        mag = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_echos4d_denoise.nii"
     output:
-        # "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/"
-        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_echo-1_part-phase_MEGRE.nii.gz"
+        # "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/"
+        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -118,10 +118,10 @@ rule copy_denoised_qsm:
         vols="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
         for vol in $(seq 1 $vols); do
             i="$((${{vol}}-1))"
-            mrconvert {input.phase} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_phase.nii.gz
-            mv data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_phase.nii.gz data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_echo-${{vol}}_part-phase_MEGRE.nii.gz
-            mrconvert {input.mag} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_mag.nii.gz
-            mv data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/tmp_mag.nii.gz data/derivatives/{wildcards.field_strength}/QSM/{wildcards.subject}/{wildcards.session}/anat/{wildcards.subject}_{wildcards.session}_echo-${{vol}}_part-mag_MEGRE.nii.gz
+            mrconvert {input.phase} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/tmp_phase.nii.gz
+            mv data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/tmp_phase.nii.gz data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_echo-${{vol}}_part-phase_MEGRE.nii.gz
+            mrconvert {input.mag} -coord 3 $i -axes 0,1,2 data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/tmp_mag.nii.gz
+            mv data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/tmp_mag.nii.gz data/derivatives/{wildcards.field_strength}/QSM/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_echo-${{vol}}_part-mag_MEGRE.nii.gz
         done
         """
 
@@ -132,7 +132,7 @@ rule copy_raw_t1w_qsm:
     params:
         inv1 = get_inv1
     output:
-        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.json"
+        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.json"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     run:
@@ -142,9 +142,9 @@ rule copy_raw_t1w_qsm:
         
 rule copy_uniden_qsm:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/QSM/{subject}/{session}/anat/{subject}_{session}_T1w.nii.gz"
+        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     shell:
@@ -155,11 +155,11 @@ rule copy_uniden_qsm:
 
 rule copy_mask_qsm:
     input:
-        mask = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTt1w_mt-off_part-mag_sos_brain_spine_mask.nii.gz",
-        ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_sos.nii.gz",
-        reg = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_registeredtovibeMTt1w_Composite.h5"
+        mask = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTt1w_mt-off_part-mag_sos_brain_spine_mask.nii.gz",
+        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_sos.nii.gz",
+        reg = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_registeredtovibeMTt1w_Composite.h5"
     output:
-        "data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/{subject}/{session}/anat/{subject}_{session}_mask.nii.gz"
+        "data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_mask.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
@@ -172,12 +172,12 @@ rule copy_mask_qsm:
 
 # rule copy_seg_qsm:
 #     input:
-#         seg = "data/derivatives/{field_strength}/MP2RAGE/{subject}/{session}/MP2RAGE_synthseg.nii.gz",
-#         ref = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_sos.nii.gz",
-#         T1toMP2RAGE =  "data/derivatives/{field_strength}/MPM/{subject}/{session}/{subject}_{session}_acq-vibeMT_registeredtoMP2RAGE_Composite.h5",
-#         MT0toT1 = "data/derivatives/{field_strength}/MPM/{subject}/{session}/preproc/{subject}_{session}_acq-vibeMTmt0_mt-off_part-mag_registeredtovibeMTt1w_Composite.h5"
+#         seg = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/MP2RAGE_synthseg.nii.gz",
+#         ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_sos.nii.gz",
+#         T1toMP2RAGE =  "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-vibeMT_registeredtoMP2RAGE_Composite.h5",
+#         MT0toT1 = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_registeredtovibeMTt1w_Composite.h5"
 #     output:
-#         "data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz"
+#         "data/derivatives/{field_strength}/QSM/derivatives/synthseg/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_dseg.nii.gz"
 #     resources: #limit memory by input size
 #         mem_mb=lambda wc, input: 2.5 * input.size_mb
 #     conda:
@@ -194,7 +194,7 @@ rule qsmxt:
         qsm_mask_list,
         t1w_nii_list,
         t1w_json_list
-        # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/{subject}/{session}/anat/{subject}_{session}_dseg.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+        # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_dseg.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
     output:
         directory("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/")    
     threads: 8

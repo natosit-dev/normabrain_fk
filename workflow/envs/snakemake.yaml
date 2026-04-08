@@ -10,3 +10,4 @@ dependencies:
   - pip
   - pip:
     - snakebids==0.15.0
+    - lxml==6.0.2
