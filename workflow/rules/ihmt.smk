@@ -18,6 +18,28 @@ def get_ihmt_contrast_type(wildcards):
         ihmt_contrast_type = meta["ContrastType"]
     return ihmt_contrast_type
 
+def ihmt_to_mp2rage(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath, validate=False)
+    apply_reg_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_ihmt = layout.get_subject(suffix="ihmt")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        for session in sessionlist:
+            ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
+            mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for ihmt in ihmt_acqlist:
+                for mp2rage in mp2rage_acqlist:
+                    apply_reg_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_apply_reg_ihmt_to_MP2RAGE" + mp2rage + "_ants.done")
+    return apply_reg_list
+
 
 # rule copy_raw_ihmt_data:
 #     #img, json, bvec, and bval need to have the same basename for designer to work
@@ -354,6 +376,18 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
         touch {output}
         """
 
+
+rule gather_ihmt_to_MP2RAGE_ants:
+    input:
+        ihmt_to_mp2rage
+    output:
+        "data/derivatives/{field_strength}/ihmt/ihmt_to_MP2RAGE.done"
+    shell:
+        """
+        touch {output}
+        """
+
+        
 # #rules for registering to MP2RAGE with easyreg
 
 # rule register_ihmt_to_MP2RAGE_easyreg:
