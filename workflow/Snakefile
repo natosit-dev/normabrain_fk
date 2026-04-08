@@ -1,5 +1,27 @@
 configfile: "config/snakemake_config.yaml"
 
+def mp2rage_to_ihmt(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath, validate=False)
+    apply_reg_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_ihmt = layout.get_subject(suffix="ihmt")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        for session in sessionlist:
+            ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
+            mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for ihmt in ihmt_acqlist:
+                for mp2rage in mp2rage_acqlist:
+                    apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage + "/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_" + ihmt + "_ants.done")
+    return apply_reg_list
+    
 
 rule all:
     input:
