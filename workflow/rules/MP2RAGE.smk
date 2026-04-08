@@ -416,6 +416,35 @@ rule apply_reg_seg_to_ihmt_ants:
         """
 
 
+rule ihmt_stats:
+    input:
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done"
+    output:
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg_stats.done"
+    params:
+        get_mp2rage_acqs
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        acq_array=( {params} )
+        first_acq="${{acq_array[0]}}"
+        seg="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/mri/aparc+aseg_registeredto{wildcards.ihmt_params}.nii.gz"
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        
+        for map in "${{MTmaps[@]}}"; do
+            ihmt="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_${{map}}.nii.gz"
+            stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/stats/{wildcards.ihmt_params}_${{map}}.stats"
+            if [ -f $ihmt ]; then
+                mri_segstats --seg $seg --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $ihmt --sum $stats --excludeid 0
+            fi
+        done
+        touch {output}
+        """
+
 #rules for registering with ANTs
 
 rule synthstrip_qT1:
