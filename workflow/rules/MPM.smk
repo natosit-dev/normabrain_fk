@@ -733,7 +733,7 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
 
 rule gather_MPM_to_MP2RAGE_ants:
     input:
-        ihmt_to_mp2rage
+        mpm_to_mp2rage
     output:
         "data/derivatives/{field_strength}/MPM/{seq}_to_MP2RAGE.done"
     shell:
