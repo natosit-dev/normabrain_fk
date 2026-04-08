@@ -71,9 +71,13 @@ def mp2rage_statslist(wildcards):
     layout=BIDSLayout(bidspath)
     statslist = []
     mapslist = ["qT1", "qR1"]
-    subjectlist=layout.get_subject(suffix="MP2RAGE")
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
     for subject in subjectlist:
-        sessionlist = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for acq in acqlist:
