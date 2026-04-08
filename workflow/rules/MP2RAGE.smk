@@ -65,6 +65,13 @@ def seg_first_acq_mp2rage(wildcards):
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz', mp2rage_params=first_acq, allow_missing=True)
 
+def resliced_seg_first_acq_mp2rage(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
+    return expand("data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz", mp2rage_params=first_acq, allow_missing=True)
+
 def mp2rage_statslist(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
@@ -89,9 +96,13 @@ def freesurfer_subjectlist(wildcards):
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     fs_subjectlist = []
-    subjectlist=layout.get_subject(suffix="MP2RAGE")
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
     for subject in subjectlist:
-        sessionlist = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for acq in acqlist:
@@ -468,6 +479,10 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         done
         touch {output}
         """
+
+# rule apply_reg_seg_to_ihmt_ants:
+#     input:
+#         seg = resliced_seg_first_acq_mp2rage,
 
 
 rule apply_reg_MP2RAGE_to_MPM_ants:
