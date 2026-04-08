@@ -72,6 +72,13 @@ def resliced_seg_first_acq_mp2rage(wildcards):
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz", mp2rage_params=first_acq, allow_missing=True)
 
+def ihmt_reg_to_first_acq_mp2rage(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
+    return expand("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
+
 def mp2rage_statslist(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
@@ -379,6 +386,36 @@ rule mp2rage_tsv:
         """
 
 
+rule apply_reg_seg_to_ihmt_ants:
+    input:
+        seg = resliced_seg_first_acq_mp2rage,
+        reg = ihmt_reg_to_first_acq_mp2rage
+    params:
+        get_mp2rage_acqs
+    output:
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done"
+    resources: 
+        mem_mb=500
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd")
+        for map in "${{MTmaps[@]}}"; do
+            ref_init="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_"$map".nii.gz"
+            if [ -f $ref_init ]; then #if file exists, then set ref
+                ref=$ref_init
+            fi
+        done
+        
+        acq_array=( {params} )
+        first_acq="${{acq_array[0]}}"
+
+        antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {input.seg} -r $ref -t [ {input.reg}, 1 ] -o data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/mri/aparc+aseg_registeredto{wildcards.ihmt_params}.nii.gz"
+        touch {output}
+        """
+
+        
 #rules for registering with ANTs
 
 rule synthstrip_qT1:
@@ -479,10 +516,6 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         done
         touch {output}
         """
-
-# rule apply_reg_seg_to_ihmt_ants:
-#     input:
-#         seg = resliced_seg_first_acq_mp2rage,
 
 
 rule apply_reg_MP2RAGE_to_MPM_ants:
