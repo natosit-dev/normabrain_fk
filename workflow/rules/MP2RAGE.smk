@@ -485,7 +485,7 @@ rule ihmt_stats:
             # stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/stats/{wildcards.ihmt_params}_${{map}}.stats"
             stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}/stats/ihmt_${{map}}.stats"
             if [ -f $ihmt ]; then
-                mri_segstats --seg $seg --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $ihmt --sum $stats --excludeid 0
+                mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $ihmt --sum $stats --excludeid 0
             fi
         done
         touch {output}
