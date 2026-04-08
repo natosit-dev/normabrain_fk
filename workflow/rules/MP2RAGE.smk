@@ -84,7 +84,6 @@ def mp2rage_statslist(wildcards):
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     statslist = []
-    mapslist = ["qT1", "qR1"]
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
     subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
@@ -98,7 +97,29 @@ def mp2rage_statslist(wildcards):
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/MP2RAGE_{mp2rage_map}.stats")
     return statslist
 
-def freesurfer_subjectlist(wildcards):
+def ihmt_statslist(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath, validate=False)
+    statslist = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_ihmt = layout.get_subject(suffix="ihmt")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
+            for acq in acqlist:
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" acq + "/stats/stats.done")
+                # statslist.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "acq-" acq + "_seg_stats.done")
+    return statslist
+
+def freesurfer_subjectlist_mp2rage(wildcards):
+# def freesurfer_subjectlist(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
@@ -112,6 +133,27 @@ def freesurfer_subjectlist(wildcards):
         sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for acq in acqlist:
+                fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
+    fs_subjectarray = " ".join(fs_subjectlist)
+    return fs_subjectarray
+
+def freesurfer_subjectlist_ihmt(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath, validate=False)
+    fs_subjectlist = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_ihmt = layout.get_subject(suffix="ihmt")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for acq in acqlist:
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
     fs_subjectarray = " ".join(fs_subjectlist)
@@ -371,7 +413,7 @@ rule mp2rage_tsv:
     input:
         mp2rage_statslist
     params:
-        freesurfer_subjectlist
+        freesurfer_subjectlist_mp2rage
     output:
         "data/derivatives/{field_strength}/freesurfer/MP2RAGE_{mp2rage_map}_stats.tsv"  
     container:
@@ -390,10 +432,11 @@ rule apply_reg_seg_to_ihmt_ants:
     input:
         seg = resliced_seg_first_acq_mp2rage,
         reg = ihmt_reg_to_first_acq_mp2rage
-    params:
-        get_mp2rage_acqs
+    # params:
+    #     get_mp2rage_acqs
     output:
-        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/mri/aparc+aseg.nii.gz"
+        # "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done"
     resources: 
         mem_mb=500
     conda:
@@ -408,22 +451,23 @@ rule apply_reg_seg_to_ihmt_ants:
             fi
         done
         
-        acq_array=( {params} )
-        first_acq="${{acq_array[0]}}"
+        # acq_array=( {params} )
+        # first_acq="${{acq_array[0]}}"
 
-        antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {input.seg} -r $ref -t [ {input.reg}, 1 ] -o data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/mri/aparc+aseg_registeredto{wildcards.ihmt_params}.nii.gz
-        touch {output}
+        antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {input.seg} -r $ref -t [ {input.reg}, 1 ] -o {output}
+        # touch {output}
         """
 
 
 rule ihmt_stats:
     input:
-        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done",
-        check_csa_added_to_meta
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/mri/aparc+aseg.nii.gz"
+        # "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg.done",
+        # check_csa_added_to_meta
     output:
-        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_seg_stats.done"
-    params:
-        get_mp2rage_acqs
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/stats/stats.done"
+    # params:
+    #     get_mp2rage_acqs
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -431,20 +475,45 @@ rule ihmt_stats:
         cp $HOME/.snakemake/scripts/.license $HOME
         export FS_LICENSE=$HOME/.license
 
-        acq_array=( {params} )
-        first_acq="${{acq_array[0]}}"
-        seg="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/mri/aparc+aseg_registeredto{wildcards.ihmt_params}.nii.gz"
+        # acq_array=( {params} )
+        # first_acq="${{acq_array[0]}}"
+        # seg="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/mri/aparc+aseg_registeredto{wildcards.ihmt_params}.nii.gz"
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
         
         for map in "${{MTmaps[@]}}"; do
             ihmt="data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_${{map}}.nii.gz"
-            stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/stats/{wildcards.ihmt_params}_${{map}}.stats"
+            # stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}/stats/{wildcards.ihmt_params}_${{map}}.stats"
+            stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}/stats/${{map}}.stats"
             if [ -f $ihmt ]; then
                 mri_segstats --seg $seg --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $ihmt --sum $stats --excludeid 0
             fi
         done
         touch {output}
         """
+
+
+rule ihmt_tsv:
+    input:
+        ihmt_statslist
+    output:
+        "data/derivatives/{field_strength}/freesurfer/ihmt_stats.done"
+    params:
+        freesurfer_subjectlist_ihmt
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        export SUBJECTS_DIR=$HOME/data/derivatives/{wildcards.field_strength}/freesurfer/
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        
+        for map in "${{MTmaps[@]}}"; do
+            asegstats2table --subjects {params} --statsfile ${{map}}.stats -t {output} --meas mean --common-segs --no-segno 0 --skip
+        done
+        """
+    
 
 #rules for registering with ANTs
 
