@@ -572,9 +572,9 @@ rule apply_reg_seg_to_mpm_ants:
     input:
         seg = resliced_seg_first_acq_mp2rage,
         reg = mpm_reg_to_first_acq_mp2rage,
-        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_T1map.nii.gz"
+        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_T1map.nii.gz"
     output:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}/mri/aparc+aseg_registeredtoMPM.nii.gz"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}/mri/aparc+aseg_registeredtoMPM{mpm_params}.nii.gz"
     resources: 
         mem_mb=500
     conda:
