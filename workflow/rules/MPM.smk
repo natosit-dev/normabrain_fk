@@ -143,7 +143,7 @@ rule create_complex_images:
     shell: #first clip mag so that it has the same number of volumes as phase, then calculate complex image
         """
         phasesize="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
-        magsize="$(mrinfo -size {input.mag} | awk '{print $4}')"
+        magsize="$(mrinfo -size {input.mag} | awk '{{print $4}}')"
         magstart="$((${{magsize}}-${{phasesize}}))"
         mrconvert {input.mag} {output.mag_clipped} -coord 3 ${{magstart}}:end
         mrcalc {output.mag_clipped} {input.phase} pi 4096 -div -mult -polar {output.out}
