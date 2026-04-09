@@ -250,8 +250,14 @@ DICOM:
     bids: *anat_dicoment_nonparametric
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(T2w|t2w).*
-      SequenceVariant: "['SK', 'SP']"
+      ProtocolName: (?i).*(T2w|t2w|t2_semc|quantorage).*
+      # SequenceVariant: "['SK', 'SP']"
+    bids:
+      <<: *anat_dicoment_nonparametric
+      suffix: T2w
+  - attributes:
+      <<: *anat_dicomattr
+      SeriesDescription: (?i).*(pcbSSFP).*
     bids:
       <<: *anat_dicoment_nonparametric
       suffix: T2w
