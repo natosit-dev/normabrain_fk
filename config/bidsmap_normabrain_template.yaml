@@ -197,7 +197,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).*mtw.*
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*mtw.*
       ComplexImageComponent: .*PHASE.*
     bids: 
       <<: *anat_dicoment_vfamt
@@ -210,7 +210,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).*mtw.*
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*mtw.*
     bids: 
       <<: *anat_dicoment_vfamt
       mt: 'on'
@@ -221,7 +221,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).*
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*
       ComplexImageComponent: .*PHASE.*
     bids: 
       <<: *anat_dicoment_vfamt
@@ -234,7 +234,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT|quantorage).*
+      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*
     bids: 
       <<: *anat_dicoment_vfamt
       mt: 'off'
