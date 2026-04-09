@@ -197,7 +197,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*mtw.*
+      ProtocolName: (?i).*(vibemt|vibeMT|gremt|greMT).*mtw.*
       ComplexImageComponent: .*PHASE.*
     bids: 
       <<: *anat_dicoment_vfamt
@@ -210,7 +210,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*mtw.*
+      ProtocolName: (?i).*(vibemt|vibeMT|gremt|greMT).*mtw.*
     bids: 
       <<: *anat_dicoment_vfamt
       mt: 'on'
@@ -221,7 +221,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*
+      ProtocolName: (?i).*(vibemt|vibeMT|gremt|greMT).*
       ComplexImageComponent: .*PHASE.*
     bids: 
       <<: *anat_dicoment_vfamt
@@ -234,7 +234,7 @@ DICOM:
       EffectiveEchoTime: <<EffectiveEchoTime>>
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(vibemt|vibeMT|qrage|gremt|greMT).*
+      ProtocolName: (?i).*(vibemt|vibeMT|gremt|greMT).*
     bids: 
       <<: *anat_dicoment_vfamt
       mt: 'off'
@@ -250,7 +250,7 @@ DICOM:
     bids: *anat_dicoment_nonparametric
   - attributes:
       <<: *anat_dicomattr
-      ProtocolName: (?i).*(T2w|t2w|t2_semc|quantorage).*
+      ProtocolName: (?i).*(T2w|t2w|t2_semc|quantorage|qrage).*
       # SequenceVariant: "['SK', 'SP']"
     bids:
       <<: *anat_dicoment_nonparametric

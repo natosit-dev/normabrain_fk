@@ -79,6 +79,13 @@ def ihmt_reg_to_first_acq_mp2rage(wildcards):
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
 
+def mpm_reg_to_first_acq_mp2rage(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
+    return expand("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5", mp2rage_params=first_acq, allow_missing=True)
+
 def mp2rage_statslist(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
@@ -113,6 +120,26 @@ def ihmt_statslist(wildcards):
         sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
+            for acq in acqlist:
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/ihmt_stats.done")
+    return statslist
+
+def mpm_statslist(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    statslist = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/ihmt_stats.done")
     return statslist
@@ -539,7 +566,73 @@ rule ihmt_tsv:
         done
         touch {output}
         """
-    
+
+
+rule apply_reg_seg_to_mpm_ants:
+    input:
+        seg = resliced_seg_first_acq_mp2rage,
+        reg = mpm_reg_to_first_acq_mp2rage,
+        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_T1map.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}/mri/aparc+aseg_registeredtoMPM.nii.gz"
+    resources: 
+        mem_mb=500
+    conda:
+        "../envs/qMT.yaml"
+    shell:
+        """      
+        antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {input.seg} -r {input.ref} -t [ {input.reg}, 1 ] -o {output}
+        """
+  
+
+rule mpm_stats:
+    input:
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/mri/aparc+aseg_registeredtoMPM.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}/stats/MPM_stats.done"
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
+        
+        for map in "${{MPMmaps[@]}}"; do
+            mpm="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
+            stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}/stats/MPM_${{map}}.stats"
+            if [ -f $ihmt ]; then
+                mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $mpm --sum $stats --excludeid 0
+            fi
+        done
+        touch {output}
+        """
+
+
+rule mpm_tsv:
+    input:
+        ihmt_statslist
+    output:
+        "data/derivatives/{field_strength}/freesurfer/ihmt_stats.done"
+    params:
+        freesurfer_subjectlist_ihmt
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        export SUBJECTS_DIR=$HOME/data/derivatives/{wildcards.field_strength}/freesurfer/
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        
+        for map in "${{MTmaps[@]}}"; do
+            asegstats2table --subjects {params} --statsfile ihmt_${{map}}.stats -t data/derivatives/{wildcards.field_strength}/freesurfer/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+        done
+        touch {output}
+        """
+
 
 #rules for registering with ANTs
 
