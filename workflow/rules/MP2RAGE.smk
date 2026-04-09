@@ -574,7 +574,7 @@ rule apply_reg_seg_to_mpm_ants:
         reg = mpm_reg_to_first_acq_mp2rage,
         ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_T1map.nii.gz"
     output:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}/mri/aparc+aseg_registeredtoMPM{mpm_params}.nii.gz"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}/mri/aparc+aseg_registeredtoMPM.nii.gz"
     resources: 
         mem_mb=500
     conda:
@@ -587,9 +587,9 @@ rule apply_reg_seg_to_mpm_ants:
 
 rule mpm_stats:
     input:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/mri/aparc+aseg_registeredtoMPM.nii.gz"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}/mri/aparc+aseg_registeredtoMPM.nii.gz"
     output:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}/stats/MPM_stats.done"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}/stats/MPM_stats.done"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -600,8 +600,8 @@ rule mpm_stats:
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         
         for map in "${{MPMmaps[@]}}"; do
-            mpm="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}_"$map".nii.gz"
-            stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}/stats/MPM_${{map}}.stats"
+            mpm="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.mpm_params}_"$map".nii.gz"
+            stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.mpm_params}/stats/MPM_${{map}}.stats"
             if [ -f $ihmt ]; then
                 mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $mpm --sum $stats --excludeid 0
             fi
@@ -612,11 +612,11 @@ rule mpm_stats:
 
 rule mpm_tsv:
     input:
-        ihmt_statslist
+        mpm_statslist
     output:
-        "data/derivatives/{field_strength}/freesurfer/ihmt_stats.done"
+        "data/derivatives/{field_strength}/freesurfer/MPM_stats.done"
     params:
-        freesurfer_subjectlist_ihmt
+        freesurfer_subjectlist_mpm
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     shell:
@@ -625,10 +625,10 @@ rule mpm_tsv:
         cp $HOME/.snakemake/scripts/.license $HOME
         export FS_LICENSE=$HOME/.license
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         
-        for map in "${{MTmaps[@]}}"; do
-            asegstats2table --subjects {params} --statsfile ihmt_${{map}}.stats -t data/derivatives/{wildcards.field_strength}/freesurfer/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+        for map in "${{MPMmaps[@]}}"; do
+            asegstats2table --subjects {params} --statsfile MPM_${{map}}.stats -t data/derivatives/{wildcards.field_strength}/freesurfer/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
         done
         touch {output}
         """
