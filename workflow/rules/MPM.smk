@@ -57,9 +57,9 @@ def t1wmag_preproc(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
         raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
-        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
+        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
-        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}{mpm_params}_mt-off_part-mag_echos4d.nii"
+        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_echos4d.nii"
     return mag_preproc
 
 def mt0mag_preproc(wildcards):
@@ -67,9 +67,9 @@ def mt0mag_preproc(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
         raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
-        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
+        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
-        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}{mpm_params}_mt-off_part-mag_echos4d.nii"
+        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_echos4d.nii"
     return mag_preproc
 
 def mtwmag_preproc(wildcards):
@@ -77,9 +77,9 @@ def mtwmag_preproc(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
         raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-phase_MPM.nii.gz')[0]
-        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}{mpm_params}_mt-on_part-mag_echos4d_riciancorr.nii"
+        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}_mt-on_part-mag_echos4d_riciancorr.nii"
     except:
-        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}{mpm_params}_mt-on_part-mag_echos4d.nii"
+        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}_mt-on_part-mag_echos4d.nii"
     return mag_preproc
 
 def pdwmag_preproc(wildcards):
@@ -87,9 +87,9 @@ def pdwmag_preproc(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
         raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
-        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{mpm_params}{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
+        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
-        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{mpm_params}{mpm_params}_mt-off_part-mag_echos4d.nii"
+        mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{mpm_params}_mt-off_part-mag_echos4d.nii"
     return mag_preproc
 
 def mpm_to_mp2rage(wildcards):
