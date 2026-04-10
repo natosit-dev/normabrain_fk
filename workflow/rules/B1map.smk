@@ -79,6 +79,7 @@ rule DenoiseImage_b1anat:
         DenoiseImage -d 3 -n Rician -s 1 -v 1 -p 1 -r 2 -i {input.input_image} -x {input.mask_image} -o {output}
         """
 
+
 rule N4BiasFieldCorrection_b1anat:
     input:
         input_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised.nii.gz",
