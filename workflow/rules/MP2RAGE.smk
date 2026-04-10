@@ -5,6 +5,11 @@ from lxml import etree
 import re
 from collections import Counter
 
+wildcard_constraints:
+    contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
+    seq = config["MPM_sequence"],
+    part = 'mag|phase'
+
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
