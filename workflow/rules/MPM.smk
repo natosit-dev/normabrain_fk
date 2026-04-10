@@ -108,13 +108,12 @@ def mpm_to_mp2rage(wildcards):
         sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
-            mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
-            for mp2rage in mp2rage_acqlist:
-                for mpm in mpm_acqlist:
-                    mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "")
-                    for contrast in config["MPM_contrasts"]:
-                        mpm = mpm.replace(contrast, "")
-                    apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_apply_reg_MPM_to_MP2RAGE" + mp2rage + "_ants.done")
+            mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
+            for mpm in mpm_acqlist:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "")
+                for contrast in config["MPM_contrasts"]:
+                    mpm = mpm.replace(contrast, "")
+                apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_apply_reg_MPM_to_MP2RAGE" + mp2rage_first_acq + "_ants.done")
     counts = Counter(apply_reg_list)
     apply_reg_list = [reg for reg, count in counts.items() if count == 4]
     return apply_reg_list

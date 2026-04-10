@@ -34,10 +34,9 @@ def ihmt_to_mp2rage(wildcards):
         sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
         for session in sessionlist:
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
-            mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             for ihmt in ihmt_acqlist:
-                for mp2rage in mp2rage_acqlist:
-                    apply_reg_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_apply_reg_ihmt_to_MP2RAGE" + mp2rage + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_apply_reg_ihmt_to_MP2RAGE" + mp2rage_first_acq + "_ants.done")
     return apply_reg_list
 
 
