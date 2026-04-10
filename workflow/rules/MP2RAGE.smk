@@ -145,9 +145,9 @@ def mpm_statslist(wildcards):
                 acq = acq.replace("6eco", "").replace("3eco", "").replace("sag", "")
                 for contrast in config["MPM_contrasts"]:
                     acq = acq.replace(contrast, "")
-                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/ihmt_stats.done")
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/MPM_stats.done")
     counts = Counter(statslist)
-    statslist = [stat for stat, count in counts.items() if count > 2]
+    statslist = [stat for stat, count in counts.items() if count == 4]
     return statslist
 
 def freesurfer_subjectlist_mp2rage(wildcards):
@@ -212,7 +212,7 @@ def freesurfer_subjectlist_mpm(wildcards):
                     acq = acq.replace(contrast, "")
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
     counts = Counter(fs_subjectlist)
-    fs_subjectlist = [sub for sub, count in counts.items() if count > 2]
+    fs_subjectlist = [sub for sub, count in counts.items() if count == 4]
     fs_subjectarray = " ".join(fs_subjectlist)
     return fs_subjectarray
 
