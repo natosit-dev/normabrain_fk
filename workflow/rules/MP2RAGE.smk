@@ -3,6 +3,7 @@ from pathlib import Path
 from bids import BIDSLayout
 from lxml import etree
 import re
+from collections import Counter
 
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -84,7 +85,7 @@ def mpm_reg_to_first_acq_mp2rage(wildcards):
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
-    return expand("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5", mp2rage_params=first_acq, allow_missing=True)
+    return expand("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5", mp2rage_params=first_acq, allow_missing=True)
 
 def mp2rage_statslist(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -141,7 +142,11 @@ def mpm_statslist(wildcards):
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
+                for contrast in config["MPM_contrasts"]:
+                    acq = acq.replace(contrast, "")
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/ihmt_stats.done")
+    counts = Counter(statslist)
+    statslist = [stat for stat, count in counts.items() if count > 2]
     return statslist
 
 def freesurfer_subjectlist_mp2rage(wildcards):
@@ -184,6 +189,31 @@ def freesurfer_subjectlist_ihmt(wildcards):
     fs_subjectarray = " ".join(fs_subjectlist)
     return fs_subjectarray
 
+def freesurfer_subjectlist_mpm(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    fs_subjectlist = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
+            for acq in acqlist:
+                for contrast in config["MPM_contrasts"]:
+                    acq = acq.replace(contrast, "")
+                fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
+    counts = Counter(fs_subjectlist)
+    fs_subjectlist = [sub for sub, count in counts.items() if count > 2]
+    fs_subjectarray = " ".join(fs_subjectlist)
+    return fs_subjectarray
+
 def mp2rage_to_ihmt(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
@@ -199,11 +229,10 @@ def mp2rage_to_ihmt(wildcards):
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
         sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
         for session in sessionlist:
+            mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
-            mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for ihmt in ihmt_acqlist:
-                for mp2rage in mp2rage_acqlist:
-                    apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage + "/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_" + ihmt + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_" + ihmt + "_ants.done")
     return apply_reg_list
 
 def mp2rage_to_mpm(wildcards):
@@ -221,9 +250,12 @@ def mp2rage_to_mpm(wildcards):
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
         sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
         for session in sessionlist:
-            mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
-            for mp2rage in mp2rage_acqlist:
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage + "/registered_to_{seq}_ants/apply_reg_MP2RAGE_to_{seq}_ants.done")
+            mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
+            mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
+            for mpm in mpm_acqlist:
+                for contrast in config["MPM_contrasts"]:
+                    mpm = mpm.replace(contrast, "")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registered_to_" + mpm + "_ants/apply_reg_MP2RAGE_to_" + mpm + "_ants.done")
     return apply_reg_list
 
 
@@ -628,7 +660,7 @@ rule mpm_tsv:
          MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         
         for map in "${{MPMmaps[@]}}"; do
-            asegstats2table --subjects {params} --statsfile MPM_${{map}}.stats -t data/derivatives/{wildcards.field_strength}/freesurfer/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+            asegstats2table --subjects {params} --statsfile MPM_${{map}}.stats -t data/derivatives/{wildcards.field_strength}/freesurfer/MPM_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
         done
         touch {output}
         """
@@ -749,10 +781,10 @@ rule gather_MP2RAGE_to_ihmt_ants:
 
 rule apply_reg_MP2RAGE_to_MPM_ants:
     input:
-        ref="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_T1map.nii.gz",
-        reg="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5"
+        ref="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_T1map.nii.gz",
+        reg="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registered_to_{seq}_ants/apply_reg_MP2RAGE_to_{seq}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registered_to_{seq}{mpm_params}_ants/apply_reg_MP2RAGE_to_{seq}{mpm_params}_ants.done"
     resources: 
         mem_mb=500
     conda:
@@ -760,10 +792,10 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
     shell:
         """
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
-        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}_ants
+        mkdir -p data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}{wildcards.mpm_params}_ants
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/"$map".nii.gz"
-            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}_ants/"$map"_registeredto{wildcards.seq}.nii.gz"
+            out="data/derivatives/{wildcards.field_strength}/MP2RAGE/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/registered_to_{wildcards.seq}{wildcards.mpm_params}_ants/"$map"_registeredto{wildcards.seq}{wildcards.mpm_params}.nii.gz"
             antsApplyTransforms -d 3 -v 1 -n Linear -i $moving -r {input.ref} -t [ {input.reg}, 1 ] -o $out
         done
         touch {output}
@@ -774,7 +806,7 @@ rule gather_MP2RAGE_to_MPM_ants:
     input:
         mp2rage_to_mpm
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_{seq}.done"
+        "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_MPM.done"
     shell:
         """
         touch {output}

@@ -738,7 +738,7 @@ rule gather_MPM_to_MP2RAGE_ants:
     input:
         mpm_to_mp2rage
     output:
-        "data/derivatives/{field_strength}/MPM/{seq}_to_MP2RAGE.done"
+        "data/derivatives/{field_strength}/MPM/MPM_to_MP2RAGE.done"
     shell:
         """
         touch {output}
