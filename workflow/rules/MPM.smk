@@ -571,7 +571,7 @@ rule mtr:
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     output:
-        "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}_MTRmap.nii.gz"
+        "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_MTRmap.nii.gz"
     conda:
         "../envs/qMT.yaml"
     shell:
