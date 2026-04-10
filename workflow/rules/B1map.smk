@@ -64,7 +64,7 @@ rule apply_brainmask_b1anat:
         """
 
 
-rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
+rule DenoiseImage_b1anat:
     input:
         input_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain.nii.gz",
         mask_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
@@ -79,7 +79,7 @@ rule DenoiseImage_b1anat: #ATTENTION: slighlty different parameters from MPM/VFA
         DenoiseImage -d 3 -n Rician -s 1 -v 1 -p 1 -r 2 -i {input.input_image} -x {input.mask_image} -o {output}
         """
 
-rule N4BiasFieldCorrection_b1anat: #ATTENTION: slightly different parameters from MPM/VFA
+rule N4BiasFieldCorrection_b1anat:
     input:
         input_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised.nii.gz",
         mask_image = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
@@ -151,7 +151,7 @@ rule register_b1anat_to_MPM_t1w_ants:
         antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_B1registeredto{wildcards.seq}t1w{wildcards.mpm_params}_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
-rule apply_reg_b1map_to_MPM_t1w_ants: #ATTENTION: some parameters are different from MPM/VFA
+rule apply_reg_b1map_to_MPM_t1w_ants:
     input:
         check_csa_added_to_meta,
         ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos_brain_denoised_n4.nii.gz",
