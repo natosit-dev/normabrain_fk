@@ -142,7 +142,7 @@ def mpm_statslist(wildcards):
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
-                acq = acq.replace("6eco", "").replace("3eco", "")
+                acq = acq.replace("6eco", "").replace("3eco", "").replace("sag", "")
                 for contrast in config["MPM_contrasts"]:
                     acq = acq.replace(contrast, "")
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/ihmt_stats.done")
@@ -207,7 +207,7 @@ def freesurfer_subjectlist_mpm(wildcards):
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
-                acq = acq.replace("6eco", "").replace("3eco", "")
+                acq = acq.replace("6eco", "").replace("3eco", "").replace("sag", "")
                 for contrast in config["MPM_contrasts"]:
                     acq = acq.replace(contrast, "")
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
@@ -255,7 +255,7 @@ def mp2rage_to_mpm(wildcards):
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
-                mpm = mpm.replace("6eco", "").replace("3eco", "")
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "")
                 for contrast in config["MPM_contrasts"]:
                     mpm = mpm.replace(contrast, "")
                 apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registered_to_" + mpm + "_ants/apply_reg_MP2RAGE_to_" + mpm + "_ants.done")
