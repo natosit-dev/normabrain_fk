@@ -259,6 +259,8 @@ def mp2rage_to_mpm(wildcards):
                 for contrast in config["MPM_contrasts"]:
                     mpm = mpm.replace(contrast, "")
                 apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registered_to_" + mpm + "_ants/apply_reg_MP2RAGE_to_" + mpm + "_ants.done")
+    counts = Counter(apply_reg_list)
+    apply_reg_list = [reg for reg, count in counts.items() if count == 4]
     return apply_reg_list
 
 
