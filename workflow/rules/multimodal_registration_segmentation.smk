@@ -397,7 +397,8 @@ rule apply_reg_seg_to_mpm_ants:
 
 rule mpm_stats:
     input:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}/mri/aparc+aseg_registeredtoMPM.nii.gz"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}/mri/aparc+aseg_registeredtoMPM.nii.gz",
+        "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_MTRmap.nii.gz"
     output:
         "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}/stats/MPM_stats.done"
     container:
