@@ -13,11 +13,11 @@ def check_csa_added_to_meta(wildcards):
 def get_echos(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     #get the list of echo files and sort it
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}{wildcards.mpm_params}_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*{wildcards.mpm_params}_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))
 
 def get_qMT_params(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
+    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
     with open(json_path, "r") as f:
         mtw_meta = json.load(f)
         mt_params = {
@@ -36,18 +36,18 @@ def get_qMT_params(wildcards):
 
 def get_qMT_json(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
 
 def get_t1flip(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         t1w_meta = json.load(f)
     return t1w_meta["FlipAngle"]
 
 def get_pdflip(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
+    json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         pdw_meta = json.load(f)
     return pdw_meta["FlipAngle"]
@@ -56,7 +56,7 @@ def t1wmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}{mpm_params}_mt-off_part-mag_echos4d.nii"
@@ -66,7 +66,7 @@ def mt0mag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}{mpm_params}_mt-off_part-mag_echos4d.nii"
@@ -76,7 +76,7 @@ def mtwmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}{mpm_params}_mt-on_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}{mpm_params}_mt-on_part-mag_echos4d.nii"
@@ -86,7 +86,7 @@ def pdwmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{mpm_params}{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{mpm_params}{mpm_params}_mt-off_part-mag_echos4d.nii"
@@ -111,6 +111,7 @@ def mpm_to_mp2rage(wildcards):
             mp2rage_acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for mp2rage in mp2rage_acqlist:
                 for mpm in mpm_acqlist:
+                    mpm = mpm.replace("6eco", "").replace("3eco", "")
                     for contrast in config["MPM_contrasts"]:
                         mpm = mpm.replace(contrast, "")
                     apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_apply_reg_MPM_to_MP2RAGE" + mp2rage + "_ants.done")
