@@ -414,7 +414,7 @@ rule mpm_stats:
             mpm="data/derivatives/{wildcards.field_strength}/MPM/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.mpm_params}_"$map".nii.gz"
             stats="data/derivatives/{wildcards.field_strength}/freesurfer/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.mpm_params}/stats/MPM_${{map}}.stats"
             if [ -f $mpm ]; then
-                mri_segstats --seg {input} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $mpm --sum $stats --excludeid 0
+                mri_segstats --seg {input[0]} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $mpm --sum $stats --excludeid 0
             fi
         done
         touch {output}
