@@ -7,11 +7,11 @@ rule all:
         "data/derivatives/3T/freesurfer/MP2RAGE_qR1_pksUnit_stats.tsv",
         "data/derivatives/3T/freesurfer/MP2RAGE_qT1_msUnit_stats.tsv",
         "data/derivatives/3T/freesurfer/ihmt_stats.done",
-        "data/derivatives/3T/MP2RAGE/MP2RAGE_to_ihmt.done",
-        "data/derivatives/3T/ihmt/ihmt_to_MP2RAGE.done",
+        # "data/derivatives/3T/MP2RAGE/MP2RAGE_to_ihmt.done",
+        # "data/derivatives/3T/ihmt/ihmt_to_MP2RAGE.done",
         "data/derivatives/3T/freesurfer/MPM_stats.done",
-        "data/derivatives/3T/MPM/MPM_to_MP2RAGE.done",
-        "data/derivatives/3T/MP2RAGE/MP2RAGE_to_MPM.done"
+        # "data/derivatives/3T/MPM/MPM_to_MP2RAGE.done",
+        # "data/derivatives/3T/MP2RAGE/MP2RAGE_to_MPM.done"
 
 include: "rules/bidsify.smk"
 include: "rules/B1map.smk"
