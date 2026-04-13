@@ -1,3 +1,4 @@
+#requires BIDS data at data/rawdata/bids/{field_strength}
 import json
 import glob
 import shutil

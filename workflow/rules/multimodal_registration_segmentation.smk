@@ -1,5 +1,5 @@
 #rules for multimodal registration and segmentation, not including B1map which is a dependency for regular pre-processing for MP2RAGE and MPM
-
+#dependent on all other smk files
 from bids import BIDSLayout
 from collections import Counter
 from pathlib import Path

@@ -1,3 +1,5 @@
+#requires BIDS data at data/rawdata/bids/{field_strength}
+#requires B1map.smk and MPM.smk
 import glob
 import shutil
 from pathlib import Path

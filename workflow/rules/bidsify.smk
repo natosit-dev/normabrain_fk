@@ -1,3 +1,4 @@
+#for creating data/rawdata folder structure necessary for the rest of the pipeline
 checkpoint copy_dicoms_by_field_strength:
     input:
         expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])

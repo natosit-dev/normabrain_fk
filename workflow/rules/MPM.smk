@@ -1,3 +1,5 @@
+#requires BIDS data at data/rawdata/bids/{field_strength}
+#requires B1map.smk
 import json
 import glob
 from collections import Counter

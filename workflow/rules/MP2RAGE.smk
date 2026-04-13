@@ -1,3 +1,5 @@
+#requires BIDS data at data/rawdata/bids/{field_strength}
+#requires B1map.smk
 import glob
 from pathlib import Path
 from bids import BIDSLayout
@@ -114,8 +116,8 @@ def freesurfer_subjectlist_mp2rage(wildcards):
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
     fs_subjectarray = " ".join(fs_subjectlist)
     return fs_subjectarray
-    
-     
+
+
 rule json_for_uncorr_qT1:
     input:
         meta_complete = check_csa_added_to_meta
