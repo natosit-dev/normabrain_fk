@@ -13,9 +13,11 @@ rule all:
         "data/derivatives/3T/MP2RAGE/MP2RAGE_to_MPM.done",
         "data/derivatives/3T/MPM/MPM_to_MP2RAGE.done"
 
-include: "rules/bidsify.smk"
+
 include: "rules/B1map.smk"
-include: "rules/MPM.smk"
-include: "rules/MP2RAGE.smk"
+include: "rules/bidsify.smk"
 include: "rules/ihmt.smk"
+include: "rules/MP2RAGE.smk"
+include: "rules/MPM.smk"
+include: "rules/multimodal_registration_segmentation.smk"
 include: "rules/QSM.smk"

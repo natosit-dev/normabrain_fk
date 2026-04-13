@@ -3,11 +3,6 @@ import shutil
 from pathlib import Path
 from bids import BIDSLayout
 
-# layout=BIDSLayout("data/rawdata/bids/3T")
-# qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
-# qsm_subjects = ["sub-" + x for x in qsm_subjects]
-# qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
-# qsm_sessions = ["ses-" + x for x in qsm_sessions]
 
 def check_csa_added_to_meta(wildcards):
     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
@@ -16,9 +11,9 @@ def qsm_nii_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_sessions = ["ses-" + x for x in qsm_sessions]
     return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
@@ -26,9 +21,9 @@ def qsm_json_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_sessions = ["ses-" + x for x in qsm_sessions]
     return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
@@ -36,9 +31,9 @@ def qsm_mask_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_sessions = ["ses-" + x for x in qsm_sessions]
     return expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
@@ -50,9 +45,9 @@ def t1w_nii_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_sessions = ["ses-" + x for x in qsm_sessions]
     return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
@@ -60,9 +55,9 @@ def t1w_json_list(wildcards):
     csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     bidspath = Path(csa_complete).parents[2]
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", regex_search=True)
+    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_sessions = ["ses-" + x for x in qsm_sessions]
     return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
