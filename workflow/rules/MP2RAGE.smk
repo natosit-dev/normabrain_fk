@@ -78,7 +78,44 @@ def resliced_seg_first_acq_mp2rage(wildcards):
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz", mp2rage_params=first_acq, allow_missing=True)
 
+def mp2rage_statslist(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    statslist = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for acq in acqlist:
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/MP2RAGE_{mp2rage_map}.stats")
+    return statslist
 
+def freesurfer_subjectlist_mp2rage(wildcards):
+    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    bidspath = Path(csa_complete).parents[2]
+    layout=BIDSLayout(bidspath)
+    fs_subjectlist = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for acq in acqlist:
+                fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
+    fs_subjectarray = " ".join(fs_subjectlist)
+    return fs_subjectarray
+    
+     
 rule json_for_uncorr_qT1:
     input:
         meta_complete = check_csa_added_to_meta
