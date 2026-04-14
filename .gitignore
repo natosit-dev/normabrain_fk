@@ -9,3 +9,5 @@ results/
 .snakemake/
 opt_*
 install_sct_log.txt
+*pulp*
+snakemake*/

@@ -4,22 +4,22 @@ import json
 import glob
 import shutil
 
-def check_csa_added_to_meta(wildcards):
-    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+# def check_csa_added_to_meta(wildcards):
+#     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def get_target_flip(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-famp*_TB1TFL.json'))[-1] #select last run
     with open(json_path, "r") as f:
         b1map_meta = json.load(f)
     return b1map_meta["target_fa_deg"] * 10
 
 def get_last_b1map_run(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-famp*_TB1TFL.nii.gz'))[-1]
 
 def get_last_b1anat_run(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-anat*_TB1TFL.nii.gz'))[-1]
 
 
@@ -27,11 +27,10 @@ def get_last_b1anat_run(wildcards):
 
 rule synthstrip_b1anat:
     input:
-        check_csa_added_to_meta
-    params:
+    #     check_csa_added_to_meta
+    # params:
         get_last_b1anat_run
     output:
-        # "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain.nii.gz",
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"
@@ -43,16 +42,18 @@ rule synthstrip_b1anat:
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
         fi
-        mri_synthstrip -i {params} -m {output} -t {threads} -g --no-csf || mri_synthstrip -i {params} -m {output} -t {threads} --no-csf
+        # mri_synthstrip -i {params} -m {output} -t {threads} -g --no-csf || mri_synthstrip -i {params} -m {output} -t {threads} --no-csf
+        mri_synthstrip -i {input} -m {output} -t {threads} -g --no-csf || mri_synthstrip -i {input} -m {output} -t {threads} --no-csf
         """
 
 
 rule apply_brainmask_b1anat:
     input:
-        check_csa_added_to_meta,
-        brain_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
-    params:
-        get_last_b1anat_run
+        # check_csa_added_to_meta,
+        brain_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz",
+        b1anat = get_last_b1anat_run
+    # params:
+        # get_last_b1anat_run
     output:
         temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain.nii.gz")
     conda:
@@ -62,7 +63,8 @@ rule apply_brainmask_b1anat:
     shell:
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
-        fslmaths {params} -mas {input.brain_mask} {output}
+        # fslmaths {params} -mas {input.brain_mask} {output}
+        fslmaths {input.b1anat} -mas {input.brain_mask} {output}
         """
 
 
@@ -117,13 +119,15 @@ rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from 
         antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/sub-{wildcards.subject}_ses-{wildcards.session}_B1registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
+
 rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM/VFA
     input:
-        check_csa_added_to_meta,
+        # check_csa_added_to_meta,
+        moving = get_last_b1map_run,
         ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz",
         reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
-    params:
-        moving = get_last_b1map_run
+    # params:
+    #     moving = get_last_b1map_run
     output:
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
     conda:
@@ -132,8 +136,9 @@ rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM
         mem_mb=500
     shell:
         """
-        antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {params.moving} -r {input.ref} -t {input.reg} -o {output}
+        antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
         """
+
 
 rule register_b1anat_to_MPM_t1w_ants: 
     input:
@@ -156,11 +161,12 @@ rule register_b1anat_to_MPM_t1w_ants:
 
 rule apply_reg_b1map_to_MPM_t1w_ants:
     input:
-        check_csa_added_to_meta,
+        # check_csa_added_to_meta,
+        moving = get_last_b1map_run,
         ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos_brain_denoised_n4.nii.gz",
         reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w{mpm_params}_0GenericAffine.mat"
-    params:
-        moving = get_last_b1map_run
+    # params:
+    #     moving = get_last_b1map_run
     output:
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_ants.nii.gz"
     conda:
@@ -169,7 +175,7 @@ rule apply_reg_b1map_to_MPM_t1w_ants:
         mem_mb=500
     shell:
         """
-        antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {params.moving} -r {input.ref} -t {input.reg} -o {output}
+        antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
         """
 
 
@@ -251,16 +257,18 @@ rule apply_reg_b1map_to_MPM_t1w_ants:
 
 rule copy_b1map_json_after_regtoMP2RAGE:
     input:
-        check_csa_added_to_meta,
+        # check_csa_added_to_meta,
+        b1map_raw = get_last_b1map_run,
         b1map_registeredtoMP2RAGE = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz"
-    params:
-         b1map_raw = get_last_b1map_run
+    # params:
+    #      b1map_raw = get_last_b1map_run
     output:
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.json"
     resources: 
         mem_mb=300
     run:
-        b1map_raw_json = Path(params.b1map_raw).with_suffix("").with_suffix(".json")
+        # b1map_raw_json = Path(params.b1map_raw).with_suffix("").with_suffix(".json")
+        b1map_raw_json = Path(input.b1map_raw).with_suffix("").with_suffix(".json")
         b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")
         shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
 
@@ -282,7 +290,7 @@ rule smooth_B1:
 
 rule normalize_B1_to_target_flip: #not masking because we are interested in the spinal cord
     input:
-        check_csa_added_to_meta,
+        # check_csa_added_to_meta,
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_smooth.nii.gz"
     output:
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_smooth_norm.nii.gz"
@@ -295,5 +303,5 @@ rule normalize_B1_to_target_flip: #not masking because we are interested in the 
     shell:
         """
         export FSLOUTPUTTYPE='NIFTI_GZ'
-        fslmaths {input[1]} -div {params.target_flip} {output} -odt float 
+        fslmaths {input} -div {params.target_flip} {output} -odt float 
         """

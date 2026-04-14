@@ -12,8 +12,8 @@ wildcard_constraints:
     seq = config["MPM_sequence"],
     part = 'mag|phase'
 
-def check_csa_added_to_meta(wildcards):
-    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+# def check_csa_added_to_meta(wildcards):
+#     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def mp2rage_echo_spacing(wildcards):
     protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
@@ -33,56 +33,62 @@ def mp2rage_echo_spacing(wildcards):
     return echo_spacing
 
 def get_inv1(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-1_MP2RAGE.nii.gz'))[0]
 
 def get_inv2(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-2_MP2RAGE.nii.gz'))[0]
 
 def get_unit1(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_UNIT1.nii.gz'))[0]
 
 def get_uniden(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_DEN_dicomUnit.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
 
 def get_mp2rage_brain_masks(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
 
 def get_mp2rage_acqs(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
     mp2rage_params_array = " ".join(mp2rage_params_list)
     return mp2rage_params_array
 
 def seg_first_acq_mp2rage(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/MP2RAGE_synthseg.nii.gz', mp2rage_params=first_acq, allow_missing=True)
 
 def resliced_seg_first_acq_mp2rage(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz", mp2rage_params=first_acq, allow_missing=True)
 
 def mp2rage_statslist(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -99,8 +105,9 @@ def mp2rage_statslist(wildcards):
     return statslist
 
 def freesurfer_subjectlist_mp2rage(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -120,12 +127,13 @@ def freesurfer_subjectlist_mp2rage(wildcards):
 
 rule json_for_uncorr_qT1:
     input:
-        meta_complete = check_csa_added_to_meta
-    params:
+    #     meta_complete = check_csa_added_to_meta
+    # params:
         b1map_nifti = get_last_b1map_run,
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
+    params:
         echo_spacing = mp2rage_echo_spacing,
         uncorr_qT1 = True
     output:
@@ -136,7 +144,7 @@ rule json_for_uncorr_qT1:
         mem_mb=200
     shell:
         """
-        python3 workflow/scripts/create_json_for_mp2proc.py -b1map_nifti {params.b1map_nifti} -inv1_nifti {params.inv1_nifti} -inv2_nifti {params.inv2_nifti} -unit1_nifti {params.unit1_nifti} -output_json {output} -echo_spacing {params.echo_spacing} -threads {threads} -uncorr_qT1 {params.uncorr_qT1}
+        python3 workflow/scripts/create_json_for_mp2proc.py -b1map_nifti {input.b1map_nifti} -inv1_nifti {input.inv1_nifti} -inv2_nifti {input.inv2_nifti} -unit1_nifti {input.unit1_nifti} -output_json {output} -echo_spacing {params.echo_spacing} -threads {threads} -uncorr_qT1 {params.uncorr_qT1}
         """
 
 
@@ -160,13 +168,14 @@ rule create_uncorr_qT1:
 
 rule json_for_mp2proc:
     input:
-        meta_complete = check_csa_added_to_meta,
+        # meta_complete = check_csa_added_to_meta,
         b1map_nifti = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.nii.gz",
-        b1map_json = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.json"
-    params:
+        b1map_json = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.json",
+    # params:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
+    params:
         echo_spacing = mp2rage_echo_spacing
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/mp2proc.json"
@@ -176,7 +185,7 @@ rule json_for_mp2proc:
         mem_mb=200
     shell:
         """
-        python3 workflow/scripts/create_json_for_mp2proc.py -b1map_nifti {input.b1map_nifti} -inv1_nifti {params.inv1_nifti} -inv2_nifti {params.inv2_nifti} -unit1_nifti {params.unit1_nifti} -output_json {output} -echo_spacing {params.echo_spacing} -threads {threads}
+        python3 workflow/scripts/create_json_for_mp2proc.py -b1map_nifti {input.b1map_nifti} -inv1_nifti {input.inv1_nifti} -inv2_nifti {input.inv2_nifti} -unit1_nifti {input.unit1_nifti} -output_json {output} -echo_spacing {params.echo_spacing} -threads {threads}
         """
 
 

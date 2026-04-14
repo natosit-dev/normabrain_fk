@@ -4,15 +4,15 @@ import glob
 import shutil
 from pathlib import Path
 
-def check_csa_added_to_meta(wildcards):
-    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+# def check_csa_added_to_meta(wildcards):
+#     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def get_raw_ihmt(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.nii.gz'))[0] #get first run
 
 def get_ihmt_contrast_type(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0]
     with open(json_path, "r") as f:
         meta = json.load(f)
@@ -73,8 +73,8 @@ def get_ihmt_contrast_type(wildcards):
 
 rule denoise_ihmt:
     input:
-        check_csa_added_to_meta
-    params:
+        # check_csa_added_to_meta
+    # params:
         raw_img = get_raw_ihmt
     output:
         out=temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise.nii"),
@@ -85,7 +85,7 @@ rule denoise_ihmt:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
         """
-        dwidenoise {params.raw_img} {output.out} -noise {output.noisemap}
+        dwidenoise {input.raw_img} {output.out} -noise {output.noisemap}
         """
 
 
@@ -126,7 +126,7 @@ rule moco_ihmt:
 rule split_contrast_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii",
-        check_csa_added_to_meta
+        # check_csa_added_to_meta
     output:
         mt0="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/split_acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mt0.nii",
         split_dir=temp(directory("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/split_acq-{ihmt_params}"))
@@ -139,28 +139,28 @@ rule split_contrast_ihmt:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     shell:
         """
-        mrconvert {input[0]} {output.mt0} -coord 3 0 -axes 0,1,2 -force
+        mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2 -force
 
         if [ "{params.ihmt_contrast_type}" == "Frequency Alternated and Cosine Modulated" ]
         then
-            mrconvert {input[0]} {params.mts} -coord 3 1:3:end -force
-            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 2:3:end -force
-            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 3:3:end -force
+            mrconvert {input} {params.mts} -coord 3 1:3:end -force
+            mrconvert {input} {params.mtd_freqalt} -coord 3 2:3:end -force
+            mrconvert {input} {params.mtd_cosmod} -coord 3 3:3:end -force
         
         elif [ "{params.ihmt_contrast_type}" == "Frequency Alternated" ]
         then
-            mrconvert {input[0]} {params.mts} -coord 3 1:2:end -force
-            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 2:2:end -force
+            mrconvert {input} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input} {params.mtd_freqalt} -coord 3 2:2:end -force
 
         elif [ "{params.ihmt_contrast_type}" == "Cosine Modulated" ]
         then
-            mrconvert {input[0]} {params.mts} -coord 3 1:2:end -force
-            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 2:2:end -force
+            mrconvert {input} {params.mts} -coord 3 1:2:end -force
+            mrconvert {input} {params.mtd_cosmod} -coord 3 2:2:end -force
 
         elif [ "{params.ihmt_contrast_type}" == "BandPass (no single)" ]
         then
-            mrconvert {input[0]} {params.mtd_freqalt} -coord 3 1:2:end -force
-            mrconvert {input[0]} {params.mtd_cosmod} -coord 3 2:2:end -force
+            mrconvert {input} {params.mtd_freqalt} -coord 3 1:2:end -force
+            mrconvert {input} {params.mtd_cosmod} -coord 3 2:2:end -force
         fi
         """
         
@@ -240,13 +240,10 @@ rule calculate_ihmt_maps:
         """
 
 
-#rules for registering to MP2RAGE with ANTs
-
 rule synthstrip_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap.nii.gz"
     output:
-        # temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_MTmap_brain.nii.gz"),
         "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
     container:
         "docker://freesurfer/synthstrip:1.8-gpu"

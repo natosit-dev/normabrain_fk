@@ -6,12 +6,16 @@ from pathlib import Path
 from bids import BIDSLayout
 
 
-def check_csa_added_to_meta(wildcards):
-    return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+# def check_csa_added_to_meta(wildcards):
+#     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+
+def get_mt0_phase(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz'))[0]
 
 def qsm_nii_list(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
@@ -20,8 +24,9 @@ def qsm_nii_list(wildcards):
     return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def qsm_json_list(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
@@ -30,8 +35,9 @@ def qsm_json_list(wildcards):
     return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def qsm_mask_list(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
@@ -40,12 +46,13 @@ def qsm_mask_list(wildcards):
     return expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def get_inv1(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
 
 def t1w_nii_list(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
@@ -54,8 +61,9 @@ def t1w_nii_list(wildcards):
     return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
 
 def t1w_json_list(wildcards):
-    csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    bidspath = Path(csa_complete).parents[2]
+    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    # bidspath = Path(csa_complete).parents[2]
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
     # qsm_subjects = ["sub-" + x for x in qsm_subjects]
@@ -66,7 +74,8 @@ def t1w_json_list(wildcards):
 
 rule copy_raw_qsm:
     input:
-        check_csa_added_to_meta  
+        # check_csa_added_to_meta  
+        get_mt0_phase
     output:
         "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.json"
     run: #python code, not shell
@@ -75,7 +84,7 @@ rule copy_raw_qsm:
 
         phase_list = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-phase_MPM.nii.gz'))
         num_phase = len(phase_list)
-        mag_list_clipped = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-mag_MPM.nii.gz'))[:num_phase]
+        mag_list_clipped = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-mag_MPM.nii.gz'))[num_phase:]
         raw_list = phase_list + mag_list_clipped
         i=0
         for img in phase_list:
@@ -104,7 +113,6 @@ rule copy_denoised_qsm:
         phase = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-phase_echos4d_riciancorr.nii",
         mag = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_echos4d_denoise.nii"
     output:
-        # "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/"
         "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
@@ -123,17 +131,17 @@ rule copy_denoised_qsm:
         """
 
 
-rule copy_raw_t1w_qsm:
+rule copy_raw_t1w_json_qsm:
     input:
-        check_csa_added_to_meta
-    params:
+    #     check_csa_added_to_meta
+    # params:
         inv1 = get_inv1
     output:
         "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.json"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     run:
-        inv1_json = Path(params.inv1).with_suffix("").with_suffix(".json")
+        inv1_json = Path(input.inv1).with_suffix("").with_suffix(".json")
         shutil.copy(inv1_json, str(output))
 
         
