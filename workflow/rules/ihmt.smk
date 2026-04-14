@@ -4,15 +4,11 @@ import glob
 import shutil
 from pathlib import Path
 
-# def check_csa_added_to_meta(wildcards):
-#     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def get_raw_ihmt(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.nii.gz'))[0] #get first run
 
 def get_ihmt_contrast_type(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0]
     with open(json_path, "r") as f:
         meta = json.load(f)
@@ -73,8 +69,6 @@ def get_ihmt_contrast_type(wildcards):
 
 rule denoise_ihmt:
     input:
-        # check_csa_added_to_meta
-    # params:
         raw_img = get_raw_ihmt
     output:
         out=temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise.nii"),
@@ -125,8 +119,7 @@ rule moco_ihmt:
 
 rule split_contrast_ihmt:
     input:
-        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii",
-        # check_csa_added_to_meta
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii"
     output:
         mt0="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/split_acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mt0.nii",
         split_dir=temp(directory("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/split_acq-{ihmt_params}"))

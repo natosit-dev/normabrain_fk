@@ -9,16 +9,12 @@ wildcard_constraints:
     seq = config["MPM_sequence"],
     part = 'mag|phase'
 
-# def check_csa_added_to_meta(wildcards):
-#     return checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
 
 def get_echos(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     #get the list of echo files and sort it
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*{wildcards.mpm_params}_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))
 
 def get_qMT_params(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
     with open(json_path, "r") as f:
         mtw_meta = json.load(f)
@@ -37,18 +33,15 @@ def get_qMT_params(wildcards):
     return mt_params
 
 def get_qMT_json(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
 
 def get_t1flip(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         t1w_meta = json.load(f)
     return t1w_meta["FlipAngle"]
 
 def get_pdflip(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     json_path = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-mag_MPM.json')[0]
     with open(json_path, "r") as f:
         pdw_meta = json.load(f)
@@ -56,7 +49,6 @@ def get_pdflip(wildcards):
 
 def t1wmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
         raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}t1w*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
@@ -66,7 +58,6 @@ def t1wmag_preproc(wildcards):
 
 def mt0mag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
         raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
@@ -76,7 +67,6 @@ def mt0mag_preproc(wildcards):
 
 def mtwmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
         raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}_mt-on_part-mag_echos4d_riciancorr.nii"
@@ -86,7 +76,6 @@ def mtwmag_preproc(wildcards):
 
 def pdwmag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
     try:
         raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}pdw*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
@@ -97,8 +86,6 @@ def pdwmag_preproc(wildcards):
 
 rule concat_echos:
     input:
-    #     meta_complete = check_csa_added_to_meta
-    # params:
         echos = get_echos
     output:
         temp("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_echos4d.nii")
@@ -504,41 +491,8 @@ rule apply_reg_MPM_to_ref_ants:
         antsApplyTransforms -d 3 -v 1 -n Linear -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
         """
 
-# #rules for registration with synthmorph
-
-# rule register_MPM_to_t1w_synthmorph:
-#     input:
-#         ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos_brain.nii.gz",
-#         moving = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_sos_brain.nii.gz"
-#     output:
-#         "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_registeredto{seq}t1w{mpm_params}_synthmorph.lta"
-#     resources: 
-#         mem_mb=7000
-#     container:
-#         "docker://freesurfer/freesurfer:8.1.0"
-#     shell:
-#         """
-#         mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref} -g || mri_synthmorph register -m rigid -t {output} {input.moving} {input.ref}
-#         """
-
-
-# rule apply_reg_MPM_to_t1w_synthmorph:
-#     input:
-#         moving = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_sos.nii.gz",
-#         reg = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_registeredto{seq}t1w{mpm_params}_synthmorph.lta"
-#     output:
-#         "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w{mpm_params}_synthmorph.nii.gz"
-#     resources: 
-#         mem_mb=1000
-#     container:
-#         "docker://freesurfer/freesurfer:8.1.0"
-#     shell: 
-#         """
-#         mri_synthmorph apply {input.reg} {input.moving} {output}
-        # """
 
 #rules for after registration
-
 
 rule mtr:
     input:
@@ -572,7 +526,6 @@ rule setup_fit_JSPqMT_CLI:
 
 rule fit_JSPqMT_CLI:
     input:
-        # meta_complete = check_csa_added_to_meta,
         build = "workflow/scripts/luca_qMT/build/",
         mt_off = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_sos_registeredto{seq}t1w{mpm_params}_ants.nii.gz",
         mt_on = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}_mt-on_part-mag_sos_registeredto{seq}t1w{mpm_params}_ants.nii.gz",

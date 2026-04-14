@@ -1,4 +1,15 @@
 #for creating data/rawdata folder structure necessary for the rest of the pipeline
+
+def get_dicoms_folders(wildcards):
+    checkpoint_output = checkpoints.copy_dicoms_by_field_strength.get(**wildcards).output[0]
+    return expand(os.path.join(checkpoint_output, "{field_strength}"),
+        field_strength=wildcards.field_strength)
+
+def check_bidscoiner_ran(wildcards):
+    checkpoint_output = checkpoints.bidscoiner.get(**wildcards).output[0]
+    return checkpoint_output
+
+
 checkpoint copy_dicoms_by_field_strength:
     input:
         expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])
@@ -13,10 +24,6 @@ checkpoint copy_dicoms_by_field_strength:
         python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output} {params}
         """
 
-def get_dicoms_folders(wildcards):
-    checkpoint_output = checkpoints.copy_dicoms_by_field_strength.get(**wildcards).output[0]
-    return expand(os.path.join(checkpoint_output, "{field_strength}"),
-        field_strength=wildcards.field_strength)
 
 rule bidsmapper:
     input:
@@ -30,6 +37,7 @@ rule bidsmapper:
         bidsmapper {input} data/rawdata/bids/{wildcards.field_strength} -t config/bidsmap_normabrain_template -a
         touch {output}
         """
+
 
 checkpoint bidscoiner:
     input:
@@ -45,9 +53,6 @@ checkpoint bidscoiner:
         touch {output}
         """
 
-def check_bidscoiner_ran(wildcards):
-    checkpoint_output = checkpoints.bidscoiner.get(**wildcards).output[0]
-    return checkpoint_output
 
 checkpoint add_csa_data_to_meta:
     input:

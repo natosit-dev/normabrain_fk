@@ -12,8 +12,6 @@ wildcard_constraints:
 
 
 def mpm_to_mp2rage(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     apply_reg_list = []
@@ -39,8 +37,6 @@ def mpm_to_mp2rage(wildcards):
     return apply_reg_list
 
 def ihmt_to_mp2rage(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath, validate=False)
     apply_reg_list = []
@@ -61,24 +57,18 @@ def ihmt_to_mp2rage(wildcards):
     return apply_reg_list
 
 def ihmt_reg_to_first_acq_mp2rage(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
 
 def mpm_reg_to_first_acq_mp2rage(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_registeredtoMP2RAGE{mp2rage_params}_Composite.h5", mp2rage_params=first_acq, allow_missing=True)
 
 def ihmt_statslist(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath, validate=False)
     statslist = []
@@ -98,8 +88,6 @@ def ihmt_statslist(wildcards):
     return statslist
 
 def mpm_statslist(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     statslist = []
@@ -124,8 +112,6 @@ def mpm_statslist(wildcards):
     return statslist
 
 def freesurfer_subjectlist_ihmt(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath, validate=False)
     fs_subjectlist = []
@@ -146,8 +132,6 @@ def freesurfer_subjectlist_ihmt(wildcards):
     return fs_subjectarray
 
 def freesurfer_subjectlist_mpm(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     fs_subjectlist = []
@@ -173,8 +157,6 @@ def freesurfer_subjectlist_mpm(wildcards):
     return fs_subjectarray
 
 def mp2rage_to_ihmt(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath, validate=False)
     apply_reg_list = []
@@ -195,8 +177,6 @@ def mp2rage_to_ihmt(wildcards):
     return apply_reg_list
 
 def mp2rage_to_mpm(wildcards):
-    # csa_complete = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    # bidspath = Path(csa_complete).parents[2]
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     apply_reg_list = []
