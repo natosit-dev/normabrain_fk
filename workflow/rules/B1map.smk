@@ -146,6 +146,7 @@ rule register_b1anat_to_MPM_t1w_ants:
         antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_B1registeredto{wildcards.seq}t1w{wildcards.mpm_params}_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
         """
 
+
 rule apply_reg_b1map_to_MPM_t1w_ants:
     input:
         moving = get_last_b1map_run,

@@ -510,23 +510,23 @@ rule mtr:
         """
 
 
-rule setup_fit_JSPqMT_CLI:
-    output:
-        directory("workflow/scripts/luca_qMT/build/")
-    conda:
-        "../envs/qMT.yaml"
-    resources: 
-        mem_mb=1000
-    shell:
-        """
-        cd workflow/scripts/luca_qMT/
-        python3 setup.py build_ext --inplace
-        """
+# rule setup_fit_JSPqMT_CLI:
+#     output:
+#         directory("workflow/scripts/luca_qMT/build/")
+#     conda:
+#         "../envs/qMT.yaml"
+#     resources: 
+#         mem_mb=1000
+#     shell:
+#         """
+#         cd workflow/scripts/luca_qMT/
+#         python3 setup.py build_ext --inplace
+#         """
 
 
 rule fit_JSPqMT_CLI:
     input:
-        build = "workflow/scripts/luca_qMT/build/",
+        # build = "workflow/scripts/luca_qMT/build/",
         mt_off = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_sos_registeredto{seq}t1w{mpm_params}_ants.nii.gz",
         mt_on = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}_mt-on_part-mag_sos_registeredto{seq}t1w{mpm_params}_ants.nii.gz",
         pdw = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{mpm_params}_mt-off_part-mag_sos_registeredto{seq}t1w{mpm_params}_ants.nii.gz",
