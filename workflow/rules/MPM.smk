@@ -550,7 +550,7 @@ rule fit_JSPqMT_CLI:
     #     "docker://hugodary/vibe_mt:latest"
     shell:
         """
-        python3 workflow/scripts/luca_qMT/fit_JSPqMT_CLI.py \
+        python3 workflow/scripts/luca_qMT/qmt/fit_JSPqMT_CLI.py \
         {input.mt_off},{input.mt_on} \
         {input.pdw},{input.t1w} \
         {output.mpfmap} \
