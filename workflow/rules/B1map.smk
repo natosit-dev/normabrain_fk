@@ -1,6 +1,7 @@
 #necessary for MP2RAGE.smk and MPM.smk processing
 #requires BIDS data at data/rawdata/bids/{field_strength}
 import json
+import logging
 import glob
 import shutil
 
@@ -30,12 +31,14 @@ rule synthstrip_b1anat:
     threads: 4
     resources: 
         mem_mb=9000
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
         fi
-        # mri_synthstrip -i {params} -m {output} -t {threads} -g --no-csf || mri_synthstrip -i {params} -m {output} -t {threads} --no-csf
         mri_synthstrip -i {input} -m {output} -t {threads} -g --no-csf || mri_synthstrip -i {input} -m {output} -t {threads} --no-csf
         """
 
@@ -50,10 +53,12 @@ rule apply_brainmask_b1anat:
         "../envs/fslmaths.yaml"
     resources: 
         mem_mb=500
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
         export FSLOUTPUTTYPE='NIFTI_GZ'
-        # fslmaths {params} -mas {input.brain_mask} {output}
         fslmaths {input.b1anat} -mas {input.brain_mask} {output}
         """
 
@@ -68,9 +73,19 @@ rule DenoiseImage_b1anat:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised.log"
     shell:
         """
-        DenoiseImage -d 3 -n Rician -s 1 -v 1 -p 1 -r 2 -i {input.input_image} -x {input.mask_image} -o {output}
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        DenoiseImage \
+        --image-dimensionality 3 \
+        --noise-model Rician \
+        --verbose 1 \
+        -i {input.input_image} \
+        -x {input.mask_image} \
+        -o {output}
         """
 
 
@@ -84,33 +99,57 @@ rule N4BiasFieldCorrection_b1anat:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    log:
+       "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4.log"
     shell:
         """
-        N4BiasFieldCorrection -d 3 -s 1 -v 1 -c [ 50x50x50x50, 0 ] -i {input.input_image} -x {input.mask_image} -o {output}
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        N4BiasFieldCorrection \
+        --image-dimensionality 3 \
+        --shrink-factor 1 \
+        --verbose 1 \
+        -i {input.input_image} \
+        -x {input.mask_image} \
+        -o {output}
         """
 
 
-rule register_b1anat_to_mp2rage: #ATTENTION: slightly different parameters from MPM/VFA
+rule register_b1anat_to_mp2rage:
     input:
         ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_denoised_n4.nii.gz",
         moving = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4.nii.gz",
         ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4_registeredtoMP2RAGE_ants.nii.gz"),
-        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_n4_registeredtoB1anat_ants.nii.gz"),
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_0GenericAffine.mat"
+    params:
+        outprefix="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE_"
     conda:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=700
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE.log"
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.mp2rage_params}/sub-{wildcards.subject}_ses-{wildcards.session}_B1registeredtoMP2RAGE_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        antsRegistration \
+        --random-seed 1 \
+        --dimensionality 3 \
+        --verbose 1 \
+        --convergence [ 1000x500x250x100, 1e-7, 100 ] \
+        --shrink-factors 8x4x2x1 \
+        --smoothing-sigmas 4x2x1x0vox \
+        --transform Rigid[0.1] \
+        --metric MI[ {input.ref}, {input.moving}, 1, 32 ] \
+        -o {params.outprefix} \
+        -x [ {input.ref_mask}, {input.moving_mask} ]
         """
 
 
-rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM/VFA
+rule apply_reg_b1_to_mp2rage:
     input:
         moving = get_last_b1map_run,
         ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz",
@@ -121,9 +160,20 @@ rule apply_reg_b1_to_mp2rage: #ATTENTION: some parameters are different from MPM
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.log"
     shell:
         """
-        antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        antsApplyTransforms \
+        --dimensionality 3 \
+        --interpolation Linear \
+        --verbose 1 \
+        -i {input.moving} \
+        -r {input.ref} \
+        -t {input.reg} \
+        -o {output}
         """
 
 
@@ -134,16 +184,30 @@ rule register_b1anat_to_MPM_t1w_ants:
         ref_mask ="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4_registeredto{seq}t1w{mpm_params}_ants.nii.gz"),
-        temp("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos_brain_denoised_n4_registeredtob1anat.nii.gz"),
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w{mpm_params}_0GenericAffine.mat"
+    params:
+        outprefix="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w{mpm_params}_"
     conda:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1000
+    log:
+       "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w{mpm_params}.log" 
     shell:
         """
-        antsRegistration -d 3 -v 1 --transform Rigid[0.1] --metric MI[ {input.ref}, {input.moving}, 1, 32 ] --convergence [ 1000x500x250x100, 1e-7, 100 ] --collapse-output-transforms 1 --shrink-factors 8x4x2x1 -s 4x2x1x0vox -o [ data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/sub-{wildcards.subject}_ses-{wildcards.session}_B1registeredto{wildcards.seq}t1w{wildcards.mpm_params}_, {output[0]}, {output[1]} ] -x [ {input.ref_mask}, {input.moving_mask} ] --random-seed 1
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        antsRegistration \
+        --random-seed 1 \
+        --dimensionality 3 \
+        --verbose 1 \
+        --convergence [ 1000x500x250x100, 1e-7, 100 ] \
+        --shrink-factors 8x4x2x1 \
+        --smoothing-sigmas 4x2x1x0vox \
+        --transform Rigid[0.1] \
+        --metric MI[ {input.ref}, {input.moving}, 1, 32 ] \
+        -o {params.outprefix} \
+        -x [ {input.ref_mask}, {input.moving_mask} ]
         """
 
 
@@ -158,9 +222,20 @@ rule apply_reg_b1map_to_MPM_t1w_ants:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    log:
+       "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_ants.log" 
     shell:
         """
-        antsApplyTransforms -d 3 -n Linear --output-data-type short -v 1 -f 0 -i {input.moving} -r {input.ref} -t {input.reg} -o {output}
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        antsApplyTransforms \
+        --dimensionality 3 \
+        --interpolation Linear \
+        --verbose 1 \
+        -i {input.moving} \
+        -r {input.ref} \
+        -t {input.reg} \
+        -o {output}
         """
 
 
@@ -174,7 +249,11 @@ rule copy_b1map_json_after_regtoMP2RAGE:
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.json"
     resources: 
         mem_mb=300
+    log:
+       "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_copy_b1map_json_after_regtoMP2RAGE.log" 
     run:
+        logging.basicConfig(level=logging.INFO, filename=log, filemode="w")
+        
         b1map_raw_json = Path(input.b1map_raw).with_suffix("").with_suffix(".json")
         b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")
         shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
@@ -189,8 +268,11 @@ rule smooth_B1:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_smooth.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
         SmoothImage 3 {input[0]} 3x1x1 {output}
         """
 
@@ -206,8 +288,11 @@ rule normalize_B1_to_target_flip: #not masking because we are interested in the 
         "../envs/fslmaths.yaml"
     resources: 
         mem_mb=500
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_smooth_norm.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
         export FSLOUTPUTTYPE='NIFTI_GZ'
         fslmaths {input} -div {params.target_flip} {output} -odt float 
         """

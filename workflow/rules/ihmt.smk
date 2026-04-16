@@ -77,8 +77,11 @@ rule denoise_ihmt:
         mem_mb=1000
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
         dwidenoise {input.raw_img} {output.out} -noise {output.noisemap}
         """
 
@@ -92,8 +95,11 @@ rule degibbs_ihmt:
         mem_mb=1000
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs.log"
     shell: #use the Bautista extension of the Kellner protocol because data is 3D not 2D
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
         mrdegibbs -mode 3d {input} {output}
         """
 
@@ -103,17 +109,24 @@ rule moco_ihmt:
         "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs.nii"
     output:
         preproc="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii"
+    params:
+        outprefix="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_",
+        outtmp="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}"
     container:
         "docker://hugodary/ihmt_proc:latest"
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.log"
     shell: 
         # -m 1 means use ihMT-MoCo for motion correction (from Soustelle preprint)
         # -c is a comma separated list of desired output images, we chose to only output the motion corrected image without computing any maps
         """
-        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.ihmt_params}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o {params.outprefix}
         
         #rename preproc image for clarity
-        mv data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.ihmt_params}/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}_ihMT.nii {output.preproc}
-        rm -rf data/derivatives/{wildcards.field_strength}/ihmt/sub-{wildcards.subject}/ses-{wildcards.session}/acq-{wildcards.ihmt_params}
+        mv {params.outprefix}_ihMT.nii {output.preproc}
+        rm -rf {params.outtmp}
         """
 
 
@@ -130,8 +143,12 @@ rule split_contrast_ihmt:
         mtd_cosmod="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/split_acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mtd_cosmod.nii"
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/split_acq-{ihmt_params}.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
         mrconvert {input} {output.mt0} -coord 3 0 -axes 0,1,2 -force
 
         if [ "{params.ihmt_contrast_type}" == "Frequency Alternated and Cosine Modulated" ]
@@ -190,8 +207,12 @@ rule calculate_ihmt_maps:
         ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_freqalt_ihMTR.nii.gz"      
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihMTmaps.log"
     shell: 
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
         mkdir -p {output.sums_means_dir}
         if [ -f {params.mts} ]
         then
@@ -243,8 +264,11 @@ rule synthstrip_ihmt:
     threads: 4
     resources: 
         mem_mb=9000
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
         fi
@@ -262,8 +286,11 @@ rule apply_brainmask_ihmt:
         "../envs/fslmaths.yaml"
     resources: 
         mem_mb=500
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
         export FSLOUTPUTTYPE='NIFTI_GZ'
         fslmaths {input.input_image} -mas {input.brain_mask} {output}
         """
@@ -279,9 +306,18 @@ rule DenoiseImage_ihmt:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised.log"
     shell:
         """
-        DenoiseImage -i {input.input_image} -x {input.mask_image} -d 3 -n Rician -s 1 -p 1 -r 2 -v 1 -o {output}
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        DenoiseImage \
+        --image-dimensionality 3 \
+        --noise-model "Rician" \
+        --verbose 1 \
+        -i {input.input_image} \
+        -x {input.mask_image} \
+        -o {output}
         """
 
 
@@ -295,9 +331,18 @@ rule N4BiasFieldCorrection_ihmt:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.log"
     shell:
         """
-        N4BiasFieldCorrection -i {input.input_image} -x {input.mask_image} -d 3 -s 4 -c [ 50x50x50x50, 0 ] -v 1 -o {output}
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        N4BiasFieldCorrection \
+        --image-dimensionality 3 \
+        --shrink-factor 1 \
+        --verbose 1 \
+        -i {input.input_image} \
+        -x {input.mask_image} \
+        -o {output}
         """
 
         
