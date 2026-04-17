@@ -282,7 +282,7 @@ rule register_mp2rage_acqs:
                 --verbose 1 \
                 --convergence [ 1000x500x250x100, 1e-7, 100 ] \
                 --shrink-factors 8x4x2x1 \
-                --smoothing-sigmas 4x2x1x0vox
+                --smoothing-sigmas 4x2x1x0vox \
                 --transform Rigid[0.1] \
                 --metric MI[ ${{first_img}}, ${{img}}, 1, 32 ] \
                 -o {params.regdir}/acq-$acq/registeredto${{first_acq}}_ \
@@ -317,7 +317,7 @@ rule apply_reg_first_mp2rage_acq:
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
-            --verbose 1 \ 
+            --verbose 1 \
             -i {input.moving} \
             --reference-image {params.sessiondir}/acq-$first_acq/{wildcards.mp2rage_map}.nii.gz \
             --transform {params.sessiondir}/acq-{wildcards.mp2rage_params}/registeredto${{first_acq}}_0GenericAffine.mat \
@@ -558,7 +558,6 @@ rule N4BiasFieldCorrection_qT1:
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
-        --shrink-factor 1 \
         --verbose 1 \
         -i {input.input_image} \
         -x {input.mask_image} \

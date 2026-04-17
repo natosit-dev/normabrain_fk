@@ -265,7 +265,7 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
                 --dimensionality 3 \
                 --interpolation Linear \
                 --verbose 1 \
-                -i {input.moving} \
+                -i $moving \
                 -r {input.ref} \
                 -t {input.reg} \
                 -o $out
@@ -460,6 +460,8 @@ rule register_MPM_to_MP2RAGE_ants:
         moving = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_T1map_brain_denoised_n4.nii.gz",
         ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos_brain_mask.nii.gz"
+    params:
+        outprefix="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_registeredtoMP2RAGE{mp2rage_params}_"
     output:
         "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_registeredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat"
     conda:
@@ -492,7 +494,7 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
         reg = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_registeredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat"
     params:
         sessiondir="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/",
-        regto="registeredto{wildcards.mp2rage_params}",
+        regto="registeredto{mp2rage_params}",
         mpmprefix="sub-{subject}_ses-{session}_acq-{seq}{mpm_params}"
     output:
         "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_apply_reg_MPM_to_MP2RAGE{mp2rage_params}_ants.done"

@@ -3,7 +3,7 @@ configfile: "config/snakemake_config.yaml"
 
 rule all:
     input:
-        "data/rawdata/bids/3T/code/bidscoin/fixmeta.log",
+        # "data/rawdata/bids/3T/code/bidscoin/fixmeta.log",
         "data/derivatives/3T/freesurfer/MP2RAGE_qR1_pksUnit_stats.tsv",
         "data/derivatives/3T/freesurfer/MP2RAGE_qT1_msUnit_stats.tsv",
         "data/derivatives/3T/freesurfer/ihmt_stats.done",

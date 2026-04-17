@@ -107,7 +107,6 @@ rule N4BiasFieldCorrection_b1anat:
 
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
-        --shrink-factor 1 \
         --verbose 1 \
         -i {input.input_image} \
         -x {input.mask_image} \
@@ -250,9 +249,9 @@ rule copy_b1map_json_after_regtoMP2RAGE:
     resources: 
         mem_mb=300
     log:
-       "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_copy_b1map_json_after_regtoMP2RAGE.log" 
+       out="logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_copy_b1map_json_after_regtoMP2RAGE.log" 
     run:
-        logging.basicConfig(level=logging.INFO, filename=log, filemode="w")
+        logging.basicConfig(level=logging.INFO, filename=log.out, filemode="w")
         
         b1map_raw_json = Path(input.b1map_raw).with_suffix("").with_suffix(".json")
         b1map_registeredtoMP2RAGE_json = Path(input.b1map_registeredtoMP2RAGE).with_suffix("").with_suffix(".json")

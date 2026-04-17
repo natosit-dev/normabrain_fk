@@ -125,7 +125,7 @@ rule moco_ihmt:
         /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o {params.outprefix}
         
         #rename preproc image for clarity
-        mv {params.outprefix}_ihMT.nii {output.preproc}
+        mv {params.outprefix}ihMT.nii {output.preproc}
         rm -rf {params.outtmp}
         """
 

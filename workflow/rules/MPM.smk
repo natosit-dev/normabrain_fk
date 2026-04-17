@@ -523,7 +523,6 @@ rule N4BiasFieldCorrection_mpm:
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
-        --shrink-factor 1 \
         --verbose 1 \
         -i {input.input_image} \
         -x {input.mask_image} \
@@ -736,7 +735,6 @@ rule N4BiasFieldCorrection_T1map:
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
-        --shrink-factor 1 \
         --verbose 1 \
         -i {input.input_image} \
         -x {input.mask_image} \
