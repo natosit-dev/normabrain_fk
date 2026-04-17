@@ -1,4 +1,4 @@
-snakemake --config input_dicoms_path="../test_dicoms" -np data/derivatives/3T/MPM/sub-rfl260123normanoel/ses-1/sub-rfl260123normanoel_ses-1_acq-vibeMT_T1map_registeredtoMP2RAGE.nii.gz --dag | sed -n "/digraph/,/}/p" | dot -Tsvg > qT1_dag.svg
+snakemake --config input_dicoms_path="/DATA_CEMEREM/data/users/ttroalen/vida/normadev/" protocol_path="/DATA_CNS/PROJECTS/NORMABRAIN/NORMA_DEV_CPP/" --dag | sed -n "/digraph/,/}/p" | dot -Tsvg > pipeline_dag.svg
 
 #generate BIDS folder first
 snakemake --config input_dicoms_path="/DATA_CEMEREM/data/users/ttroalen/vida/normadev/" protocol_path="/DATA_CNS/PROJECTS/NORMABRAIN/NORMA_DEV_CPP/" --sdm conda --cores 2 data/rawdata/bids/3T/code/bidscoin/fixmeta.log

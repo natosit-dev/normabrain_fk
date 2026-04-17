@@ -85,7 +85,7 @@ def ihmt_statslist(wildcards):
             acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for acq in acqlist:
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/ihmt_stats.done")
-    return statslist
+    return sorted(statslist)
 
 def mpm_statslist(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
@@ -109,7 +109,7 @@ def mpm_statslist(wildcards):
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/MPM_stats.done")
     counts = Counter(statslist)
     statslist = [stat for stat, count in counts.items() if count == 4]
-    return statslist
+    return sorted(statslist)
 
 def freesurfer_subjectlist_ihmt(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
