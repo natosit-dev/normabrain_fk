@@ -17,6 +17,7 @@ rule all:
 
 include: "rules/B1map.smk"
 include: "rules/bidsify.smk"
+include: "rules/dwi.smk"
 include: "rules/ihmt.smk"
 include: "rules/MP2RAGE.smk"
 include: "rules/MPM.smk"
