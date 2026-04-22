@@ -6,6 +6,7 @@ def get_dwi_nii(wildcards):
 def get_b0_nii(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*b0*{wildcards.dwi_params}*_dir-AP_dwi.nii.gz'))
 
+
 rule nyu_designer:
     input:
         dwi=get_dwi_nii,
@@ -13,15 +14,101 @@ rule nyu_designer:
     params:
         preproc="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_preproc/"
     output:
-        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.nii.gz"
+        mif="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.mif"
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     threads:
         8
+    resources:
+        mem_mb=11000
     log:
        "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        designer "{input.dwi}" "{output}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads}
+        designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads}
+        """
+
+
+rule convert_designer_mif_to_nii:
+    input:
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.mif"
+    output:
+        nii="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.nii.gz",
+        json="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.json",
+        bvec="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.bvec",
+        bval="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.bval"
+    container:
+        "docker://nyudiffusionmri/designer2:v2.0.15"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    log:
+        "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_convert_designer_mif_to_nii.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        mrconvert -force -stride -1,2,3,4 -json_export {output.json} -export_grad_fsl {output.bvec} {output.bval} {input} {output.nii}
+        """
+
+
+rule mean_b0:
+    input:
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.mif"
+    output:
+        b0=temp("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_b0.mif"),
+        meanb0="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0.nii.gz"
+    container:
+        "docker://nyudiffusionmri/designer2:v2.0.15"
+    resources: #limit memory by input size
+        mem_mb=lambda wc, input: 2.5 * input.size_mb
+    log:
+       "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0.log" 
+    shell:
+        """
+        dwiextract -bzero {input} {output.b0}
+        mrmath {output.b0} mean {output.meanb0} -axis 3
+        """
+    
+rule b0_mask:
+    input:
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brainmask.nii"
+    container:
+        "docker://freesurfer/synthstrip:1.8-gpu"
+    threads: 4
+    resources: 
+        mem_mb=8000
+    log:
+        "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brainmask.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+        fi
+        mri_synthstrip -i {input} -m {output} -t {threads} --no-csf -g || mri_synthstrip -i {input} -m {output} -t {threads} --no-csf
+        """
+
+
+rule dki_tensor_dipy:
+    input:
+        img="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.nii.gz",
+        mask="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brainmask.nii"
+    params:
+        outprefix="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_dki/sub-{subject}_ses-{session}_acq-{dwi_params}_"
+    output:
+        directory("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_dki/")
+    conda:
+        "../envs/dipy.yaml"
+    threads:
+        4
+    resources:
+        mem_mb=4000
+    log:
+        "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_dki.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        python3 workflow/scripts/dki_tensor_dipy.py {input.img} {input.mask} {params.outprefix}
         """

@@ -1,0 +1,7 @@
+name: dipy
+channels:
+  - conda-forge
+dependencies:
+  - dipy=1.12.0
+  - fury=0.12.0
+  - cvxpy=1.8.2
