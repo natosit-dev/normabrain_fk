@@ -9,14 +9,6 @@ import argparse
 import numpy as np
 from pathlib import Path
 
-def GMM_weights(*args):
-    """Geman-McClure weights with outliers defined by +/-3 standard
-    deviations.
-    """
-    return weights_method_wls_m_est(
-        *args, m_est="gm", cutoff=3, outlier_condition_func=simple_cutoff
-    )
-
 def dki_tensor(preproc_nii: str, mask_nii: str, outprefix: str):
     #load the preprocessed dwi nii
     print("loading data...")
@@ -25,42 +17,36 @@ def dki_tensor(preproc_nii: str, mask_nii: str, outprefix: str):
     bval_path = Path(preproc_nii).with_suffix("").with_suffix(".bval")
     bvec_path = Path(preproc_nii).with_suffix("").with_suffix(".bvec")
     bvals, bvecs = read_bvals_bvecs(bval_path, bvec_path)
-    #scale bvals for constrained fitting
-    bvals = bvals * 0.001 #s/m^2 instead of usual s/mm^2
+    # #scale bvals for constrained fitting
+    # bvals = bvals * 0.001 #s/m^2 instead of usual s/mm^2
     #convert bvals and bvecs into GradientTable object needed for dipy data recon
     gtab = gradient_table(bvals, bvecs=bvecs)
     #load the mask
     mask, affine = load_nifti(mask_nii)
 
+    print("fitting the model...")
     #define the model and fitting method
-    print("fitting the unconstrained model...")
-    dkimodel_unconstrained = dki.DiffusionKurtosisModel(gtab, fit_method="RWLS", num_iter=6)
-    dkifit_unconstrained = dkimodel_unconstrained.fit(data, mask=mask)
-    print("fitting the constrained model...")
-    dkimodel_constrained = dki.DiffusionKurtosisModel(
-    gtab, fit_method="CWLS", return_S0_hat=True, weights_method=GMM_weights, num_iter=6)
-    dkifit_constrained = dkimodel_constrained.fit(data, mask=mask)
+    dkimodel = dki.DiffusionKurtosisModel(gtab, fit_method="RWLS", num_iter=6)
+    #fit the model
+    dkifit = dkimodel.fit(data, mask=mask)
 
     #save maps calculated from the DKI tensor
     print("saving the maps...")
     array_maps = ['fa', 'color_fa', 'md', 'rd', 'ad', 'kfa'] #attributes return an array
     func_maps = ['mk', 'rk', 'ak', 'mkt', 'rtk'] #attributes return a function, which returns an array
     for m in array_maps:
-        print("saving" + m + " unconstrained and constrained maps...")
-        save_nifti(outprefix + "unconstrained_" + m + ".nii.gz", getattr(dkifit_unconstrained, m), affine)
-        save_nifti(outprefix + "constrained_" + m + ".nii.gz", getattr(dkifit_constrained, m), affine)
+        print("   saving " + m + "...")
+        save_nifti(outprefix + m + ".nii.gz", getattr(dkifit_unconstrained, m), affine)
     for m in func_maps: #use () after getattr to call function to generate array
-        print("saving" + m + " unconstrained and constrained maps...")
-        save_nifti(outprefix + "unconstrained_" + m + ".nii.gz", getattr(dkifit_unconstrained, m)(), affine)
-        save_nifti(outprefix + "constrained_" + m + ".nii.gz", getattr(dkifit_constrained, m)(), affine)
+        print("   saving " + m + "...")
+        save_nifti(outprefix + m + ".nii.gz", getattr(dkifit_unconstrained, m)(), affine)
     print("done!")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description=
         """
-        Fit constrained and unconstrained DKI models with iterative robust weighted least squares as described in Coveney et al. 2025, Coveney et al. 2026, and version 1.12.0 of the DIPY DKI tutorial. 
-        In the constrained model the tensors are forced to be non-negative as described by Haije et al. 2020.
+        Fit unconstrained DKI models with iterative robust weighted least squares as described in Coveney et al. 2025 and version 1.12.0 of the DIPY DKI tutorial.
         """)
     parser.add_argument('preproc_nii', type=str, help="Path to preprocessed DWIs")
     parser.add_argument('mask_nii', type=str, help="Path to mask")

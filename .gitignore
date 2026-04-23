@@ -14,3 +14,4 @@ install_sct_log.txt
 snakemake*/
 *tree.txt
 *tmp*
+*.svg

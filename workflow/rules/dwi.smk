@@ -110,5 +110,6 @@ rule dki_tensor_dipy:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        mkdir -p {output}
         python3 workflow/scripts/dki_tensor_dipy.py {input.img} {input.mask} {params.outprefix}
         """
