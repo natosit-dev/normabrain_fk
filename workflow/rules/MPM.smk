@@ -563,7 +563,7 @@ rule register_MPM_to_t1w_ants:
         """
 
 
-rule apply_reg_MPM_to_ref_ants:
+rule apply_reg_MPM_to_t1w_ants:
     input:
         moving = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_sos.nii.gz",
         ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos.nii.gz",
