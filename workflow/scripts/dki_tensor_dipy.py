@@ -36,10 +36,10 @@ def dki_tensor(preproc_nii: str, mask_nii: str, outprefix: str):
     func_maps = ['mk', 'rk', 'ak', 'mkt', 'rtk'] #attributes return a function, which returns an array
     for m in array_maps:
         print("   saving " + m + "...")
-        save_nifti(outprefix + m + ".nii.gz", getattr(dkifit_unconstrained, m), affine)
+        save_nifti(outprefix + m + ".nii.gz", getattr(dkifit, m), affine)
     for m in func_maps: #use () after getattr to call function to generate array
         print("   saving " + m + "...")
-        save_nifti(outprefix + m + ".nii.gz", getattr(dkifit_unconstrained, m)(), affine)
+        save_nifti(outprefix + m + ".nii.gz", getattr(dkifit, m)(), affine)
     print("done!")
 
 if __name__ == '__main__':

@@ -101,8 +101,6 @@ rule dki_tensor_dipy:
         directory("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_dki/")
     conda:
         "../envs/dipy.yaml"
-    threads:
-        4
     resources:
         mem_mb=11000
     log:
