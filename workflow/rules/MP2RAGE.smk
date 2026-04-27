@@ -179,7 +179,7 @@ rule json_for_mp2proc:
     resources: 
         mem_mb=200
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/mp2proc.log"
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/mp2proc_json.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -210,7 +210,7 @@ rule run_mp2proc:
     resources: 
         mem_mb=5000
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/MP2Proc.log"
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/mp2proc.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -418,7 +418,7 @@ rule reslice_segmentation:
     conda:
         "../envs/qMT.yaml"
     log:
-        "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.log"
+        "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/aparc+aseg_resliced.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console

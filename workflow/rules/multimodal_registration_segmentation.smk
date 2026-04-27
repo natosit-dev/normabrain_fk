@@ -373,7 +373,7 @@ rule ihmt_tsv:
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     log:
-        "logs/{field_strength}/freesurfer/ihmt_stats.log"
+        "logs/{field_strength}/freesurfer/ihmt_stats_tsv.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -616,7 +616,7 @@ rule mpm_tsv:
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     log:
-      "logs/{field_strength}/freesurfer/MPM_stats.log"  
+      "logs/{field_strength}/freesurfer/MPM_stats_tsv.log"  
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
