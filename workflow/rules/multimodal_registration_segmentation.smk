@@ -634,9 +634,6 @@ rule mpm_tsv:
         """
 
 
-
-
-
 rule apply_reg_MP2RAGE_to_MPM_ants:
     input:
         ref="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_T1map.nii.gz",
