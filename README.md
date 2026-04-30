@@ -5,7 +5,7 @@ This repository utilizes git submodules. To clone, use the command ```git clone 
 Requires: python3, conda, singularity, gcc
 
 
-Once the repository is cloned, it can be installed with the command ```conda env create -f workflow/envs/snakemake.yaml```
+Once the repository is cloned, it can be installed with the command ```conda env create -f workflow/envs/snakemake.yaml```. To use the pipeline, first activate the environment with ```conda activate snakemake```.
 
 If installation from snakemake.yaml leads to conflicts, try running ```conda config --set channel_priority flexible``` first.
 
