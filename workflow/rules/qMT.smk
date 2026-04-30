@@ -7,7 +7,7 @@ from collections import Counter
 wildcard_constraints:
     contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
     seq = config["MPM_sequence"],
-    part = 'mag|phase|complex'
+    part = 'mag|phase'
 
 
 def get_echos(wildcards):
