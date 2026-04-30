@@ -91,6 +91,26 @@ rule b0_mask:
         """
 
 
+rule apply_brainmask_meanb0:
+    input:
+        img="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0.nii.gz",
+        mask="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brainmask.nii"
+    output:
+        temp("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brain.nii.gz")
+    conda:
+        "../envs/fslmaths.yaml"
+    resources: 
+        mem_mb=500
+    log:
+        "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brain.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        export FSLOUTPUTTYPE='NIFTI_GZ'
+        fslmaths {input.img} -mas {input.mask} {output}
+        """
+
+
 rule dki_tensor_dipy:
     input:
         img="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.nii.gz",

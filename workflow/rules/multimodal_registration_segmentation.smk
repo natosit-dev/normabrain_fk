@@ -688,7 +688,29 @@ rule gather_MP2RAGE_to_MPM_ants:
         """
 
 
+rule register_DWI_to_MP2RAGE_bbregister:
+    input:
+        meanb0="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brain.nii.gz",
+        orig_mgz="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz"
+    output:
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_DWIregisteredto{mp2rage_params}.lta"
+    params:
+        subjects_dir="data/derivatives/{field_strength}/freesurfer/",
+        subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
+    resources:
+        mem_mb=1500
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
+        export SUBJECTS_DIR=$HOME/{params.subjects_dir}
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        bbregister --s {params.subject} --mov {input.meanb0} --reg {output} --dti --init-fsl --9
+        """
 
 # #rules for registration with easyreg
 
