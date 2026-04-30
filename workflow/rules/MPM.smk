@@ -7,12 +7,12 @@ from collections import Counter
 wildcard_constraints:
     contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
     seq = config["MPM_sequence"],
-    part = 'mag|phase'
+    part = 'mag|phase|complex'
 
 
 def get_echos(wildcards):
     #get the list of echo files and sort it
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*{wildcards.mpm_params}_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}{wildcards.contrast}*{wildcards.mpm_params}*_echo-*_flip-*_mt-{wildcards.mt}_part-{wildcards.part}_MPM.nii.gz'))
 
 def get_qMT_params(wildcards):
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mtw*{wildcards.mpm_params}_echo-1_flip-*_mt-on_part-mag_MPM.json'))[0]
@@ -59,7 +59,7 @@ def t1wmag_preproc(wildcards):
 def mt0mag_preproc(wildcards):
     #get preprocessed magnitude image depending on if phase is available
     try:
-        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
+        raw_phase = glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}*_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz')[0]
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
     except:
         mag_preproc = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_echos4d.nii"
