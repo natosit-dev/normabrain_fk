@@ -17,9 +17,9 @@ rule all:
 
 include: "rules/B1map.smk"
 include: "rules/bidsify.smk"
-include: "rules/dwi.smk"
-include: "rules/ihmt.smk"
+include: "rules/DWI.smk"
+include: "rules/ihMT.smk"
 include: "rules/MP2RAGE.smk"
-include: "rules/MPM.smk"
 include: "rules/multimodal_registration_segmentation.smk"
+include: "rules/qMT.smk"
 include: "rules/QSM.smk"
