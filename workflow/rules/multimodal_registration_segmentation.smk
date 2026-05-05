@@ -288,9 +288,8 @@ def mp2rage_to_dwi(wildcards):
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for dwi in dwi_acqlist:
                 dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registered_to_dwi" + dwi + "/apply_reg_MP2RAGE_to_dwi" + dwi + ".done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registeredtoDWI" + dwi + "/apply_reg_MP2RAGE_to_DWI" + dwi + ".done")
     return apply_reg_list
-
 
 rule register_ihmt_to_MP2RAGE_ants:
     input:
@@ -979,6 +978,22 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
         done
         touch {output}
         """
+
+
+rule gather_MP2RAGE_to_dwi_bbregister:
+    input:
+        mp2rage_to_dwi
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_DWI.done"
+    log:
+        "logs/{field_strength}/MP2RAGE/MP2RAGE_to_DWI.log"  
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        touch {output}
+        """
+
 
 # #rules for registration with easyreg
 
