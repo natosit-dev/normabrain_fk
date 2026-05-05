@@ -739,7 +739,8 @@ rule register_DWI_to_MP2RAGE_bbregister:
 rule apply_reg_DWI_to_MP2RAGE_bbregister:
     input:
         reg="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_DWIregisteredto{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_DWIregisteredto{mp2rage_params}.lta",
-        target="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz"
+        target="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz",
+        moving="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/"
     output:
         "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_DWIregisteredto{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_apply_reg_DWIto{mp2rage_params}.done"
     params:
