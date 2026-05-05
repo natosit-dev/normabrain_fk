@@ -771,6 +771,7 @@ rule apply_reg_DWI_to_MP2RAGE_bbregister:
         touch {output}
         """
 
+
 rule gather_DWI_to_MP2RAGE_bbregister:
     input:
         dwi_to_mp2rage
