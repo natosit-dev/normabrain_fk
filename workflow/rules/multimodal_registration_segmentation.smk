@@ -270,6 +270,27 @@ def mp2rage_to_mpm(wildcards):
     apply_reg_list = [reg for reg, count in counts.items() if count == 4]
     return apply_reg_list
 
+def mp2rage_to_dwi(wildcards):
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=BIDSLayout(bidspath)
+    apply_reg_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_dwi = layout.get_subject(suffix="dwi")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        for session in sessionlist:
+            mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
+            dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
+            for dwi in dwi_acqlist:
+                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registered_to_dwi" + dwi + "/apply_reg_MP2RAGE_to_dwi" + dwi + ".done")
+    return apply_reg_list
+
 
 rule register_ihmt_to_MP2RAGE_ants:
     input:
@@ -923,6 +944,41 @@ rule dwi_tsv:
         touch {output}
         """
 
+
+rule apply_reg_MP2RAGE_to_dwi_bbregister:
+    input:
+        b0 = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brain.nii.gz",
+        target="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz",
+        reg = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_DWIregisteredto{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_DWIregisteredto{mp2rage_params}.lta"
+    params:
+        mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
+        regto="registeredtoDWI{dwi_params}"
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registeredtoDWI{dwi_params}/apply_reg_MP2RAGE_to_DWI{dwi_params}.done"
+    resources: 
+        mem_mb=500
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    log:
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registered_to_DWI{dwi_params}/apply_reg_MP2RAGE_to_DWI{dwi_params}.done"  
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
+        mkdir -p {params.mp2rage_acqdir}/{params.regto}
+        for map in "${{MP2RAGEmaps[@]}}"; do
+            target="{params.mp2rage_acqdir}/"$map".nii.gz"
+            out="{params.mp2rage_acqdir}/{params.regto}/"$map"_{params.regto}.nii.gz"
+
+            #apply inverse of MPM to MP2RAGE registration
+            mri_vol2vol --mov {input.b0} --targ $target --inv --o $out --reg {input.reg} --no-save-reg
+        done
+        touch {output}
+        """
 
 # #rules for registration with easyreg
 
