@@ -56,6 +56,27 @@ def ihmt_to_mp2rage(wildcards):
                 apply_reg_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_apply_reg_ihmt_to_MP2RAGE" + mp2rage_first_acq + "_ants.done")
     return apply_reg_list
 
+def dwi_to_mp2rage(wildcards):
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=BIDSLayout(bidspath, validate=False)
+    apply_reg_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_dwi = layout.get_subject(suffix="dwi")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        for session in sessionlist:
+            dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
+            mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
+            for dwi in dwi_acqlist:
+                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                apply_reg_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + dwi + "_DWIregisteredto" + mp2rage_first_acq + "/sub-" + subject + "_ses-" + session + "_acq-" + dwi + "_apply_reg_DWIto" + mp2rage_first_acq + ".done" )
+    return apply_reg_list
+
 def ihmt_reg_to_first_acq_mp2rage(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
@@ -747,6 +768,20 @@ rule apply_reg_DWI_to_MP2RAGE_bbregister:
                 mri_vol2vol --mov $moving --targ {input.target} --o $out --reg {input.reg} --no-save-reg
             fi
         done
+        touch {output}
+        """
+
+rule gather_DWI_to_MP2RAGE_bbregister:
+    input:
+        dwi_to_mp2rage
+    output:
+        "data/derivatives/{field_strength}/dwi/DWI_to_MP2RAGE.done"
+    log:
+        "logs/{field_strength}/dwi/DWI_to_MP2RAGE.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
         touch {output}
         """
 
