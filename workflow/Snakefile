@@ -14,7 +14,7 @@ rule all:
         "data/derivatives/3T/MPM/MPM_to_MP2RAGE.done",
         "data/derivatives/3T/freesurfer/dwi_stats.done",
         "data/derivatives/3T/MP2RAGE/MP2RAGE_to_DWI.done",
-        "data/derivatives/3T/MPM/DWI_to_MP2RAGE.done",
+        "data/derivatives/3T/dwi/DWI_to_MP2RAGE.done",
         "data/derivatives/3T/QSM/derivatives/qsmxt/"
 
 
