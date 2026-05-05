@@ -89,6 +89,12 @@ def mpm_reg_to_first_acq_mp2rage(wildcards):
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_registeredtoMP2RAGE{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
 
+def dwi_reg_to_first_acq_mp2rage(wildcards):
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=BIDSLayout(bidspath)
+    first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
+    return expand("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_DWIregisteredto{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_DWIregisteredto{mp2rage_params}.lta", mp2rage_params=first_acq, allow_missing=True)
+
 def ihmt_statslist(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath, validate=False)
@@ -785,6 +791,31 @@ rule gather_DWI_to_MP2RAGE_bbregister:
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
         touch {output}
+        """
+
+
+rule apply_reg_seg_to_dwi_bbregister:
+    input:
+        seg = resliced_seg_first_acq_mp2rage,
+        reg = dwi_reg_to_first_acq_mp2rage,
+        b0 = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brain.nii.gz"
+    output:
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/mri/aparc+aseg_registeredtoDWI.nii.gz"
+    resources: 
+        mem_mb=500
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    log:
+        "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/aparc+aseg_registeredtoDWI.log"
+    shell:
+        """ 
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        #apply inverse reg so that seg is in dwi space, to avoid interpolation of dwi
+        mri_vol2vol --mov {input.b0} --targ {input.seg} --inv --interp nearest --o {output} --reg {input.reg} --no-save-reg
         """
 
 # #rules for registration with easyreg
