@@ -818,6 +818,40 @@ rule apply_reg_seg_to_dwi_bbregister:
         mri_vol2vol --mov {input.b0} --targ {input.seg} --inv --interp nearest --o {output} --reg {input.reg} --no-save-reg
         """
 
+
+rule dwi_stats:
+    input:
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/mri/aparc+aseg_registeredtoDWI.nii.gz",
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/"
+    params:
+        dkiprefix="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/sub-{subject}_ses-{session}_acq-{dwi_params}",
+        statsprefix="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/stats/dki"
+    output:
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/stats/dki_stats.done"
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    log:
+       "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/dki_stats.log" 
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        dkimaps=("ad" "ak" "color_fa" "fa" "kfa" "md" "mk" "mkt" "rd" "rk" "rtk")
+        
+        for map in "${{dkimaps[@]}}"; do
+            mpm="{params.dkiprefix}_"$map".nii.gz"
+            stats="{params.statsprefix}_${{map}}.stats"
+            if [ -f $mpm ]; then
+                mri_segstats --seg {input[0]} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i $mpm --sum $stats --excludeid 0
+            fi
+        done
+
+        touch {output}
+        """
+
 # #rules for registration with easyreg
 
 # rule register_MPM_to_MP2RAGE_easyreg:
