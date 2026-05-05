@@ -116,9 +116,9 @@ rule dki_tensor_dipy:
         img="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer.nii.gz",
         mask="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brainmask.nii"
     params:
-        outprefix="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_dki/sub-{subject}_ses-{session}_acq-{dwi_params}_"
+        outprefix="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/sub-{subject}_ses-{session}_acq-{dwi_params}_"
     output:
-        directory("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_dki/")
+        directory("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/")
     conda:
         "../envs/dipy.yaml"
     resources:
