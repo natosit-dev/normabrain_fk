@@ -138,6 +138,26 @@ def mpm_statslist(wildcards):
     statslist = [stat for stat, count in counts.items() if count == 4]
     return sorted(statslist)
 
+def dwi_statslist(wildcards):
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=BIDSLayout(bidspath)
+    statslist = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_dwi = layout.get_subject(suffix="dwi")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="dwi", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
+            for acq in acqlist:
+                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/dwi_stats.done")
+    return sorted(statslist)
+
 def freesurfer_subjectlist_ihmt(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath, validate=False)
@@ -180,6 +200,28 @@ def freesurfer_subjectlist_mpm(wildcards):
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
     counts = Counter(fs_subjectlist)
     fs_subjectlist = [sub for sub, count in counts.items() if count == 4]
+    fs_subjectarray = " ".join(fs_subjectlist)
+    return fs_subjectarray
+
+def freesurfer_subjectlist_dwi(wildcards):
+    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=BIDSLayout(bidspath)
+    fs_subjectlist = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_dwi = layout.get_subject(suffix="dwi")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
+            for acq in acqlist:
+                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
+                fs_subjectlist = list(set(fs_subjectlist))
     fs_subjectarray = " ".join(fs_subjectlist)
     return fs_subjectarray
 
@@ -827,11 +869,11 @@ rule dwi_stats:
         dkiprefix="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/sub-{subject}_ses-{session}_acq-{dwi_params}",
         statsprefix="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/stats/dki"
     output:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/stats/dki_stats.done"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/stats/dwi_stats.done"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     log:
-       "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/dki_stats.log" 
+       "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/dwi_stats.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -851,6 +893,36 @@ rule dwi_stats:
 
         touch {output}
         """
+
+
+rule dwi_tsv:
+    input:
+        dwi_statslist
+    output:
+        "data/derivatives/{field_strength}/freesurfer/dwi_stats.done"
+    params:
+        subjectlist=freesurfer_subjectlist_dwi,
+        subjects_dir="data/derivatives/{field_strength}/freesurfer/"
+    container:
+        "docker://freesurfer/freesurfer:8.1.0"
+    log:
+      "logs/{field_strength}/freesurfer/dwi_stats_tsv.log"  
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export SUBJECTS_DIR=$HOME/{params.subjects_dir}
+        cp $HOME/.snakemake/scripts/.license $HOME
+        export FS_LICENSE=$HOME/.license
+
+        dkimaps=("ad" "ak" "color_fa" "fa" "kfa" "md" "mk" "mkt" "rd" "rk" "rtk")
+        
+        for map in "${{dkimaps[@]}}"; do
+            asegstats2table --subjects {params.subjectlist} --statsfile dki_${{map}}.stats -t $SUBJECTS_DIR/dki_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+        done
+        touch {output}
+        """
+
 
 # #rules for registration with easyreg
 
