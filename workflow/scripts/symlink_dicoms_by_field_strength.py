@@ -44,7 +44,9 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str,
             
             #copy the contents of the session folder to the new location
             #shutil.copytree(session, new_folder, dirs_exist_ok=True)
-            os.system("rsync -au " + str(session) + "/ " + str(new_folder) + "/")
+            # os.system("rsync -au " + str(session) + "/ " + str(new_folder) + "/")
+            for item in os.listdir(session):
+                os.symlink(os.path.join(session, item), os.path.join(new_folder, item))
 
             # #remove files from new_folder less than 300 KB (either not images or corrupted)
             # for dicom in list(new_folder.rglob('*.dcm')):
@@ -55,8 +57,8 @@ def copy_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: str,
             #     if not os.listdir(dicom.parent):
             #         os.rmdir(dicom.parent)
             #remove dicoms with NoAV in the name
-            for dicom in list(new_folder.rglob('NoAV*.dcm')):
-                os.remove(dicom)
+            for dicom in list(new_folder.rglob('*NoAV*.dcm', recurse_symlinks=True)):
+                os.remove(dicom.parent)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

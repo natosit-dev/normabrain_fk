@@ -24,7 +24,7 @@ checkpoint copy_dicoms_by_field_strength:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        python3 workflow/scripts/copy_dicoms_by_field_strength.py {input} {output} {params.subject_list}
+        python3 workflow/scripts/symlink_dicoms_by_field_strength.py {input} {output} {params.subject_list}
         """
 
 
