@@ -8,5 +8,5 @@ if command -v nvidia-smi; then
     #include nvidia arguments for singularity if GPU is available
     snakemake --config input_dicoms_path="/DATA_CEMEREM/data/users/ttroalen/vida/normadev/" protocol_path="/DATA_CNS/PROJECTS/NORMABRAIN/NORMA_DEV_CPP/" --resources mem_mb=63000 --sdm conda apptainer --cores 20 --singularity-args "--nv -e" --rerun-incomplete
 else
-    snakemake --config input_dicoms_path="/home/rflaherty/test_dicoms" protocol_path="/home/rflaherty/NORMA_DEV_CPP/" --resources mem_mb=9300 --sdm conda apptainer --cores 8 --rerun-incomplete
+    snakemake --config input_dicoms_path="/home/rflaherty/test_dicoms" protocol_path="/home/rflaherty/NORMA_DEV_CPP/" --resources mem_mb=9300 --sdm conda apptainer --cores 7 --rerun-incomplete
 fi
