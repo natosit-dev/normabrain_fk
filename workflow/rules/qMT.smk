@@ -491,11 +491,15 @@ rule DenoiseImage_mpm:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1000
+    threads: 1
     log:
         "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_sos_brain_denoised.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         DenoiseImage \
         --image-dimensionality 3 \
         --noise-model Rician \
@@ -516,11 +520,15 @@ rule N4BiasFieldCorrection_mpm:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1000
+    threads: 1
     log:
         "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_sos_brain_denoised_n4.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
         --verbose 1 \
@@ -544,11 +552,15 @@ rule register_MPM_to_t1w_ants:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1500
+    threads: 4
     log:
         "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_registeredto{seq}t1w{mpm_params}.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         antsRegistration \
         --random-seed 1 \
         --dimensionality 3 \
@@ -572,6 +584,7 @@ rule apply_reg_MPM_to_t1w_ants:
         "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-{part}_sos_registeredto{seq}t1w{mpm_params}_ants.nii.gz"
     resources: 
         mem_mb=500
+    threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
@@ -579,6 +592,8 @@ rule apply_reg_MPM_to_t1w_ants:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         antsApplyTransforms \
         --dimensionality 3 \
@@ -600,6 +615,7 @@ rule mtr:
         mt_on = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{mpm_params}_mt-on_part-mag_sos_registeredto{seq}t1w{mpm_params}_ants.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
+    threads: 1
     output:
         "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_MTRmap.nii.gz"
     conda:
@@ -609,6 +625,9 @@ rule mtr:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         ImageMath 3 {output} MTR {input.mt_off} {input.mt_on}
         """
 
@@ -703,11 +722,15 @@ rule DenoiseImage_T1map:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
         "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_T1map_brain_denoised.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         DenoiseImage \
         --image-dimensionality 3 \
         --noise-model Rician \
@@ -728,11 +751,15 @@ rule N4BiasFieldCorrection_T1map:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
         "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_T1map_brain_denoised_n4.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+        
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
         --verbose 1 \

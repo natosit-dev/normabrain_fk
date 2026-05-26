@@ -306,11 +306,15 @@ rule DenoiseImage_ihmt:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
         "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         DenoiseImage \
         --image-dimensionality 3 \
         --noise-model "Rician" \
@@ -331,11 +335,15 @@ rule N4BiasFieldCorrection_ihmt:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
         "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+        
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
         --shrink-factor 1 \

@@ -255,11 +255,15 @@ rule register_mp2rage_acqs:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1000
+    threads: 4
     log:
         "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/mp2rage_acqs_registration.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         img_array=( {input.img_list} )
         mask_array=( {input.mask_list} )
         acq_array=( {params.acq_array} )
@@ -306,11 +310,15 @@ rule apply_reg_first_mp2rage_acq:
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
+    threads: 1
     log:
         "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{mp2rage_map}_coreg.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         acq_array=( {params.acq_array} )
         first_acq="${{acq_array[0]}}"
         if [ -f {params.sessiondir}/acq-{wildcards.mp2rage_params}/registeredto${{first_acq}}_0GenericAffine.mat ]; then    
@@ -526,11 +534,15 @@ rule DenoiseImage_qT1:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1000
+    threads: 1
     log:
         "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}_brain_denoised.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+
         DenoiseImage \
         --image-dimensionality 3 \
         --noise-model Rician \
@@ -551,11 +563,15 @@ rule N4BiasFieldCorrection_qT1:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1000
+    threads: 1
     log:
         "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/{qT1}_brain_denoised_n4.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+        
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
         --verbose 1 \

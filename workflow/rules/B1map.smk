@@ -73,11 +73,14 @@ rule DenoiseImage_b1anat:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
         "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         DenoiseImage \
         --image-dimensionality 3 \
@@ -99,11 +102,14 @@ rule N4BiasFieldCorrection_b1anat:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         N4BiasFieldCorrection \
         --image-dimensionality 3 \
@@ -128,11 +134,14 @@ rule register_b1anat_to_mp2rage:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=700
+    threads: 4
     log:
         "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_B1registeredtoMP2RAGE.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         antsRegistration \
         --random-seed 1 \
@@ -159,11 +168,14 @@ rule apply_reg_b1_to_mp2rage:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
         "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoMP2RAGE_ants.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         antsApplyTransforms \
         --dimensionality 3 \
@@ -190,11 +202,14 @@ rule register_b1anat_to_MPM_t1w_ants:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1000
+    threads: 4
     log:
        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_B1registeredto{seq}t1w{mpm_params}.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         antsRegistration \
         --random-seed 1 \
@@ -221,11 +236,14 @@ rule apply_reg_b1map_to_MPM_t1w_ants:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_ants.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         antsApplyTransforms \
         --dimensionality 3 \
@@ -267,11 +285,15 @@ rule smooth_B1:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
+    threads: 1
     log:
         "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_smooth.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+        
         SmoothImage 3 {input[0]} 3x1x1 {output}
         """
 

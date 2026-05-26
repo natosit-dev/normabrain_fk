@@ -305,11 +305,14 @@ rule register_ihmt_to_MP2RAGE_ants:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=700
+    threads: 4
     log:
        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_IHMTregisteredtoMP2RAGE{mp2rage_params}.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         antsRegistration \
         --random-seed 1 \
@@ -338,11 +341,14 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
+    threads: 1
     log:
         "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_apply_reg_ihmt_to_MP2RAGE{mp2rage_params}_ants.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
         mkdir -p {params.sessiondir}/registered_to_MP2RAGE_ants
@@ -391,11 +397,14 @@ rule apply_reg_seg_to_ihmt_ants:
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
+    threads: 1
     log:
        "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{ihmt_params}/aparc+aseg_registeredtoIHMT.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         #choose ref based on what maps are available
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd")
@@ -491,6 +500,7 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registered_to_ihmt_ants/apply_reg_MP2RAGE_to_{ihmt_params}_ants.done"
     resources: 
         mem_mb=500
+    threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
@@ -498,6 +508,8 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         #set reference based on what maps are availble
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd")
@@ -557,11 +569,14 @@ rule register_MPM_to_MP2RAGE_ants:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=1500
+    threads: 4
     log:
        "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_registeredtoMP2RAGE{mp2rage_params}.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         antsRegistration \
         --random-seed 1 \
@@ -589,6 +604,7 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
         "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_apply_reg_MPM_to_MP2RAGE{mp2rage_params}_ants.done"
     resources: 
         mem_mb=500
+    threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
@@ -596,6 +612,8 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         mkdir -p {params.sessiondir}/{params.regto}_ants
@@ -640,6 +658,7 @@ rule apply_reg_seg_to_mpm_ants:
         "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}/mri/aparc+aseg_registeredtoMPM.nii.gz"
     resources: 
         mem_mb=500
+    threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
@@ -647,6 +666,8 @@ rule apply_reg_seg_to_mpm_ants:
     shell:
         """ 
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         #apply inverse reg so that seg is in mpm space, to avoid interpolation of mpm
         antsApplyTransforms \
@@ -734,6 +755,7 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/registeredto{seq}{mpm_params}_ants/apply_reg_MP2RAGE_to_{seq}{mpm_params}_ants.done"
     resources: 
         mem_mb=500
+    threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
@@ -741,6 +763,8 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
         mkdir -p {params.mp2rage_acqdir}/{params.regto}_ants
