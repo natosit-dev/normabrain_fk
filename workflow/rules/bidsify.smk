@@ -1,7 +1,7 @@
 #for creating data/rawdata folder structure necessary for the rest of the pipeline
 
 def get_dicoms_folders(wildcards):
-    checkpoint_output = checkpoints.copy_dicoms_by_field_strength.get(**wildcards).output[0]
+    checkpoint_output = checkpoints.symlink_dicoms_by_field_strength.get(**wildcards).output[0]
     return expand(os.path.join(checkpoint_output, "{field_strength}"),
         field_strength=wildcards.field_strength)
 
@@ -10,7 +10,7 @@ def check_bidscoiner_ran(wildcards):
     return checkpoint_output
 
 
-checkpoint copy_dicoms_by_field_strength:
+checkpoint symlink_dicoms_by_field_strength:
     input:
         expand("{input_dicoms_path}", input_dicoms_path=config["input_dicoms_path"])
     params:
@@ -20,7 +20,7 @@ checkpoint copy_dicoms_by_field_strength:
     conda:
         "../envs/bidscoin.yaml"
     log:
-        "logs/copy_dicoms_by_field_strength.log"
+        "logs/symlink_dicoms_by_field_strength.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
