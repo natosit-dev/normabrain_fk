@@ -321,7 +321,7 @@ rule register_ihmt_to_MP2RAGE_ants:
         --convergence [ 1000x500x250x100, 1e-7, 100 ] \
         --shrink-factors 8x4x2x1 \
         --smoothing-sigmas 4x2x1x0vox \
-        --transform Affine[0.1] \
+        --transform Rigid[0.1] \
         --metric MI[ {input.ref}, {input.moving}, 1, 32 ] \
         -o {params.outprefix} \
         -x [ {input.ref_mask}, {input.moving_mask} ]
@@ -585,7 +585,7 @@ rule register_MPM_to_MP2RAGE_ants:
         --convergence [ 1000x500x250x100, 1e-7, 100 ] \
         --shrink-factors 8x4x2x1 \
         --smoothing-sigmas 4x2x1x0vox \
-        --transform Affine[0.1] \
+        --transform Rigid[0.1] \
         --metric MI[ {input.ref}, {input.moving}, 1, 32 ] \
         -o {params.outprefix} \
         -x [ {input.ref_mask}, {input.moving_mask} ]
