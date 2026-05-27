@@ -2,7 +2,7 @@
 
 This repository utilizes git submodules. To clone, use the command ```git clone --recurse-submodules project_url```
 
-Requires: python3, conda, singularity, gcc
+Requires: python3, conda, singularity, gcc, bash
 
 
 Once the repository is cloned, it can be installed with the command ```conda env create -f workflow/envs/snakemake.yaml```. To use the pipeline, first activate the environment with ```conda activate snakemake```.
@@ -11,6 +11,7 @@ If installation from snakemake.yaml leads to conflicts, try running ```conda con
 
 Some freesurfer tools require a freesurfer license. You can obtain a freesurfer license from https://surfer.nmr.mgh.harvard.edu/registration.html. Once you have obtained a license, save it to ```.snakemake/scripts/.license```
 
+ihMT MoCo also requires a license agreement. Please sign the license agreement and download the code at https://crmbm.univ-amu.fr/resources/ihmt-moco/. Once you have obtained the code, save it to ```.snakemake/scripts/ihMT_MoCo.sh```
 
 # Useage
 
