@@ -6,71 +6,145 @@ from pathlib import Path
 from bids import BIDSLayout
 import logging
 
+wildcard_constraints:
+    seq = config["MPM_sequence"]
 
 def get_mt0_phase(wildcards):
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}_echo-1_flip-*_mt-off_part-phase_MPM.nii.gz'))[0]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}*_echo-*_flip-*_mt-off_part-phase_MPM.nii.gz'))[0]
 
 def qsm_nii_list(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    qsm_nii_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
+            for mpm in mpm_acqlist:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["MPM_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["MPM_contrasts"]:
+                    mpm = mpm.replace(contrast, "")
+                qsm_nii_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["MPM_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.nii.gz")
+    qsm_nii_list = list(set(qsm_nii_list))
+    return qsm_nii_list
 
 def qsm_json_list(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    qsm_json_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
+            for mpm in mpm_acqlist:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["MPM_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["MPM_contrasts"]:
+                    mpm = mpm.replace(contrast, "")
+                qsm_json_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["MPM_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.json")
+    qsm_json_list = list(set(qsm_json_list))
+    return qsm_json_list
 
 def qsm_mask_list(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    return expand("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_mask.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    qsm_mask_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
+            for mpm in mpm_acqlist:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["MPM_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["MPM_contrasts"]:
+                    mpm = mpm.replace(contrast, "")
+                qsm_mask_list.append("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["MPM_sequence"] + "mt0" + mpm + "_mask.nii.gz")
+    qsm_mask_list = list(set(qsm_mask_list))
+    return qsm_mask_list
 
 def get_inv1(wildcards):
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*_inv-1_MP2RAGE.nii.gz'))[0]
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.mp2rage_params}*_inv-1_MP2RAGE.nii.gz'))[0]
 
 def t1w_nii_list(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    t1w_nii_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            mp2rage_first_acq = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
+            t1w_nii_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_T1w.nii.gz")
+    t1w_nii_list = list(set(t1w_nii_list))
+    return t1w_nii_list
 
 def t1w_json_list(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
-    qsm_subjects=layout.get_subjects(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    qsm_sessions=layout.get_sessions(acquisition="(?i)vibeMTmt0", part="phase", regex_search=True)
-    return expand("data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.json", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    t1w_json_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        for session in sessionlist:
+            mp2rage_first_acq = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
+            t1w_json_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_T1w.json")
+    t1w_json_list = list(set(t1w_json_list))
+    return t1w_json_list
 
 
 rule copy_raw_qsm:
     input:
         get_mt0_phase
     output:
-        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.json"
+        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_echo-1_part-phase_MEGRE.json"
     log:
-        "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_raw_qsm.log"
+        "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_raw_qsm_acq-{seq}mt0{mpm_params}.log"
     run: #python code, not shell
-        logging.basicConfig(level=logging.INFO, filename=log, filemode="w")
+        logging.basicConfig(level=logging.INFO, filename=log[0], filemode="w")
 
         qsm_folder = Path(str(output)).parent
         qsm_folder.mkdir(exist_ok=True, parents=True)
 
-        phase_list = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-phase_MPM.nii.gz'))
+        phase_list = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}*_echo-*_flip-*_mt-off_part-phase_MPM.nii.gz'))
         num_phase = len(phase_list)
-        mag_list_clipped = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-vibeMTmt0*_mt-off_part-mag_MPM.nii.gz'))[num_phase:]
+        mag_list_clipped = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.mpm_params}*_echo-*_flip-*_mt-off_part-mag_MPM.nii.gz'))[num_phase:]
         raw_list = phase_list + mag_list_clipped
         i=0
         for img in phase_list:
             i += 1
             raw = Path(img)
-            qsm_name = wildcards.subject + "_" + wildcards.session + "_echo-" + str(i) + "_part-phase_MEGRE.nii.gz"
+            qsm_name = "sub-" + wildcards.subject + "_ses-" + wildcards.session + "_acq-" + wildcards.seq + "mt0" + wildcards.mpm_params + "_echo-" + str(i) + "_part-phase_MEGRE.nii.gz"
             qsm = qsm_folder / qsm_name
             # shutil.copy(raw, qsm)
             raw_json = raw.with_suffix("").with_suffix(".json")
@@ -80,7 +154,7 @@ rule copy_raw_qsm:
         for img in mag_list_clipped:
             i += 1
             raw = Path(img)
-            qsm_name = wildcards.subject + "_" + wildcards.session + "_echo-" + str(i) + "_part-mag_MEGRE.nii.gz"
+            qsm_name = "sub-" + wildcards.subject + "_ses-" + wildcards.session + "_acq-" + wildcards.seq + "mt0" + wildcards.mpm_params + "_echo-" + str(i) + "_part-mag_MEGRE.nii.gz"
             qsm = qsm_folder / qsm_name
             # shutil.copy(raw, qsm)
             raw_json = raw.with_suffix("").with_suffix(".json")
@@ -90,28 +164,28 @@ rule copy_raw_qsm:
 
 rule copy_denoised_qsm:
     input:
-        phase = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-phase_echos4d_riciancorr.nii",
-        mag = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_echos4d_denoise.nii"
+        phase = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-phase_echos4d_riciancorr.nii",
+        mag = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_echos4d_riciancorr.nii"
     params:
         anatdir="data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/",
-        subject="sub-{subject}_ses-{session}"
+        subject="sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}"
     output:
-        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_echo-1_part-phase_MEGRE.nii.gz"
+        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_echo-1_part-phase_MEGRE.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     log:
-        "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_denoised_qsm.log"
+        "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_denoised_qsm_acq-{seq}mt0{mpm_params}.log"
     shell:
         """
         vols="$(mrinfo -size {input.phase} | awk '{{print $4}}')"
         for vol in $(seq 1 $vols); do
             i="$((${{vol}}-1))"
-            mrconvert {input.phase} -coord 3 $i -axes 0,1,2 {params.anatdir}/tmp_phase.nii.gz
+            mrconvert {input.phase} -coord 3 $i -axes 0,1,2 {params.anatdir}/tmp_phase.nii.gz -force
             mv {params.anatdir}/tmp_phase.nii.gz {params.anatdir}/{params.subject}_echo-${{vol}}_part-phase_MEGRE.nii.gz
-            mrconvert {input.mag} -coord 3 $i -axes 0,1,2 {params.anatdir}/tmp_mag.nii.gz
-            mv {params.anatdir}/tmp_mag.nii.gz {params.anatdir}/anat/{params.subject}_echo-${{vol}}_part-mag_MEGRE.nii.gz
+            mrconvert {input.mag} -coord 3 $i -axes 0,1,2 {params.anatdir}/tmp_mag.nii.gz -force
+            mv {params.anatdir}/tmp_mag.nii.gz {params.anatdir}/{params.subject}_echo-${{vol}}_part-mag_MEGRE.nii.gz
         done
         """
 
@@ -120,26 +194,26 @@ rule copy_raw_t1w_json_qsm:
     input:
         inv1 = get_inv1
     output:
-        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.json"
+        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w.json"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     log:
-        "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_raw_t1w_json_qsm.log"
+        "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_raw_t1w_json_qsm_acq-{mp2rage_params}.log"
     run:
-        logging.basicConfig(level=logging.INFO, filename=log, filemode="w")
+        logging.basicConfig(level=logging.INFO, filename=log[0], filemode="w")
         inv1_json = Path(input.inv1).with_suffix("").with_suffix(".json")
         shutil.copy(inv1_json, str(output))
 
         
 rule copy_uniden_qsm:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/t1wUNI_B1Corrected_DEN_dicomUnit.nii.gz"
     output:
-        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_T1w.nii.gz"
+        "data/derivatives/{field_strength}/QSM/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     log:
-       "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_uniden_qsm.log" 
+       "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_uniden_qsm_acq-{mp2rage_params}.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -150,17 +224,17 @@ rule copy_uniden_qsm:
 
 rule copy_mask_qsm:
     input:
-        mask = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTt1w_mt-off_part-mag_sos_brain_spine_mask.nii.gz",
-        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_sos.nii.gz",
-        reg = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_registeredtovibeMTt1w_Composite.h5"
+        mask = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos_brain_spine_mask.nii.gz",
+        ref = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_sos.nii.gz",
+        reg = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mt-off_part-mag_registeredto{seq}t1w{mpm_params}_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_mask.nii.gz"
+        "data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_acq-{seq}mt0{mpm_params}_mask.nii.gz"
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:
         "../envs/qMT.yaml"
     log:
-       "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_mask_qsm.log" 
+       "logs/{field_strength}/QSM/sub-{subject}/ses-{session}/copy_mask_qsm_acq-{seq}mt0{mpm_params}.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -194,6 +268,8 @@ rule qsmxt:
         t1w_nii_list,
         t1w_json_list
         # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_dseg.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
+    params:
+        qsm_folder="data/derivatives/{field_strength}/QSM/"
     output:
         directory("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/")    
     threads: 8
@@ -205,10 +281,10 @@ rule qsmxt:
         "logs/{field_strength}/QSM/qsmxt.log"
     shell:
         """
-        qsmxt data/derivatives/{wildcards.field_strength}/QSM --use_existing_masks --do_qsm --do_swi --do_t2starmap --do_r2starmap --qsm_algorithm 'nextqsm' --auto_yes
+        qsmxt {params.qsm_folder} --use_existing_masks --do_qsm --do_swi --do_t2starmap --do_r2starmap --qsm_algorithm 'nextqsm' --auto_yes
 
         #move qsmxt folder so it has a consistent name for snakemake
-        mkdir -p data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt
-        mv data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*/* data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt/
-        rm -rf data/derivatives/{wildcards.field_strength}/QSM/derivatives/qsmxt-*
+        mkdir -p {output}
+        mv {params.qsm_folder}/derivatives/qsmxt-*/* {output}
+        rm -rf {params.qsm_folder}/derivatives/qsmxt-*/*
         """

@@ -168,7 +168,7 @@ rule calculate_phase_from_complex:
     input:
         "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-complex_echos4d_riciancorr.nii"
     output:
-        "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-phase_echos4d_riciancorr.nii.gz"
+        temp("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{contrast}{mpm_params}_mt-{mt}_part-phase_echos4d_riciancorr.nii")
     resources: #limit memory by input size
         mem_mb=lambda wc, input: 2.5 * input.size_mb
     conda:

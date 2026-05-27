@@ -221,7 +221,7 @@ def freesurfer_subjectlist_dwi(wildcards):
             for acq in acqlist:
                 acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
-                fs_subjectlist = list(set(fs_subjectlist))
+    fs_subjectlist = list(set(fs_subjectlist))
     fs_subjectarray = " ".join(fs_subjectlist)
     return fs_subjectarray
 
@@ -265,7 +265,7 @@ def mp2rage_to_mpm(wildcards):
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "")
                 for contrast in config["MPM_contrasts"]:
                     mpm = mpm.replace(contrast, "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registered_to_" + mpm + "_ants/apply_reg_MP2RAGE_to_" + mpm + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/registeredto" + mpm + "_ants/apply_reg_MP2RAGE_to_" + mpm + "_ants.done")
     counts = Counter(apply_reg_list)
     apply_reg_list = [reg for reg, count in counts.items() if count == 4]
     return apply_reg_list
