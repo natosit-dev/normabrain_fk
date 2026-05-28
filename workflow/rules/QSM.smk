@@ -281,7 +281,14 @@ rule qsmxt:
         "logs/{field_strength}/QSM/qsmxt.log"
     shell:
         """
-        qsmxt {params.qsm_folder} --use_existing_masks --do_qsm --do_swi --do_t2starmap --do_r2starmap --qsm_algorithm 'nextqsm' --auto_yes
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+        fi
+
+        qsmxt {params.qsm_folder} --use_existing_masks --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --gpu --auto_yes || \
+        qsmxt {params.qsm_folder} --use_existing_masks --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --auto_yes
 
         #move qsmxt folder so it has a consistent name for snakemake
         mkdir -p {output}
