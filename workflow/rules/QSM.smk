@@ -287,8 +287,8 @@ rule qsmxt:
             export CUDA_VISIBLE_DEVICES=0
         fi
 
-        qsmxt {params.qsm_folder} --use_existing_masks --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --gpu --auto_yes || \
-        qsmxt {params.qsm_folder} --use_existing_masks --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --auto_yes
+        qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --gpu --auto_yes || \
+        qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --auto_yes
 
         #move qsmxt folder so it has a consistent name for snakemake
         mkdir -p {output}
