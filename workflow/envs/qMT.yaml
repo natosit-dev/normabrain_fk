@@ -2,6 +2,7 @@ name: qMT
 channels:
   - conda-forge
   - MRtrix3
+  - https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/public/
 dependencies:
   - python=3.13.5
   - numpy=2.3.2
@@ -14,5 +15,7 @@ dependencies:
   - gxx_linux-64
   - ants=2.6.2
   - mrtrix3=3.0.7
+  - fsl-bet2=2111.9
+  - fsl-avwutils=2209.6
   - pip:
     - -e ../../workflow/scripts/luca_qMT
