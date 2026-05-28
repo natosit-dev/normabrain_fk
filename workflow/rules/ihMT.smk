@@ -57,25 +57,38 @@ rule moco_ihmt:
     input:
         "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs.nii"
     output:
-        preproc="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii"
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii"
     params:
-        outprefix="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_",
-        outtmp="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}"
-    container:
-        "docker://hugodary/ihmt_proc:latest"
+        ihmt_contrast_type = get_ihmt_contrast_type
+    conda:
+        "../envs/qMT.yaml"
+    resources: 
+        mem_mb=1000
+    threads: 4
     log:
         "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.log"
     shell: 
-        # -m 1 means use ihMT-MoCo for motion correction (from Soustelle preprint)
-        # -c is a comma separated list of desired output images, we chose to only output the motion corrected image without computing any maps
+        # The current version of MoCo only allows for 3 contrasts. For 4 contrast case, keep all MTd together.
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        /opt/ihMT_proc/process_ihMT.sh -m 1 -c ihMT -i {input} -o {params.outprefix}
-        
-        #rename preproc image for clarity
-        mv {params.outprefix}ihMT.nii {output.preproc}
-        rm -rf {params.outtmp}
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+        export ANTSPATH="$(which antsRegistration)"
+        export ANTSPATH="$(dirname "$ANTSPATH")"
+        export FSLDIR="$(dirname "$ANTSPATH")"
+        export FSLOUTPUTTYPE='NIFTI_GZ'
+
+        if [ "{params.ihmt_contrast_type}" == "Frequency Alternated and Cosine Modulated" ]
+        then
+            imgsize="$(mrinfo -size {input} | awk '{{print $4}}')"
+            idx_mts=( $(seq 2 3 $(($imgsize))) )
+            idx_mtd_freqalt=( $(seq 3 3 $(($imgsize))) )
+            idx_mtd_cosmod=( $(seq 4 3 $(($imgsize))) )
+            idx_mtd=( "${{idx_mtd_freqalt[@]}}" "${{idx_mtd_cosmod[@]}}" )
+            .snakemake/scripts/ihMT_MoCo.sh -i {input} -o {output} -R 1 -S $idx_mts -D $idx_mtd
+        else
+            .snakemake/scripts/ihMT_MoCo.sh -i {input} -o {output}
+        fi
         """
 
 
