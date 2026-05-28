@@ -390,9 +390,7 @@ rule recon_all:
         mkdir -p $HOME/{params.subjects_dir}
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
 
-        #copy and set freesurfer license
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         #set up GPU
         if command -v nvidia-smi; then
@@ -448,8 +446,7 @@ rule mp2rage_stats:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
         
         mri_segstats --seg {input.seg} --ctab $FREESURFER_HOME/FreeSurferColorLUT.txt --i {input.mp2rage_map} --sum {output} --excludeid 0
         """  
@@ -473,8 +470,7 @@ rule mp2rage_tsv:
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         asegstats2table --subjects {params.subjects_list} --statsfile {params.statsfile} -t {output} --meas mean --common-segs --no-segno 0
         """

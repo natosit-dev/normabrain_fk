@@ -443,8 +443,7 @@ rule ihmt_stats:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
         
@@ -477,8 +476,8 @@ rule ihmt_tsv:
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
         
@@ -698,8 +697,7 @@ rule mpm_stats:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         
@@ -732,8 +730,8 @@ rule mpm_tsv:
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         
@@ -820,8 +818,8 @@ rule register_DWI_to_MP2RAGE_bbregister:
     shell:
         """
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
         
         bbregister --s {params.subject} --mov {input.meanb0} --reg {output} --dti --init-fsl --9
         mv {params.outbase}.log {log}
@@ -848,9 +846,8 @@ rule apply_reg_DWI_to_MP2RAGE_bbregister:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         dkimaps=("ad" "ak" "color_fa" "fa" "kfa" "md" "mk" "mkt" "rd" "rk" "rtk")
 
@@ -897,8 +894,7 @@ rule apply_reg_seg_to_dwi_bbregister:
         """ 
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         #apply inverse reg so that seg is in dwi space, to avoid interpolation of dwi
         mri_vol2vol --mov {input.b0} --targ {input.seg} --inv --interp nearest --o {output} --reg {input.reg} --no-save-reg
@@ -922,8 +918,7 @@ rule dwi_stats:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         dkimaps=("ad" "ak" "color_fa" "fa" "kfa" "md" "mk" "mkt" "rd" "rk" "rtk")
         
@@ -956,8 +951,8 @@ rule dwi_tsv:
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         dkimaps=("ad" "ak" "color_fa" "fa" "kfa" "md" "mk" "mkt" "rd" "rk" "rtk")
         
@@ -987,9 +982,8 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-
-        cp $HOME/.snakemake/scripts/.license $HOME
-        export FS_LICENSE=$HOME/.license
+        
+        export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         MP2RAGEmaps=("qR1_pksUnit" "qT1_msUnit" "t1wUNI_B1Corrected_DEN_dicomUnit" "t1wUNI_B1Corrected_dicomUnit" "t1wUNI_DEN_dicomUnit")
         mkdir -p {params.mp2rage_acqdir}/{params.regto}
