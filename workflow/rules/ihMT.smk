@@ -269,8 +269,8 @@ rule DenoiseImage_ihmt:
         mask_image="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised.nii.gz")
-    conda:
-        "../envs/qMT.yaml"
+    container:
+        "docker://rflaherty3636/ihmt_moco:v0.0.1"
     resources: 
         mem_mb=500
     threads: 1
@@ -298,8 +298,8 @@ rule N4BiasFieldCorrection_ihmt:
         mask_image="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.nii.gz")
-    conda:
-        "../envs/qMT.yaml"
+    container:
+        "docker://rflaherty3636/ihmt_moco:v0.0.1"
     resources: 
         mem_mb=500
     threads: 1
