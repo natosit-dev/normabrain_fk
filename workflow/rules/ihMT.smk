@@ -60,8 +60,8 @@ rule moco_ihmt:
         "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii"
     params:
         ihmt_contrast_type = get_ihmt_contrast_type
-    conda:
-        "../envs/qMT.yaml"
+    container:
+        "docker://rflaherty3636/ihmt_moco:v0.0.1"
     resources: 
         mem_mb=1000
     threads: 4
@@ -77,6 +77,11 @@ rule moco_ihmt:
         export ANTSPATH="$(dirname "$ANTSPATH")"
         export FSLDIR="$(dirname "$ANTSPATH")"
         export FSLOUTPUTTYPE='NIFTI_GZ'
+
+        if [ ! -f .snakemake/scripts/ihMT_MoCo.sh ]
+        then
+            echo "ihMT_MoCo.sh not found! Please sign the license agreement and download the script at https://crmbm.univ-amu.fr/ihmt-moco/, then save the script to .snakemake/scripts/ihMT_MoCo.sh"
+        fi
 
         if [ "{params.ihmt_contrast_type}" == "Frequency Alternated and Cosine Modulated" ]
         then
