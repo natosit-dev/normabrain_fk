@@ -102,7 +102,7 @@ rule split_contrast_ihmt:
         "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco.nii"
     output:
         mt0="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/split/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mt0.nii",
-        split_dir=temp(directory("data/derivatives/{field_strength}/ihmt/acq-{ihmt_params}/sub-{subject}/ses-{session}/preproc/split"))
+        split_dir=temp(directory("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/split"))
     params:
         ihmt_contrast_type = get_ihmt_contrast_type,
         mts="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/split/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs_moco_mts.nii",
