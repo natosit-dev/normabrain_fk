@@ -1,7 +1,4 @@
-configfile: 
-    "config/snakemake_config.yaml"
-conda:
-    "workflow/envs/snakemake.yaml"
+configfile: "config/snakemake_config.yaml"
 
 
 rule all:
