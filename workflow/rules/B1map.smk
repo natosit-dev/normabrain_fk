@@ -411,7 +411,7 @@ rule smooth_B1_ihmt:
 rule normalize_B1_to_target_flip_ihmt:
     input:
         img="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_smooth.nii.gz",
-        mask="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
+        mask="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
     params:
         target_flip = get_target_flip
     output:
