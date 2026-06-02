@@ -330,16 +330,16 @@ rule register_b1anat_to_ihmt:
         ref_mask = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_B1registeredtoIHMT_0GenericAffine.mat"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_b1_reg_to_{ihmt_params}_0GenericAffine.mat"
     params:
-        outprefix="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_B1registeredtoIHMT_"
+        outprefix="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_b1_reg_to_{ihmt_params}_"
     conda:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=700
     threads: 4
     log:
-        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_B1registeredtoIHMT.log"
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_b1_reg_to_{ihmt_params}.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -364,16 +364,16 @@ rule apply_reg_b1_to_ihmt:
     input:
         moving = get_last_b1map_run,
         ref = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.nii.gz",
-        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_B1registeredtoIHMT_0GenericAffine.mat"
+        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_b1_reg_to_{ihmt_params}_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoIHMT_ants.nii.gz"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_ants.nii.gz"
     conda:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
     threads: 1
     log:
-        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_registeredtoIHMT_ants.log"
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_ants.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -411,7 +411,7 @@ rule copy_b1map_json_after_regtoMP2RAGE:
         shutil.copy(b1map_raw_json, b1map_registeredtoMP2RAGE_json)
 
 
-rule smooth_B1:
+rule smooth_B1_mpm:
     input:
        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_ants.nii.gz" 
     output:
@@ -433,13 +433,13 @@ rule smooth_B1:
         """
 
 
-rule normalize_B1_to_target_flip: #not masking because we are interested in the spinal cord
+rule normalize_B1_to_target_flip_mpm: #not masking because we are interested in the spinal cord
     input:
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_smooth.nii.gz"
-    output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_smooth_norm.nii.gz"
     params:
         target_flip = get_target_flip
+    output:
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-famp_registeredto{seq}t1w{mpm_params}_smooth_norm.nii.gz"
     conda:
         "../envs/fslmaths.yaml"
     resources: 
@@ -451,4 +451,47 @@ rule normalize_B1_to_target_flip: #not masking because we are interested in the 
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         export FSLOUTPUTTYPE='NIFTI_GZ'
         fslmaths {input} -div {params.target_flip} {output} -odt float 
+        """
+
+rule smooth_B1_ihmt:
+    input:
+       "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_ants.nii.gz" 
+    output:
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_smooth.nii.gz")
+    conda:
+        "../envs/qMT.yaml"
+    resources: 
+        mem_mb=500
+    threads: 1
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_smooth.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
+        
+        SmoothImage 3 {input[0]} 3x1x1 {output}
+        """
+
+
+rule normalize_B1_to_target_flip_ihmt:
+    input:
+        img="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_smooth.nii.gz",
+        mask="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
+    params:
+        target_flip = get_target_flip
+    output:
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_smooth_norm.nii.gz"
+    conda:
+        "../envs/fslmaths.yaml"
+    resources: 
+        mem_mb=500
+    log:
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{ihmt_params}_smooth_norm.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        export FSLOUTPUTTYPE='NIFTI_GZ'
+        fslmaths {input.img} -mul {input.mask} -div {params.target_flip} {output} -odt float 
         """
