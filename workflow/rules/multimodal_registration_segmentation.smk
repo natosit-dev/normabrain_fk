@@ -31,7 +31,7 @@ def mpm_to_mp2rage(wildcards):
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "")
                 for contrast in config["MPM_contrasts"]:
                     mpm = mpm.replace(contrast, "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_apply_reg_MPM_to_MP2RAGE" + mp2rage_first_acq + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_apply_reg_MPM_to_" + mp2rage_first_acq + "_ants.done")
     counts = Counter(apply_reg_list)
     apply_reg_list = [reg for reg, count in counts.items() if count == 4]
     return apply_reg_list
@@ -608,7 +608,7 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
     conda:
         "../envs/qMT.yaml"
     log:
-      "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_apply_reg_MPM_to_MP2RAGE{mp2rage_params}_ants.log"  
+      "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_apply_reg_MPM_to_{mp2rage_params}_ants.log"  
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
