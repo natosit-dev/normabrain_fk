@@ -165,8 +165,8 @@ rule create_uncorr_qT1:
 
 rule json_for_mp2proc:
     input:
-        b1map_nifti = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{mp2rage_params}_ants.nii.gz",
-        b1map_json = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{mp2rage_params}_ants.json",
+        b1map_nifti = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg2{mp2rage_params}_ants.nii.gz",
+        b1map_json = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg2{mp2rage_params}_ants.json",
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1
@@ -199,7 +199,7 @@ rule run_mp2proc:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_mp2proc.json"
     output:
-        b1="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{mp2rage_params}_smooth_norm.nii.gz",
+        b1="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg2{mp2rage_params}_smooth_norm.nii.gz",
         t1map="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr.nii.gz",
         r1map="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_R1map_b1corr.nii.gz",
         uniden_corr="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN_b1corr.nii.gz",
@@ -305,7 +305,7 @@ rule register_mp2rage_acqs:
                 --smoothing-sigmas 4x2x1x0vox \
                 --transform Rigid[0.1] \
                 --metric MI[ ${{first_img}}, ${{img}}, 1, 32 ] \
-                -o {params.regdir}/acq-$acq/reg_to_${{first_acq}}_ \
+                -o {params.regdir}/acq-$acq/reg2${{first_acq}}_ \
                 -x [ ${{first_mask}}, ${{mask}} ] 
             done
         fi
@@ -337,14 +337,14 @@ rule apply_reg_first_mp2rage_acq:
 
         acq_array=( {params.acq_array} )
         first_acq="${{acq_array[0]}}"
-        if [ -f {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg_to_${{first_acq}}_0GenericAffine.mat ]; then    
+        if [ -f {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg2${{first_acq}}_0GenericAffine.mat ]; then    
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
             --verbose 1 \
             -i {input.moving} \
             --reference-image {params.sessiondir}/acq-$first_acq/{wildcards.mp2rage_map}.nii.gz \
-            --transform {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg_to_${{first_acq}}_0GenericAffine.mat \
+            --transform {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg2${{first_acq}}_0GenericAffine.mat \
             -o {output}
         else
             cp {input.moving} {output}
