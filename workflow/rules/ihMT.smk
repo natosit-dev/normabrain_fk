@@ -15,6 +15,12 @@ def get_ihmt_contrast_type(wildcards):
         ihmt_contrast_type = meta["ContrastType"]
     return ihmt_contrast_type
 
+def get_ihmt_protocol_name(wildcards):
+    json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0]
+    with open(json_path, "r") as f:
+        meta = json.load(f)
+        ihmt_protocol_name = meta["ProtocolName"]
+    return ihmt_protocol_name
         
 rule denoise_ihmt:
     input:
