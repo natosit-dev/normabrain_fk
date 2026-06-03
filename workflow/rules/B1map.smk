@@ -122,9 +122,9 @@ rule N4BiasFieldCorrection_b1anat:
 
 rule register_b1anat_to_mp2rage:
     input:
-        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_denoised_n4.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map_brain_denoised_n4.nii.gz",
         moving = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_denoised_n4.nii.gz",
-        ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1_brain_mask.nii.gz",
+        ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-anat_brain_mask.nii.gz"
     output:
         "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_b1_reg_to_MP2RAGE_0GenericAffine.mat"
@@ -160,17 +160,17 @@ rule register_b1anat_to_mp2rage:
 rule apply_reg_b1_to_mp2rage:
     input:
         moving = get_last_b1map_run,
-        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/uncorr_qT1.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map.nii.gz",
         reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_b1_reg_to_MP2RAGE_0GenericAffine.mat"
     output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_MP2RAGE_ants.nii.gz"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{mp2rage_params}_ants.nii.gz"
     conda:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=500
     threads: 1
     log:
-        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_MP2RAGE_ants.log"
+        "logs/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{mp2rage_params}_ants.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -329,9 +329,9 @@ rule apply_reg_b1_to_ihmt:
 rule copy_b1map_json_after_regtoMP2RAGE:
     input:
         b1map_raw = get_last_b1map_run,
-        b1map_reg_to_MP2RAGE = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_MP2RAGE_ants.nii.gz"
+        b1map_reg_to_MP2RAGE = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{mp2rage_params}_ants.nii.gz"
     output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_MP2RAGE_ants.json"
+        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-famp_reg_to_{mp2rage_params}_ants.json"
     resources: 
         mem_mb=300
     log:
