@@ -49,7 +49,7 @@ def get_mp2rage_brainmask_list(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
-    return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map_brain_mask.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
+    return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
 
 def get_mp2rage_acq_array(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
@@ -116,13 +116,13 @@ rule json_for_uncorr_qT1:
         echo_spacing = mp2rage_echo_spacing,
         uncorr_qT1 = True
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map.json"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map.json"
     threads:
         8
     resources: 
         mem_mb=200
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map.log"
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -141,11 +141,11 @@ rule json_for_uncorr_qT1:
 
 rule create_uncorr_qT1:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map.json"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map.json"
     params:
         qT1="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map.nii.gz"
     threads:
         8
     container:
@@ -153,7 +153,7 @@ rule create_uncorr_qT1:
     resources:
         mem_mb=3000
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map.log"
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -519,7 +519,7 @@ rule synthstrip_qT1:
 rule apply_brainmask_qT1:
     input:
         input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}.nii.gz",
-        brain_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map_brain_mask.nii.gz"
+        brain_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain.nii.gz")
     conda:
@@ -539,7 +539,7 @@ rule apply_brainmask_qT1:
 rule DenoiseImage_qT1:
     input:
         input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map_brain_mask.nii.gz"
+        mask_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised.nii.gz")
     conda:
@@ -568,7 +568,7 @@ rule DenoiseImage_qT1:
 rule N4BiasFieldCorrection_qT1:
     input:
         input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised.nii.gz",
-        mask_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_uncorr_T1map_brain_mask.nii.gz"
+        mask_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised_n4.nii.gz")
     conda:
