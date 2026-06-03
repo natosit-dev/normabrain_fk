@@ -288,7 +288,7 @@ def mp2rage_to_dwi(wildcards):
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for dwi in dwi_acqlist:
                 dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2" + dwi + "/apply_reg_MP2RAGE_to_" + dwi + ".done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2DWI" + dwi + "/apply_reg_MP2RAGE_to_DWI" + dwi + ".done")
     return apply_reg_list
 
 rule register_ihmt_to_MP2RAGE_ants:
@@ -971,9 +971,9 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
         reg = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}.lta"
     params:
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
-        regto="reg2{dwi_params}"
+        regto="reg2DWI{dwi_params}"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2{dwi_params}/apply_reg_MP2RAGE_to_DWI{dwi_params}.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2DWI{dwi_params}/apply_reg_MP2RAGE_to_DWI{dwi_params}.done"
     resources: 
         mem_mb=500
     container:
