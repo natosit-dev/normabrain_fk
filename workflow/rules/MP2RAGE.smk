@@ -289,7 +289,7 @@ rule register_mp2rage_acqs:
                 --smoothing-sigmas 4x2x1x0vox \
                 --transform Rigid[0.1] \
                 --metric MI[ ${{first_img}}, ${{img}}, 1, 32 ] \
-                -o {params.regdir}/acq-$acq/registeredto${{first_acq}}_ \
+                -o {params.regdir}/acq-$acq/reg_to_${{first_acq}}_ \
                 -x [ ${{first_mask}}, ${{mask}} ] 
             done
         fi
@@ -321,14 +321,14 @@ rule apply_reg_first_mp2rage_acq:
 
         acq_array=( {params.acq_array} )
         first_acq="${{acq_array[0]}}"
-        if [ -f {params.sessiondir}/acq-{wildcards.mp2rage_params}/registeredto${{first_acq}}_0GenericAffine.mat ]; then    
+        if [ -f {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg_to_${{first_acq}}_0GenericAffine.mat ]; then    
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
             --verbose 1 \
             -i {input.moving} \
             --reference-image {params.sessiondir}/acq-$first_acq/{wildcards.mp2rage_map}.nii.gz \
-            --transform {params.sessiondir}/acq-{wildcards.mp2rage_params}/registeredto${{first_acq}}_0GenericAffine.mat \
+            --transform {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg_to_${{first_acq}}_0GenericAffine.mat \
             -o {output}
         else
             cp {input.moving} {output}
