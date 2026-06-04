@@ -53,7 +53,7 @@ def ihmt_to_mp2rage(wildcards):
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             for ihmt in ihmt_acqlist:
-                apply_reg_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_apply_reg_ihmt_to_" + mp2rage_first_acq + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_applyreg2" + mp2rage_first_acq + "_ants.done")
     return apply_reg_list
 
 def dwi_to_mp2rage(wildcards):
@@ -81,7 +81,7 @@ def ihmt_reg2first_acq_mp2rage(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
-    return expand("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
+    return expand("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
 
 def mpm_reg2first_acq_mp2rage(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
@@ -298,16 +298,16 @@ rule register_ihmt_to_MP2RAGE_ants:
         ref_mask="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz",
         moving_mask="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
     params:
-        outprefix="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_"
+        outprefix="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_"
     output:
-        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat"
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat"
     conda:
         "../envs/qMT.yaml"
     resources: 
         mem_mb=700
     threads: 4
     log:
-       "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}.log" 
+       "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -331,19 +331,19 @@ rule register_ihmt_to_MP2RAGE_ants:
 rule apply_reg_ihmt_to_MP2RAGE_ants:
     input:
         ref="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN.nii.gz",
-        reg="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat"
+        reg="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat"
     params:
         acqdir="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/",
         subject="sub-{subject}_ses-{session}_acq-{ihmt_params}"
     output:
-        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_apply_reg_ihmt_to_{mp2rage_params}_ants.done"
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_applyreg2{mp2rage_params}_ants.done"
     resources: 
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
     threads: 1
     log:
-        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_apply_reg_ihmt_to_{mp2rage_params}_ants.log"
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_applyreg2{mp2rage_params}_ants.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -351,10 +351,10 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
-        mkdir -p "{params.acqdir}/reg2{wildcards.mp2rage_params}_ants"
+        mkdir -p "{params.acqdir}/reg2MP2RAGE"
         for map in "${{MTmaps[@]}}"; do
             moving="{params.acqdir}/{params.subject}_"$map".nii.gz"
-            out="{params.acqdir}/reg2{wildcards.mp2rage_params}_ants/{params.subject}_"$map"_reg2{wildcards.mp2rage_params}.nii.gz"
+            out="{params.acqdir}/reg2MP2RAGE/{params.subject}_"$map"_reg2{wildcards.mp2rage_params}.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms \
                 --dimensionality 3 \
@@ -491,7 +491,7 @@ rule ihmt_tsv:
 rule apply_reg_MP2RAGE_to_ihmt_ants:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr.nii.gz",
-        reg="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat"
+        reg="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat"
     params:
         ihmt_prefix="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}",
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
