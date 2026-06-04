@@ -319,7 +319,8 @@ rule apply_reg_first_mp2rage_acq:
         moving="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}.nii.gz"
     params:
         acq_array=get_mp2rage_acq_array,
-        sessiondir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/"
+        sessiondir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/",
+        filename="sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_coreg.nii.gz"
     resources: 
@@ -343,7 +344,7 @@ rule apply_reg_first_mp2rage_acq:
             --interpolation Linear \
             --verbose 1 \
             -i {input.moving} \
-            --reference-image {params.sessiondir}/acq-$first_acq/{wildcards.mp2rage_map}.nii.gz \
+            --reference-image {params.sessiondir}/acq-$first_acq/{params.filename}.nii.gz \
             --transform {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg2${{first_acq}}_0GenericAffine.mat \
             -o {output}
         else
