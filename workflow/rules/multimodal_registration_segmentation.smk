@@ -972,7 +972,8 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
         reg = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}.lta"
     params:
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
-        regto="reg2DWI{dwi_params}"
+        regto="reg2DWI{dwi_params}",
+        mp2rage_subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2DWI{dwi_params}/apply_reg_MP2RAGE_to_DWI{dwi_params}.done"
     resources: 
@@ -990,8 +991,8 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
         MP2RAGEmaps=("R1map_b1corr" "qT1_msUnit" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
         mkdir -p {params.mp2rage_acqdir}/{params.regto}
         for map in "${{MP2RAGEmaps[@]}}"; do
-            target="{params.mp2rage_acqdir}/"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/{params.regto}/"$map"_{params.regto}.nii.gz"
+            target="{params.mp2rage_acqdir}/{params.mp2rage_subject}_"$map".nii.gz"
+            out="{params.mp2rage_acqdir}/{params.regto}/{params.mp2rage_subject}_"$map"_{params.regto}.nii.gz"
 
             #apply inverse of MPM to MP2RAGE registration
             mri_vol2vol --mov {input.b0} --targ $target --inv --o $out --reg {input.reg} --no-save-reg
