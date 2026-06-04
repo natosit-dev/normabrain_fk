@@ -523,7 +523,7 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
         mkdir -p {params.mp2rage_acqdir}/reg2{wildcards.ihmt_params}_ants
         for map in "${{MP2RAGEmaps[@]}}"; do
-            moving="{params.mp2rage_prefix}_"$map".nii.gz"
+            moving="{params.mp2rage_acqdir}/{params.mp2rage_subject}_"$map".nii.gz"
             out="{params.mp2rage_acqdir}/reg2{wildcards.ihmt_params}_ants/{params.mp2rage_subject}_"$map"_reg2{wildcards.ihmt_params}.nii.gz"
 
             #apply inverse of ihmt to MP2RAGE transform to each MP2RAGE map
