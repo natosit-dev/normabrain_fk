@@ -557,7 +557,7 @@ rule gather_MP2RAGE_to_ihmt_ants:
 
 rule register_MPM_to_MP2RAGE_ants:
     input:
-        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_denoised_n4.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr_brain_denoised_n4.nii.gz",
         moving = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_T1map_brain_denoised_n4.nii.gz",
         ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{mpm_params}_mt-off_part-mag_sos_brain_mask.nii.gz"
@@ -749,7 +749,8 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
         reg="data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_reg2{mp2rage_params}_0GenericAffine.mat"
     params:
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
-        regto="reg2{seq}{mpm_params}"
+        regto="reg2{seq}{mpm_params}",
+        subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2{seq}{mpm_params}_ants/apply_reg_MP2RAGE_to_{seq}{mpm_params}_ants.done"
     resources: 
@@ -768,8 +769,8 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
         mkdir -p {params.mp2rage_acqdir}/{params.regto}_ants
         for map in "${{MP2RAGEmaps[@]}}"; do
-            moving="{params.mp2rage_acqdir}/"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/{params.regto}_ants/"$map"_{params.regto}.nii.gz"
+            moving="{params.mp2rage_acqdir}/{params.subject}_"$map".nii.gz"
+            out="{params.mp2rage_acqdir}/{params.regto}_ants/{params.subject}_"$map"_{params.regto}.nii.gz"
 
             #apply inverse of MPM to MP2RAGE registration
             antsApplyTransforms \
