@@ -242,7 +242,7 @@ def mp2rage_to_ihmt(wildcards):
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for ihmt in ihmt_acqlist:
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2ihmt/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2" + ihmt + ".done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2IHMT/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2" + ihmt + ".done")
     return apply_reg_list
 
 def mp2rage_to_mpm(wildcards):
@@ -497,14 +497,14 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
         mp2rage_subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2ihmt/applyreg2{ihmt_params}.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2IHMT/applyreg2{ihmt_params}.done"
     resources: 
         mem_mb=500
     threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
-      "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2ihmt/applyreg2{ihmt_params}.log"  
+      "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2IHMT/applyreg2{ihmt_params}.log"  
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -521,10 +521,10 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         done
 
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
-        mkdir -p {params.mp2rage_acqdir}/reg2ihmt
+        mkdir -p {params.mp2rage_acqdir}/reg2IHMT
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="{params.mp2rage_acqdir}/{params.mp2rage_subject}_"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/reg2ihmt/{params.mp2rage_subject}_"$map"_reg2{wildcards.ihmt_params}.nii.gz"
+            out="{params.mp2rage_acqdir}/reg2IHMT/{params.mp2rage_subject}_"$map"_reg2{wildcards.ihmt_params}.nii.gz"
 
             #apply inverse of ihmt to MP2RAGE transform to each MP2RAGE map
             antsApplyTransforms \
