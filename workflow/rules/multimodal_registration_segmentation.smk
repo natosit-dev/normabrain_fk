@@ -988,7 +988,7 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
         
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        MP2RAGEmaps=("R1map_b1corr" "qT1_msUnit" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
+        MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
         mkdir -p {params.mp2rage_acqdir}/{params.regto}
         for map in "${{MP2RAGEmaps[@]}}"; do
             target="{params.mp2rage_acqdir}/{params.mp2rage_subject}_"$map".nii.gz"
