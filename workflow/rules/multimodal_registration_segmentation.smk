@@ -31,7 +31,7 @@ def mpm_to_mp2rage(wildcards):
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
                 for contrast in config["MPM_contrasts"]:
                     mpm = mpm.replace(contrast, "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_applyreg2" + mp2rage_first_acq + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_applyreg2" + mp2rage_first_acq + ".done")
     counts = Counter(apply_reg_list)
     apply_reg_list = [reg for reg, count in counts.items() if count > 3]
     return apply_reg_list
@@ -53,7 +53,7 @@ def ihmt_to_mp2rage(wildcards):
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             for ihmt in ihmt_acqlist:
-                apply_reg_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_applyreg2" + mp2rage_first_acq + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_applyreg2" + mp2rage_first_acq + ".done")
     return apply_reg_list
 
 def dwi_to_mp2rage(wildcards):
@@ -242,7 +242,7 @@ def mp2rage_to_ihmt(wildcards):
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for ihmt in ihmt_acqlist:
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2ihmt_ants/sub-" subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2" + ihmt + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2ihmt/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2" + ihmt + ".done")
     return apply_reg_list
 
 def mp2rage_to_mpm(wildcards):
@@ -265,7 +265,7 @@ def mp2rage_to_mpm(wildcards):
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
                 for contrast in config["MPM_contrasts"]:
                     mpm = mpm.replace(contrast, "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2MPM_ants/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "applyreg2" + mpm + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2MPM/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "applyreg2" + mpm + ".done")
     counts = Counter(apply_reg_list)
     apply_reg_list = [reg for reg, count in counts.items() if count > 3]
     return apply_reg_list
@@ -336,14 +336,14 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
         acqdir="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/",
         subject="sub-{subject}_ses-{session}_acq-{ihmt_params}"
     output:
-        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_applyreg2{mp2rage_params}_ants.done"
+        "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_applyreg2{mp2rage_params}.done"
     resources: 
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
     threads: 1
     log:
-        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_applyreg2{mp2rage_params}_ants.log"
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_applyreg2{mp2rage_params}.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -497,14 +497,14 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
         mp2rage_subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2ihmt_ants/apply_reg_MP2RAGE_to_{ihmt_params}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2ihmt/apply_reg_MP2RAGE_to_{ihmt_params}.done"
     resources: 
         mem_mb=500
     threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
-      "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}_ants.log"  
+      "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}.log"  
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -521,10 +521,10 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         done
 
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
-        mkdir -p {params.mp2rage_acqdir}/reg2ihmt_ants
+        mkdir -p {params.mp2rage_acqdir}/reg2ihmt
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="{params.mp2rage_acqdir}/{params.mp2rage_subject}_"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/reg2ihmt_ants/{params.mp2rage_subject}_"$map"_reg2{wildcards.ihmt_params}.nii.gz"
+            out="{params.mp2rage_acqdir}/reg2ihmt/{params.mp2rage_subject}_"$map"_reg2{wildcards.ihmt_params}.nii.gz"
 
             #apply inverse of ihmt to MP2RAGE transform to each MP2RAGE map
             antsApplyTransforms \
@@ -601,14 +601,14 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
         regto="reg2{mp2rage_params}",
         mpmprefix="sub-{subject}_ses-{session}_acq-{seq}{mpm_params}"
     output:
-        "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_apply_reg_MPM_to_{mp2rage_params}_ants.done"
+        "data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_apply_reg_MPM_to_{mp2rage_params}.done"
     resources: 
         mem_mb=500
     threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
-      "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_apply_reg_MPM_to_{mp2rage_params}_ants.log"  
+      "logs/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_apply_reg_MPM_to_{mp2rage_params}.log"  
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -616,10 +616,10 @@ rule apply_reg_MPM_to_MP2RAGE_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         MPMmaps=("MPFmap" "MTRmap" "R1map" "T1map")
-        mkdir -p {params.sessiondir}/{params.regto}_ants
+        mkdir -p {params.sessiondir}/{params.regto}
         for map in "${{MPMmaps[@]}}"; do
             moving="{params.sessiondir}/{params.mpmprefix}_"$map".nii.gz"
-            out="{params.sessiondir}/{params.regto}_ants/{params.mpmprefix}_"$map"_{params.regto}.nii.gz"
+            out="{params.sessiondir}/{params.regto}/{params.mpmprefix}_"$map"_{params.regto}.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms \
                 --dimensionality 3 \
@@ -752,14 +752,14 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
         regto="reg2{seq}{mpm_params}",
         subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2{seq}{mpm_params}_ants/apply_reg_MP2RAGE_to_{seq}{mpm_params}_ants.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2{seq}{mpm_params}/apply_reg_MP2RAGE_to_{seq}{mpm_params}.done"
     resources: 
         mem_mb=500
     threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2{seq}{mpm_params}_ants/apply_reg_MP2RAGE_to_{seq}{mpm_params}_ants.done"  
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2{seq}{mpm_params}/apply_reg_MP2RAGE_to_{seq}{mpm_params}.done"  
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -767,10 +767,10 @@ rule apply_reg_MP2RAGE_to_MPM_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
-        mkdir -p {params.mp2rage_acqdir}/{params.regto}_ants
+        mkdir -p {params.mp2rage_acqdir}/{params.regto}
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="{params.mp2rage_acqdir}/{params.subject}_"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/{params.regto}_ants/{params.subject}_"$map"_{params.regto}.nii.gz"
+            out="{params.mp2rage_acqdir}/{params.regto}/{params.subject}_"$map"_{params.regto}.nii.gz"
 
             #apply inverse of MPM to MP2RAGE registration
             antsApplyTransforms \
@@ -803,20 +803,20 @@ rule gather_MP2RAGE_to_MPM_ants:
 
 rule register_DWI_to_MP2RAGE_bbregister:
     input:
-        meanb0="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brain.nii.gz",
+        meanb0="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_designer_meanb0_brain.nii.gz",
         orig_mgz="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz"
     output:
-        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}.lta"
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_reg2{mp2rage_params}.lta"
     params:
         subjects_dir="data/derivatives/{field_strength}/freesurfer/",
         subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}",
-        outbase="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}"
+        outbase="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_reg2{mp2rage_params}"
     resources:
         mem_mb=1500
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     log:
-        "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}.log"
+        "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_reg2{mp2rage_params}.log"
     shell:
         """
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
@@ -830,21 +830,21 @@ rule register_DWI_to_MP2RAGE_bbregister:
 
 rule apply_reg_DWI_to_MP2RAGE_bbregister:
     input:
-        reg="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}.lta",
+        reg="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_reg2{mp2rage_params}.lta",
         target="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz",
-        moving="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/"
+        moving="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/dki/"
     output:
-        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_apply_reg_DWIto{mp2rage_params}.done"
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_applyreg2{mp2rage_params}.done"
     params:
-        sessiondir="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/",
+        acqdir="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/",
         regto="reg2{mp2rage_params}",
-        dwiprefix="sub-{subject}_ses-{session}_acq-{dwi_params}"
+        dwiprefix="sub-{subject}_ses-{session}_acq-DWI{dwi_params}"
     resources:
         mem_mb=1500
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     log:
-       "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_apply_reg_DWIto{mp2rage_params}.log" 
+       "logs/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_applyreg2{mp2rage_params}.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -854,8 +854,8 @@ rule apply_reg_DWI_to_MP2RAGE_bbregister:
         dkimaps=("ad" "ak" "color_fa" "fa" "kfa" "md" "mk" "mkt" "rd" "rk" "rtk")
 
         for map in "${{dkimaps[@]}}"; do
-            moving="{params.sessiondir}/{params.dwiprefix}_dki/{params.dwiprefix}_"$map".nii.gz"
-            out="{params.sessiondir}/{params.dwiprefix}_{params.regto}/dki/{params.dwiprefix}_{params.regto}_"$map".nii.gz"
+            moving="{params.acqdir}/dki/{params.dwiprefix}_"$map".nii.gz"
+            out="{params.acqdir}/reg2MP2RAGE/dki/{params.dwiprefix}_{params.regto}_"$map".nii.gz"
             if [ -f $moving ]; then
                 mri_vol2vol --mov $moving --targ {input.target} --o $out --reg {input.reg} --no-save-reg
             fi
@@ -883,15 +883,15 @@ rule apply_reg_seg_to_dwi_bbregister:
     input:
         seg = resliced_seg_first_acq_mp2rage,
         reg = dwi_reg2first_acq_mp2rage,
-        b0 = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brain.nii.gz"
+        b0 = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_designer_meanb0_brain.nii.gz"
     output:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/mri/aparc+aseg_reg2DWI.nii.gz"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-DWI{dwi_params}/mri/aparc+aseg_reg2DWI.nii.gz"
     resources: 
         mem_mb=500
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     log:
-        "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/aparc+aseg_reg2DWI.log"
+        "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-DWI{dwi_params}/aparc+aseg_reg2DWI.log"
     shell:
         """ 
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -905,17 +905,17 @@ rule apply_reg_seg_to_dwi_bbregister:
 
 rule dwi_stats:
     input:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/mri/aparc+aseg_reg2DWI.nii.gz",
-        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-DWI{dwi_params}/mri/aparc+aseg_reg2DWI.nii.gz",
+        "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/dki/"
     params:
-        dkiprefix="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dki/sub-{subject}_ses-{session}_acq-{dwi_params}",
-        statsprefix="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/stats/dki"
+        dkiprefix="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/dki/sub-{subject}_ses-{session}_acq-DWI{dwi_params}",
+        statsprefix="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-DWI{dwi_params}/stats/dki"
     output:
-        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/stats/dwi_stats.done"
+        "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-DWI{dwi_params}/stats/dwi_stats.done"
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     log:
-       "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{dwi_params}/dwi_stats.log" 
+       "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-DWI{dwi_params}/dwi_stats.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -967,21 +967,21 @@ rule dwi_tsv:
 
 rule apply_reg_MP2RAGE_to_dwi_bbregister:
     input:
-        b0 = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_dwi_designer_meanb0_brain.nii.gz",
+        b0 = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_designer_meanb0_brain.nii.gz",
         target="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/orig.mgz",
-        reg = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}.lta"
+        reg = "data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_reg2{mp2rage_params}.lta"
     params:
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
         regto="reg2DWI{dwi_params}",
         mp2rage_subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2DWI{dwi_params}/apply_reg_MP2RAGE_to_DWI{dwi_params}.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2DWI/sub-{subject}_ses-{session}_acq-{mp2rage_params}_applyreg2DWI{dwi_params}.done"
     resources: 
         mem_mb=500
     container:
         "docker://freesurfer/freesurfer:8.1.0"
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2DWI{dwi_params}/apply_reg_MP2RAGE_to_DWI{dwi_params}.done"  
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2DWI/sub-{subject}_ses-{session}_acq-{mp2rage_params}_applyreg2DWI{dwi_params}.log"  
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
