@@ -497,14 +497,14 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
         mp2rage_subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2ihmt/apply_reg_MP2RAGE_to_{ihmt_params}.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2ihmt/applyreg2{ihmt_params}.done"
     resources: 
         mem_mb=500
     threads: 1
     conda:
         "../envs/qMT.yaml"
     log:
-      "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/apply_reg_MP2RAGE_to_{ihmt_params}.log"  
+      "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2ihmt/applyreg2{ihmt_params}.log"  
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
