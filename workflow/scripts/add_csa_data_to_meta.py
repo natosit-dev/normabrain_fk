@@ -68,19 +68,34 @@ def add_csa_data_to_meta(bidspath: str):
                 elif ContrastType == 3:
                     jsondata['ContrastType'] = "BandPass (no single)"
                 #add relevant fields from csa header to json sidecar
-                # jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[24]'])
-                # jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[25]'])
-                # jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[26]'])
-                # jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[27]'])
-                # jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[28]'])
-                # jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[29]'])
-                # jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[5]'])
-                # jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[7]'])
-                # jsondata['PulseSpoiler_usmTperm'] = float(csa_data['sWipMemBlock.alFree[40]'])
-                # jsondata['DummyScanTime_us'] = float(csa_data['sWipMemBlock.alFree[13]'])
-                # jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[42]'])
-                # jsondata['PartialFourier_percent'] = float(csa_data['sWipMemBlock.alFree[9]'])
-                # jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[1]'])
+                if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v3MC":
+                    jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[24]'])
+                    jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[25]'])
+                    jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[26]'])
+                    jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[27]'])
+                    jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[28]'])
+                    jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[29]'])
+                    jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[5]'])
+                    jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[7]'])
+                    jsondata['PulseSpoiler_usmTperm'] = float(csa_data['sWipMemBlock.alFree[40]'])
+                    jsondata['DummyScanTime_us'] = float(csa_data['sWipMemBlock.alFree[13]'])
+                    jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[42]'])
+                    jsondata['PartialFourier_percent'] = float(csa_data['sWipMemBlock.alFree[9]'])
+                    jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[1]'])
+                elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4":
+                    jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[20]'])
+                    jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[21]'])
+                    jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[22]'])
+                    jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[23]'])
+                    jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[25]'])
+                    jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[26]'])
+                    jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[27]'])
+                    jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[28]'])
+                    jsondata['PulseSpoiler_usmTperm'] = float(csa_data['sWipMemBlock.alFree[12]'])
+                    jsondata['DummyScanTime_us'] = float(csa_data['sWipMemBlock.alFree[31]']) * float(csa_data['alTR[0]'])
+                    jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[14]'])
+                    jsondata['PartialFourier_percent'] = float(csa_data['sWipMemBlock.alFree[9]'])
+                    jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[24]']) / 100
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
