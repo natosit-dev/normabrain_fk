@@ -8,8 +8,8 @@ import re
 from collections import Counter
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["MPM_contrasts"]]),
-    seq = config["MPM_sequence"],
+    contrast = '|'.join([re.escape(x) for x in config["qMT_contrasts"]]),
+    seq = config["qMT_sequence"],
     part = 'mag|phase'
 
 
