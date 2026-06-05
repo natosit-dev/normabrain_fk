@@ -264,7 +264,8 @@ rule register_mp2rage_acqs:
         mask_list=get_mp2rage_brainmask_list
     params:
         acq_array=get_mp2rage_acq_array,
-        regdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/"
+        regdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/",
+        subject="sub-{subject}_ses-{session}"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/mp2rage_acqs_registration.done"
     conda:
@@ -296,6 +297,8 @@ rule register_mp2rage_acqs:
                 acq="${{acq_array[$i]}}"
                 mask="${{mask_array[$i]}}"
                 
+                mkdir -p {params.regdir}/acq-$acq/coreg/
+
                 antsRegistration \
                 --random-seed 1 \
                 --dimensionality 3 \
@@ -305,7 +308,7 @@ rule register_mp2rage_acqs:
                 --smoothing-sigmas 4x2x1x0vox \
                 --transform Rigid[0.1] \
                 --metric MI[ ${{first_img}}, ${{img}}, 1, 32 ] \
-                -o {params.regdir}/acq-$acq/reg2${{first_acq}}_ \
+                -o {params.regdir}/acq-$acq/coreg/{params.subject}_acq-${{acq}}_reg2${{first_acq}}_ \
                 -x [ ${{first_mask}}, ${{mask}} ] 
             done
         fi
@@ -320,16 +323,16 @@ rule apply_reg_first_mp2rage_acq:
     params:
         acq_array=get_mp2rage_acq_array,
         sessiondir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/",
-        filename="sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}"
+        subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_coreg.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/coreg/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_coreg.nii.gz"
     resources: 
         mem_mb=500
     conda:
         "../envs/qMT.yaml"
     threads: 1
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_coreg.log"
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/coreg/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_coreg.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -338,14 +341,14 @@ rule apply_reg_first_mp2rage_acq:
 
         acq_array=( {params.acq_array} )
         first_acq="${{acq_array[0]}}"
-        if [ -f {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg2${{first_acq}}_0GenericAffine.mat ]; then    
+        if [ -f {params.sessiondir}/acq-{wildcards.mp2rage_params}/coreg/{params.subject}_reg2${{first_acq}}_0GenericAffine.mat ]; then    
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
             --verbose 1 \
             -i {input.moving} \
-            --reference-image {params.sessiondir}/acq-$first_acq/{params.filename}.nii.gz \
-            --transform {params.sessiondir}/acq-{wildcards.mp2rage_params}/reg2${{first_acq}}_0GenericAffine.mat \
+            --reference-image {params.sessiondir}/acq-$first_acq/sub-{wildcards.subject}_ses-{wildcards.session}_acq-${{first_acq}}_{wildcards.mp2rage_map}.nii.gz \
+            --transform {params.sessiondir}/acq-{wildcards.mp2rage_params}/coreg/{params.subject}_reg2${{first_acq}}_0GenericAffine.mat \
             -o {output}
         else
             cp {input.moving} {output}
@@ -355,7 +358,7 @@ rule apply_reg_first_mp2rage_acq:
 
 rule crop_mp2rage_256:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_coreg.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}.nii.gz"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_cropped.nii.gz"
     resources:
@@ -433,7 +436,7 @@ rule recon_all:
 rule reslice_segmentation:
     input:
         seg=seg_first_acq_mp2rage,
-        ref="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN_b1corr_coreg.nii.gz"
+        ref="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/coreg/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN_b1corr_coreg.nii.gz"
     output:
         "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz"
     resources:
@@ -452,7 +455,7 @@ rule reslice_segmentation:
 rule mp2rage_stats:
     input:
         seg="data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz",
-        mp2rage_map="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_coreg.nii.gz"
+        mp2rage_map="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/coreg/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_coreg.nii.gz"
     output:
         "data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/stats/MP2RAGE_{mp2rage_map}.stats"
     container:
