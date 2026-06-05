@@ -497,7 +497,7 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         mp2rage_acqdir="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/",
         mp2rage_subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2IHMT/applyreg2{ihmt_params}.done"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/reg2IHMT/sub-{subject}_ses-{session}_acq-{mp2rage_params}_applyreg2{ihmt_params}.done"
     resources: 
         mem_mb=500
     threads: 1
