@@ -31,7 +31,7 @@ def mpm_to_mp2rage(wildcards):
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
                 for contrast in config["MPM_contrasts"]:
                     mpm = mpm.replace(contrast, "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_apply_reg_MPM_to_" + mp2rage_first_acq + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MPM/sub-" + subject + "/ses-" + session + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_applyreg2" + mp2rage_first_acq + "_ants.done")
     counts = Counter(apply_reg_list)
     apply_reg_list = [reg for reg, count in counts.items() if count > 3]
     return apply_reg_list
@@ -74,7 +74,7 @@ def dwi_to_mp2rage(wildcards):
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             for dwi in dwi_acqlist:
                 dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
-                apply_reg_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + dwi + "_reg2" + mp2rage_first_acq + "/sub-" + subject + "_ses-" + session + "_acq-" + dwi + "_apply_reg_DWIto" + mp2rage_first_acq + ".done" )
+                apply_reg_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/acq-DWI" + dwi + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-DWI" + dwi + "_applyreg2" + mp2rage_first_acq + ".done" )
     return apply_reg_list
 
 def ihmt_reg2first_acq_mp2rage(wildcards):
@@ -87,13 +87,13 @@ def mpm_reg2first_acq_mp2rage(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
-    return expand("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_reg2{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
+    return expand("data/derivatives/{field_strength}/MPM/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{seq}{mpm_params}_reg2{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
 
 def dwi_reg2first_acq_mp2rage(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=BIDSLayout(bidspath)
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
-    return expand("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}/sub-{subject}_ses-{session}_acq-{dwi_params}_reg2{mp2rage_params}.lta", mp2rage_params=first_acq, allow_missing=True)
+    return expand("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_reg2{mp2rage_params}.lta", mp2rage_params=first_acq, allow_missing=True)
 
 def ihmt_statslist(wildcards):
     bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
@@ -155,7 +155,7 @@ def dwi_statslist(wildcards):
             acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for acq in acqlist:
                 acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
-                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/dwi_stats.done")
+                statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-DWI" + acq + "/stats/dwi_stats.done")
     return sorted(statslist)
 
 def freesurfer_subjectlist_ihmt(wildcards):
@@ -220,7 +220,7 @@ def freesurfer_subjectlist_dwi(wildcards):
             acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for acq in acqlist:
                 acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
-                fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
+                fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-DWI" + acq)
     fs_subjectlist = list(set(fs_subjectlist))
     fs_subjectarray = " ".join(fs_subjectlist)
     return fs_subjectarray
@@ -242,7 +242,7 @@ def mp2rage_to_ihmt(wildcards):
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for ihmt in ihmt_acqlist:
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2ihmt_ants/apply_reg_MP2RAGE_to_" + ihmt + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2ihmt_ants/sub-" subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2" + ihmt + "_ants.done")
     return apply_reg_list
 
 def mp2rage_to_mpm(wildcards):
@@ -265,7 +265,7 @@ def mp2rage_to_mpm(wildcards):
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
                 for contrast in config["MPM_contrasts"]:
                     mpm = mpm.replace(contrast, "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2" + mpm + "_ants/apply_reg_MP2RAGE_to_" + mpm + "_ants.done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2MPM_ants/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "applyreg2" + mpm + "_ants.done")
     counts = Counter(apply_reg_list)
     apply_reg_list = [reg for reg, count in counts.items() if count > 3]
     return apply_reg_list
@@ -288,7 +288,7 @@ def mp2rage_to_dwi(wildcards):
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for dwi in dwi_acqlist:
                 dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
-                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2DWI" + dwi + "/apply_reg_MP2RAGE_to_DWI" + dwi + ".done")
+                apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2DWI/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2DWI" + dwi + ".done")
     return apply_reg_list
 
 rule register_ihmt_to_MP2RAGE_ants:
@@ -521,10 +521,10 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         done
 
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
-        mkdir -p {params.mp2rage_acqdir}/reg2{wildcards.ihmt_params}_ants
+        mkdir -p {params.mp2rage_acqdir}/reg2ihmt_ants
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="{params.mp2rage_acqdir}/{params.mp2rage_subject}_"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/reg2{wildcards.ihmt_params}_ants/{params.mp2rage_subject}_"$map"_reg2{wildcards.ihmt_params}.nii.gz"
+            out="{params.mp2rage_acqdir}/reg2ihmt_ants/{params.mp2rage_subject}_"$map"_reg2{wildcards.ihmt_params}.nii.gz"
 
             #apply inverse of ihmt to MP2RAGE transform to each MP2RAGE map
             antsApplyTransforms \
