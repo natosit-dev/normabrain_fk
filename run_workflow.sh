@@ -1,3 +1,9 @@
+#/bin/bash
+
+while [ $# -gt 0]; do #while number of arguments to the script is greater than 0
+    
+
+
 snakemake --config input_dicoms_path="/DATA_CEMEREM/data/users/ttroalen/vida/normadev/" protocol_path="/DATA_CNS/PROJECTS/NORMABRAIN/NORMA_DEV_CPP/" --dag | sed -n "/digraph/,/}/p" | dot -Tsvg > pipeline_dag.svg
 
 #generate BIDS folder first

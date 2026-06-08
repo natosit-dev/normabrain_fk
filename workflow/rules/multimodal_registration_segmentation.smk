@@ -562,7 +562,7 @@ rule register_qMT_to_MP2RAGE_ants:
         ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{qMT_params}_mt-off_part-mag_sos_brain_mask.nii.gz"
     params:
-        outprefix="data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_reg2{mp2rage_params}_"
+        outprefix="data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_reg2{mp2rage_params}_"
     output:
         "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_reg2{mp2rage_params}_0GenericAffine.mat"
     conda:
@@ -571,7 +571,7 @@ rule register_qMT_to_MP2RAGE_ants:
         mem_mb=1500
     threads: 4
     log:
-       "logs/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_reg2{mp2rage_params}.log" 
+       "logs/{field_strength}/qMT/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_reg2{mp2rage_params}.log" 
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
