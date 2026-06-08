@@ -28,7 +28,7 @@ rule nyu_designer:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         rm -rf {params.preproc}
-        designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads}
+        designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}
         cp {params.preproc}/sigma.nii {output.noisemap}
         rm -rf {params.preproc}
         """

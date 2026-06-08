@@ -30,6 +30,7 @@ rule denoise_ihmt:
         noisemap="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_noisemap.nii"
     resources:
         mem_mb=1000
+    threads: 4
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     log:
@@ -37,7 +38,7 @@ rule denoise_ihmt:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        dwidenoise {input.raw_img} {output.out} -noise {output.noisemap}
+        dwidenoise {input.raw_img} {output.out} -noise {output.noisemap} -nthreads {threads}
         """
 
 
@@ -48,6 +49,7 @@ rule degibbs_ihmt:
         temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise_degibbs.nii")
     resources:
         mem_mb=1000
+    threads: 4
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     log:
@@ -55,7 +57,7 @@ rule degibbs_ihmt:
     shell: #use the Bautista extension of the Kellner protocol because data is 3D not 2D
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        mrdegibbs -mode 3d {input} {output}
+        mrdegibbs -mode 3d {input} {output} -nthreads {threads}
         """
 
 
@@ -83,6 +85,7 @@ rule moco_ihmt:
         export ANTSPATH="$(dirname "$ANTSPATH")"
         export FSLDIR="$(dirname "$ANTSPATH")"
         export FSLOUTPUTTYPE='NIFTI_GZ'
+        export FSLPARALLEL={threads}
 
         if [ ! -f .snakemake/scripts/ihMT_MoCo.sh ]
         then
