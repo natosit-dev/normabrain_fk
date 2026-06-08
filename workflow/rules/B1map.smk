@@ -331,7 +331,7 @@ rule copy_b1map_json_after_regtoMP2RAGE:
         b1map_raw = get_last_b1map_run,
         b1map_reg2MP2RAGE = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-famp_reg2{mp2rage_params}_ants.nii.gz"
     output:
-        "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-famp_reg2{mp2rage_params}_ants.json"
+        temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-famp_reg2{mp2rage_params}_ants.json")
     resources: 
         mem_mb=300
     log:
