@@ -478,7 +478,7 @@ rule mp2rage_stats:
 rule mp2rage_tsv:
     input:
         mp2rage_statslist,
-        "data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log"
+        check_add_csa_data_to_meta_done
     params:
         subjects_dir="data/derivatives/{field_strength}/freesurfer/",
         subjects_list=freesurfer_subjectlist_mp2rage,
