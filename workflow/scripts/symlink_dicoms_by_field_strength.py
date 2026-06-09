@@ -12,8 +12,9 @@ def symlink_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: s
     subjects = []
     if subject_list != "*" :
         for sub in subject_list:
-            subject_folder = lsdirs(rawfolder, sub)[0]
-            subjects.append(subject_folder)
+            subject_folder = Path(rawfolder / sub)
+            if subject_folder.is_dir():
+                subjects.append(subject_folder)
     else:
         subjects = lsdirs(rawfolder, '*')
 
