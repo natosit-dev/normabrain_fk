@@ -291,6 +291,7 @@ rule qsmxt:
         qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --auto_yes
 
         #move qsmxt folder so it has a consistent name for snakemake
+        rm -rf {output}
         mkdir -p {output}
         mv {params.qsm_folder}/derivatives/qsmxt-*/* {output}
         rm -rf {params.qsm_folder}/derivatives/qsmxt-*/*
