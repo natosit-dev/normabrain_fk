@@ -11,12 +11,8 @@ wildcard_constraints:
     seq = config["qMT_sequence"],
     part = 'mag|phase'
 
-# def "data/rawdata/bidsify.done"(wildcards):
-#     checkpoint_output = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-#     return checkpoint_output
 
 def qMT_to_mp2rage(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -41,8 +37,7 @@ def qMT_to_mp2rage(wildcards):
     return apply_reg_list
 
 def ihmt_to_mp2rage(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath, validate=False)
+    layout=layout_dict[wildcards.field_strength]
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -61,8 +56,7 @@ def ihmt_to_mp2rage(wildcards):
     return apply_reg_list
 
 def dwi_to_mp2rage(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath, validate=False)
+    layout=layout_dict[wildcards.field_strength]
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -82,26 +76,22 @@ def dwi_to_mp2rage(wildcards):
     return apply_reg_list
 
 def ihmt_reg2first_acq_mp2rage(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{ihmt_params}_reg2{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
 
 def qMT_reg2first_acq_mp2rage(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_reg2{mp2rage_params}_0GenericAffine.mat", mp2rage_params=first_acq, allow_missing=True)
 
 def dwi_reg2first_acq_mp2rage(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_reg2{mp2rage_params}.lta", mp2rage_params=first_acq, allow_missing=True)
 
 def ihmt_statslist(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath, validate=False)
+    layout=layout_dict[wildcards.field_strength]
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -119,7 +109,6 @@ def ihmt_statslist(wildcards):
     return sorted(statslist)
 
 def qMT_statslist(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -143,7 +132,6 @@ def qMT_statslist(wildcards):
     return sorted(statslist)
 
 def dwi_statslist(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -163,8 +151,7 @@ def dwi_statslist(wildcards):
     return sorted(statslist)
 
 def freesurfer_subjectlist_ihmt(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath, validate=False)
+    layout=layout_dict[wildcards.field_strength]
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -183,7 +170,6 @@ def freesurfer_subjectlist_ihmt(wildcards):
     return fs_subjectarray
 
 def freesurfer_subjectlist_qMT(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -208,7 +194,6 @@ def freesurfer_subjectlist_qMT(wildcards):
     return fs_subjectarray
 
 def freesurfer_subjectlist_dwi(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -230,8 +215,7 @@ def freesurfer_subjectlist_dwi(wildcards):
     return fs_subjectarray
 
 def mp2rage_to_ihmt(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath, validate=False)
+    layout=layout_dict[wildcards.field_strength]
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -250,7 +234,6 @@ def mp2rage_to_ihmt(wildcards):
     return apply_reg_list
 
 def mp2rage_to_qMT(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -275,7 +258,6 @@ def mp2rage_to_qMT(wildcards):
     return apply_reg_list
 
 def mp2rage_to_dwi(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")

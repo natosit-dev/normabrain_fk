@@ -12,10 +12,6 @@ wildcard_constraints:
     seq = config["qMT_sequence"],
     part = 'mag|phase'
 
-# def check_add_csa_data_to_meta_done(wildcards):
-#     checkpoint_output = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-#     return checkpoint_output
-
 def mp2rage_echo_spacing(wildcards):
     protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
     protocol_name_pattern = "*" + protocol_name + "*/*.xml"

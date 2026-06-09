@@ -13,7 +13,6 @@ def get_mt0_phase(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.qMT_params}*_echo-*_flip-*_mt-off_part-phase_MPM.nii.gz'))[0]
 
 def qsm_nii_list(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     qsm_nii_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -36,7 +35,6 @@ def qsm_nii_list(wildcards):
     return qsm_nii_list
 
 def qsm_json_list(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     qsm_json_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -59,7 +57,6 @@ def qsm_json_list(wildcards):
     return qsm_json_list
 
 def qsm_mask_list(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     qsm_mask_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -85,7 +82,6 @@ def get_inv1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.mp2rage_params}*_inv-1_MP2RAGE.nii.gz'))[0]
 
 def t1w_nii_list(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     t1w_nii_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -104,7 +100,6 @@ def t1w_nii_list(wildcards):
     return t1w_nii_list
 
 def t1w_json_list(wildcards):
-    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
     t1w_json_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
@@ -146,7 +141,6 @@ rule copy_raw_qsm:
             raw = Path(img)
             qsm_name = "sub-" + wildcards.subject + "_ses-" + wildcards.session + "_acq-" + wildcards.seq + "mt0" + wildcards.qMT_params + "_echo-" + str(i) + "_part-phase_MEGRE.nii.gz"
             qsm = qsm_folder / qsm_name
-            # shutil.copy(raw, qsm)
             raw_json = raw.with_suffix("").with_suffix(".json")
             qsm_json = qsm.with_suffix("").with_suffix(".json")
             shutil.copy(raw_json, qsm_json)
@@ -156,7 +150,6 @@ rule copy_raw_qsm:
             raw = Path(img)
             qsm_name = "sub-" + wildcards.subject + "_ses-" + wildcards.session + "_acq-" + wildcards.seq + "mt0" + wildcards.qMT_params + "_echo-" + str(i) + "_part-mag_MEGRE.nii.gz"
             qsm = qsm_folder / qsm_name
-            # shutil.copy(raw, qsm)
             raw_json = raw.with_suffix("").with_suffix(".json")
             qsm_json = qsm.with_suffix("").with_suffix(".json")
             shutil.copy(raw_json, qsm_json)
@@ -243,22 +236,6 @@ rule copy_mask_qsm:
         antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {output} -r {input.ref} -t [ {input.reg}, 1 ] -o {output}
         """
 
-# rule copy_seg_qsm:
-#     input:
-#         seg = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/MP2RAGE_synthseg.nii.gz",
-#         ref = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_sos.nii.gz",
-#         T1toMP2RAGE =  "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-vibeMT_reg2MP2RAGE_Composite.h5",
-#         MT0toT1 = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-vibeMTmt0_mt-off_part-mag_reg2vibeMTt1w_Composite.h5"
-#     output:
-#         "data/derivatives/{field_strength}/QSM/derivatives/synthseg/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_dseg.nii.gz"
-#     resources: #limit memory by input size
-#         mem_mb=lambda wc, input: 2.5 * input.size_mb
-#     conda:
-#         "../envs/qMT.yaml"
-#     shell:
-#         """
-#         antsApplyTransforms -d 3 -v 1 -n NearestNeighbor -i {input.seg} -r {input.ref} -t [ {input.T1toMP2RAGE}, 1 ] -t [ {input.MT0toT1}, 1 ] -o {output}
-#         """
 
 rule qsmxt:
     input:
@@ -267,7 +244,6 @@ rule qsmxt:
         qsm_mask_list,
         t1w_nii_list,
         t1w_json_list
-        # expand("data/derivatives/{field_strength}/QSM/derivatives/synthseg/sub-{subject}/ses-{session}/anat/sub-{subject}_ses-{session}_dseg.nii.gz", subject=qsm_subjects, session=qsm_sessions, allow_missing=True)
     params:
         qsm_folder="data/derivatives/{field_strength}/QSM/"
     output:

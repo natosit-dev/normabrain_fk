@@ -296,46 +296,6 @@ rule split_contrast_mag:
         mrconvert {input} -coord 4 3 -axes 0,1,2,3 {output.pdw}
         """
 
-# rule split_contrast_mag:
-#     input:
-#         contrast="data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}_part-mag_echoscontrast5d_denoise.nii",
-#         #same input as contrast_concat_mag
-#         t1w_in=t1wmag_preproc,
-#         mt0_in=mt0mag_preproc,
-#         mtw_in=mtwmag_preproc,
-#         pdw_in=pdwmag_preproc
-#     output:
-#         t1w_out=temp("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{qMT_params}_mt-off_part-mag_echos4d_denoise.nii"),
-#         mt0_out="data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{qMT_params}_mt-off_part-mag_echos4d_denoise.nii",
-#         mtw_out=temp("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{qMT_params}_mt-on_part-mag_echos4d_denoise.nii"),
-#         pdw_out=temp("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{qMT_params}_mt-off_part-mag_echos4d_denoise.nii") 
-#     resources: #limit memory by input size
-#         mem_mb=lambda wc, input: 2.5 * input.size_mb
-#     conda:
-#         "../envs/qMT.yaml"
-#     shell:
-#         """
-#         t1wsize="$(mrinfo -size {input.t1w_in} | awk '{{print $4}}')"
-#         t1wstart=0
-#         t1wend="$((${{t1wsize}}-1))"
-#         mrconvert {input.contrast} {output.t1w_out} -coord 3 ${{t1wstart}}:${{t1wend}}
-
-#         mt0size="$(mrinfo -size {input.mt0_in} | awk '{{print $4}}')"
-#         mt0start=$t1wsize
-#         mt0end="$((${{t1wend}}+${{mt0size}}))"
-#         mrconvert {input.contrast} {output.mt0_out} -coord 3 ${{mt0start}}:${{mt0end}}
-
-#         mtwsize="$(mrinfo -size {input.mtw_in} | awk '{{print $4}}')"
-#         mtwstart="$((${{mt0end}}+1))"
-#         mtwend="$((${{mt0end}}+${{mtwsize}}))"
-#         mrconvert {input.contrast} {output.mtw_out} -coord 3 ${{mtwstart}}:${{mtwend}}
-        
-#         pdwsize="$(mrinfo -size {input.pdw_in} | awk '{{print $4}}')"
-#         pdwstart="$((${{mtwend}}+1))"
-#         pdwend="$((${{mtwend}}+${{pdwsize}}))"
-#         mrconvert {input.contrast} {output.pdw_out} -coord 3 ${{pdwstart}}:${{pdwend}}
-#         """
-
 
 rule sos:
     input:
@@ -632,23 +592,8 @@ rule mtr:
         """
 
 
-# rule setup_fit_JSPqMT_CLI:
-#     output:
-#         directory("workflow/scripts/luca_qMT/build/")
-#     conda:
-#         "../envs/qMT.yaml"
-#     resources: 
-#         mem_mb=1000
-#     shell:
-#         """
-#         cd workflow/scripts/luca_qMT/
-#         python3 setup.py build_ext --inplace
-#         """
-
-
 rule fit_JSPqMT_CLI:
     input:
-        # build = "workflow/scripts/luca_qMT/build/",
         mt_off = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mt0{qMT_params}_mt-off_part-mag_sos_reg2{seq}t1w{qMT_params}.nii.gz",
         mt_on = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}mtw{qMT_params}_mt-on_part-mag_sos_reg2{seq}t1w{qMT_params}.nii.gz",
         pdw = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{qMT_params}_mt-off_part-mag_sos_reg2{seq}t1w{qMT_params}.nii.gz",
