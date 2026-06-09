@@ -9,6 +9,11 @@ def check_bidscoiner_ran(wildcards):
     checkpoint_output = checkpoints.bidscoiner.get(**wildcards).output[0]
     return checkpoint_output
 
+def aggregate_add_csa(wildcards): 
+    #based on dicoms subdirectories (which correspond to field strength), return the list of add_csa_data_to_meta output
+    dicoms_folder = checkpoints.symlink_dicoms_by_field_strength.get(**wildcards).output[0]
+    return expand("data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log", field_strength=glob_wildcards(os.path.join(dicoms_folder, "{field_strength}")).field_strength)
+
 
 checkpoint symlink_dicoms_by_field_strength:
     input:
@@ -81,9 +86,24 @@ checkpoint add_csa_data_to_meta:
         "../envs/bidscoin.yaml"
     log:
         "logs/{field_strength}/add_csa_data_to_meta.log"
-    priority: 50
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         python3 workflow/scripts/add_csa_data_to_meta.py {params.outdir}
+        """
+
+
+rule gather_add_csa_data_to_meta:
+    input:
+        aggregate_add_csa
+    output:
+        "data/rawdata/bidsify.done"
+    log:
+        "logs/bidsify.log"
+    priority: 50
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        touch {output}
         """

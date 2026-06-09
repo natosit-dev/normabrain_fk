@@ -7,14 +7,15 @@ configfile: "config/snakemake_config.yaml"
 dicompath = Path("data/rawdata/dicoms")
 bidspath = Path("data/rawdata/bids")
 
-if not dicompath.is_dir():
-    rule all:
-        input: #create dicom symlinks
-            "data/rawdata/dicoms"
-elif not bidspath.is_dir():
+# if not dicompath.is_dir():
+#     rule all:
+#         input: #create dicom symlinks
+#             "data/rawdata/dicoms"
+if not bidspath.is_dir():
     rule all:
         input: #create bids directories based on subdirectories of dicompath (which correspond to field strengths)
-             expand("data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log", field_strength=next(os.walk(dicompath))[1])
+            "data/rawdata/bidsify.done"
+            #  expand("data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log", field_strength=next(os.walk(dicompath))[1])
 else: #create BIDSLayout for each subdirectory of bidspath (which correspond to field strengths)
     layout_dict = {}
     for field_strength in next(os.walk(bidspath))[1]:
