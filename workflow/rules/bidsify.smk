@@ -1,5 +1,7 @@
 #for creating data/rawdata folder structure necessary for the rest of the pipeline
 
+import os
+
 def get_dicoms_folders(wildcards):
     checkpoint_output = checkpoints.symlink_dicoms_by_field_strength.get(**wildcards).output[0]
     return expand(os.path.join(checkpoint_output, "{field_strength}"),
@@ -12,7 +14,7 @@ def check_bidscoiner_ran(wildcards):
 def aggregate_add_csa(wildcards): 
     #based on dicoms subdirectories (which correspond to field strength), return the list of add_csa_data_to_meta output
     dicoms_folder = checkpoints.symlink_dicoms_by_field_strength.get(**wildcards).output[0]
-    return expand("data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log", field_strength=glob_wildcards(os.path.join(dicoms_folder, "{field_strength}")).field_strength)
+    return expand("data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log", field_strength=next(os.walk(dicoms_folder))[1])
 
 
 checkpoint symlink_dicoms_by_field_strength:
