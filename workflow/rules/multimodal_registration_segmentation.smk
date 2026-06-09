@@ -11,6 +11,10 @@ wildcard_constraints:
     seq = config["qMT_sequence"],
     part = 'mag|phase'
 
+def check_add_csa_data_to_meta_done(wildcards):
+    checkpoint_output = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+    return checkpoint_output
+
 def qMT_to_mp2rage(wildcards):
     # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
     layout=layout_dict[wildcards.field_strength]
@@ -372,7 +376,8 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
 
 rule gather_ihmt_to_MP2RAGE_ants:
     input:
-        ihmt_to_mp2rage
+        ihmt_to_mp2rage,
+        check_add_csa_data_to_meta_done
     output:
         "data/derivatives/{field_strength}/ihmt/ihmt_to_MP2RAGE.done"
     log:
@@ -461,7 +466,8 @@ rule ihmt_stats:
 
 rule ihmt_tsv:
     input:
-        ihmt_statslist
+        ihmt_statslist,
+        check_add_csa_data_to_meta_done
     params:
         subjectlist=freesurfer_subjectlist_ihmt,
         subjects_dir="data/derivatives/{field_strength}/freesurfer/"
@@ -542,7 +548,8 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
 
 rule gather_MP2RAGE_to_ihmt_ants:
     input:
-        mp2rage_to_ihmt
+        mp2rage_to_ihmt,
+        check_add_csa_data_to_meta_done
     output:
         "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_ihmt.done"
     log:
@@ -637,7 +644,8 @@ rule apply_reg_qMT_to_MP2RAGE_ants:
 
 rule gather_qMT_to_MP2RAGE_ants:
     input:
-        qMT_to_mp2rage
+        qMT_to_mp2rage,
+        check_add_csa_data_to_meta_done
     output:
         "data/derivatives/{field_strength}/qMT/qMT_to_MP2RAGE.done"
     log:
@@ -716,7 +724,8 @@ rule qMT_stats:
 
 rule qMT_tsv:
     input:
-        qMT_statslist
+        qMT_statslist,
+        check_add_csa_data_to_meta_done
     output:
         "data/derivatives/{field_strength}/freesurfer/qMT_stats.done"
     params:
@@ -788,7 +797,8 @@ rule apply_reg_MP2RAGE_to_qMT_ants:
 
 rule gather_MP2RAGE_to_qMT_ants:
     input:
-        mp2rage_to_qMT
+        mp2rage_to_qMT,
+        check_add_csa_data_to_meta_done
     output:
         "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_qMT.done"
     log:
@@ -866,7 +876,8 @@ rule apply_reg_DWI_to_MP2RAGE_bbregister:
 
 rule gather_DWI_to_MP2RAGE_bbregister:
     input:
-        dwi_to_mp2rage
+        dwi_to_mp2rage,
+        check_add_csa_data_to_meta_done
     output:
         "data/derivatives/{field_strength}/dwi/DWI_to_MP2RAGE.done"
     log:
@@ -938,7 +949,8 @@ rule dwi_stats:
 
 rule dwi_tsv:
     input:
-        dwi_statslist
+        dwi_statslist,
+        check_add_csa_data_to_meta_done
     output:
         "data/derivatives/{field_strength}/freesurfer/dwi_stats.done"
     params:
@@ -1003,7 +1015,8 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
 
 rule gather_MP2RAGE_to_dwi_bbregister:
     input:
-        mp2rage_to_dwi
+        mp2rage_to_dwi,
+        check_add_csa_data_to_meta_done
     output:
         "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_DWI.done"
     log:
