@@ -11,9 +11,9 @@ wildcard_constraints:
     seq = config["qMT_sequence"],
     part = 'mag|phase'
 
-def "data/rawdata/bidsify.done"(wildcards):
-    checkpoint_output = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
-    return checkpoint_output
+# def "data/rawdata/bidsify.done"(wildcards):
+#     checkpoint_output = checkpoints.add_csa_data_to_meta.get(**wildcards).output[0]
+#     return checkpoint_output
 
 def qMT_to_mp2rage(wildcards):
     # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
