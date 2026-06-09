@@ -81,6 +81,7 @@ checkpoint add_csa_data_to_meta:
         "../envs/bidscoin.yaml"
     log:
         "logs/{field_strength}/add_csa_data_to_meta.log"
+    priority: 50
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
