@@ -1,4 +1,6 @@
 import os
+from bids import BIDSLayout
+
 configfile: "config/snakemake_config.yaml"
 
 if not os.path.isdir("data/rawdata/dicoms"):
