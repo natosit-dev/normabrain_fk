@@ -408,6 +408,8 @@ rule recon_all:
         "logs/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/recon-all.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        
         #create and set SUBJECTS_DIR
         mkdir -p $HOME/{params.subjects_dir}
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
