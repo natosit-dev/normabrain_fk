@@ -13,8 +13,8 @@ def get_mt0_phase(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.qMT_params}*_echo-*_flip-*_mt-off_part-phase_MPM.nii.gz'))[0]
 
 def qsm_nii_list(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     qsm_nii_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -36,8 +36,8 @@ def qsm_nii_list(wildcards):
     return qsm_nii_list
 
 def qsm_json_list(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     qsm_json_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -59,8 +59,8 @@ def qsm_json_list(wildcards):
     return qsm_json_list
 
 def qsm_mask_list(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     qsm_mask_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -85,8 +85,8 @@ def get_inv1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.mp2rage_params}*_inv-1_MP2RAGE.nii.gz'))[0]
 
 def t1w_nii_list(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     t1w_nii_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -104,8 +104,8 @@ def t1w_nii_list(wildcards):
     return t1w_nii_list
 
 def t1w_json_list(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     t1w_json_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")

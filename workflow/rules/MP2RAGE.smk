@@ -12,7 +12,6 @@ wildcard_constraints:
     seq = config["qMT_sequence"],
     part = 'mag|phase'
 
-
 def mp2rage_echo_spacing(wildcards):
     protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
     protocol_name_pattern = "*" + protocol_name + "*/*.xml"
@@ -40,39 +39,39 @@ def get_unit1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_UNIT1.nii.gz'))[0]
 
 def get_preproc_uniden_list(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
 
 def get_mp2rage_brainmask_list(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
     return expand('data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz', mp2rage_params=mp2rage_params_list, allow_missing=True)
 
 def get_mp2rage_acq_array(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     mp2rage_params_list=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)
     mp2rage_params_array = " ".join(mp2rage_params_list)
     return mp2rage_params_array
 
 def seg_first_acq_mp2rage(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand('data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg.nii.gz', mp2rage_params=first_acq, allow_missing=True)
 
 def resliced_seg_first_acq_mp2rage(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=wildcards.subject, session=wildcards.session)[0]
     return expand("data/derivatives/{field_strength}/freesurfer/sub-{subject}_ses-{session}_acq-{mp2rage_params}/mri/aparc+aseg_resliced.nii.gz", mp2rage_params=first_acq, allow_missing=True)
 
 def mp2rage_statslist(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -88,8 +87,8 @@ def mp2rage_statslist(wildcards):
     return sorted(statslist)
 
 def freesurfer_subjectlist_mp2rage(wildcards):
-    bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
-    layout=BIDSLayout(bidspath)
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
@@ -409,7 +408,7 @@ rule recon_all:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        
+
         #create and set SUBJECTS_DIR
         mkdir -p $HOME/{params.subjects_dir}
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
