@@ -87,9 +87,13 @@ def pdwmag_preproc(wildcards):
 def aggregate_qMT(wildcards):
     layout=layout_dict[wildcards.field_strength]
     qMT_list = []
-    subjectlist = layout.get_subject(suffix="MPM")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list(set(subjectlist_tb1tfl) & set(subjectlist_tb1tfl))
     for subject in subjectlist:
-        sessionlist = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list(set(sessionlist_tb1tfl) & set(sessionlist_tb1tfl))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
