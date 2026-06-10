@@ -378,7 +378,7 @@ rule crop_mp2rage_256:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_cropped.nii.gz"
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_cropped.nii.gz")
     resources:
         mem_mb=1000
     conda:
@@ -516,6 +516,7 @@ rule mp2rage_tsv:
         asegstats2table --subjects {params.subjects_list} --statsfile {params.statsfile} -t {output} --meas mean --common-segs --no-segno 0
         """
 
+
 rule aggregate_mp2rage_tsv:
     input:
         expand("data/derivatives/{field_strength}/freesurfer/MP2RAGE_{mp2rage_map}_stats.tsv", field_strength=next(os.walk(bidspath))[1], mp2rage_map=["R1map_b1corr", "T1map_b1corr"])
@@ -625,9 +626,9 @@ rule aggregate_mp2rage_by_field_strength:
     input:
         aggregate_mp2rage
     output:
-        "data/derivatives/{field_strength}/mp2rage/mp2rage.done"
+        "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE.done"
     log:
-        "logs/{field_strength}/mp2rage/mp2rage.log"
+        "logs/{field_strength}/MP2RAGE/MP2RAGE.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -637,4 +638,4 @@ rule aggregate_mp2rage_by_field_strength:
 
 rule aggregate_mp2rage:
     input:
-        expand("data/derivatives/{field_strength}/mp2rage/mp2rage.done", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE.done", field_strength=next(os.walk(bidspath))[1])
