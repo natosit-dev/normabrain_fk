@@ -32,7 +32,7 @@ def aggregate_ihmt_maps(wildcards):
         for session in sessionlist:
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for ihmt in ihmt_acqlist:
-                ihmt_map_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "preproc/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_MTmap_brain_denoised_n4.nii.gz")
+                ihmt_map_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "/preproc/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_MTmap_brain_denoised_n4.nii.gz")
     return ihmt_map_list
         
 rule denoise_ihmt:
