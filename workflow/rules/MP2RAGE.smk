@@ -104,6 +104,23 @@ def freesurfer_subjectlist_mp2rage(wildcards):
     fs_subjectarray = " ".join(fs_subjectlist)
     return fs_subjectarray
 
+def aggregate_mp2rage(wildcards):
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
+    mp2rage_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for acq in acqlist:
+                mp2rage_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + acq + "/preproc/sub-" + subject + "_ses-" + session + "_acq-" + acq + "_T1map_b1corr_brain_denoised_n4.nii.gz")
+    return sorted(mp2rage_list)
+
 
 rule json_for_uncorr_qT1:
     input:
@@ -503,7 +520,7 @@ rule aggregate_mp2rage_tsv:
     input:
         expand("data/derivatives/{field_strength}/freesurfer/MP2RAGE_{mp2rage_map}_stats.tsv", field_strength=next(os.walk(bidspath))[1], mp2rage_map=["R1map_b1corr", "T1map_b1corr"])
 
-        
+
 #rules for registering with ANTs
 
 rule synthstrip_qT1:
@@ -604,3 +621,20 @@ rule N4BiasFieldCorrection_qT1:
         -o {output}
         """
 
+rule aggregate_mp2rage_by_field_strength:
+    input:
+        aggregate_mp2rage
+    output:
+        "data/derivatives/{field_strength}/mp2rage/mp2rage.done"
+    log:
+        "logs/{field_strength}/mp2rage/mp2rage.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        touch {output}
+        """
+
+rule aggregate_mp2rage:
+    input:
+        expand("data/derivatives/{field_strength}/mp2rage/mp2rage.done", field_strength=next(os.walk(bidspath))[1])
