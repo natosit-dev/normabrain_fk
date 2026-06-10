@@ -4,7 +4,6 @@ from pathlib import Path
 
 configfile: "config/snakemake_config.yaml"
 
-dicompath = Path("data/rawdata/dicoms")
 bidspath = Path("data/rawdata/bids")
 
 

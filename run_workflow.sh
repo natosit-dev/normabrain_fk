@@ -22,11 +22,23 @@ parse_yaml config/snakemake_config.yaml
 usage() { #function to display script help
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "-h, --help        Display this help message and exit"
-    echo "-i, --input       Path to the folder containing the input DICOMS"
-    echo "-p, --xml         Path to the folder containing the scanning protocol xml files"
-    echo "-d, --dag         Produce DAG of pipeline instead of running the pipeline"
-    echo "-n, --dry-run     Display what would be done without executing the pipeline"
+    echo "REQUIRED flags ===="
+    echo "-i, --input       Path to the folder containing the input DICOMS. No default."
+    echo "-x, --xml         Path to the folder containing the scanning protocol xml files. No default."
+    echo "-m, --mem_mb      Memory available for the pipeline, in MB. The default is min(max(2*input_size_mb, 1000), 8000) i.e. twice the input DICOMS folder size but no less than 1 GB and no more than 8 GB."
+    echo "-c, --cores       CPU cores used for the pipeline. The default is all available CPU cores."
+    echo "REQUIRED: Choose at least one of the below flags ===="
+    echo "-a, --all         Run all modules of the pipeline."
+    echo "-b, --bids        Run the bids module."
+    echo "-p, --mp2rage     Run the MP2RAGE module."
+    echo "-i, --ihmt        Run the ihMT module."
+    echo "-q, --qmt         Run the qMT module."
+    echo "-d, --dwi         Run the DWI module."
+    echo "-s, --qsm         Run the QSM module."
+    echo "OPTIONAL flags ===="
+    echo "-g, --gpu         Use GPU." 
+    echo "-d, --dag         Produce DAG of pipeline instead of running the pipeline."
+    echo "-n, --dry_run     Display what would be done without executing the pipeline."        
 }
 
 handle_options() { #function for handling options when this script is called
