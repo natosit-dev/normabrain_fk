@@ -9,6 +9,8 @@ import logging
 wildcard_constraints:
     seq = config["qMT_sequence"]
 
+bidspath = Path("data/rawdata/bids")
+
 def get_mt0_phase(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.qMT_params}*_echo-*_flip-*_mt-off_part-phase_MPM.nii.gz'))[0]
 
@@ -274,3 +276,7 @@ rule qsmxt:
         mv {params.qsm_folder}/derivatives/qsmxt-*/* {output}
         rm -rf {params.qsm_folder}/derivatives/qsmxt-*/*
         """
+
+rule aggregate_qsmxt:
+    input:
+        expand("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/", field_strength=next(os.walk(bidspath))[1])
