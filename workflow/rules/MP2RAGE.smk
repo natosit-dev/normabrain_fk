@@ -517,11 +517,6 @@ rule mp2rage_tsv:
         """
 
 
-rule aggregate_mp2rage_tsv:
-    input:
-        expand("data/derivatives/{field_strength}/freesurfer/MP2RAGE_{mp2rage_map}_stats.tsv", field_strength=next(os.walk(bidspath))[1], mp2rage_map=["R1map_b1corr", "T1map_b1corr"])
-
-
 #rules for registering with ANTs
 
 rule synthstrip_qT1:
@@ -638,4 +633,5 @@ rule aggregate_mp2rage_by_field_strength:
 
 rule aggregate_mp2rage:
     input:
-        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE.done", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE.done", field_strength=next(os.walk(bidspath))[1]),
+        expand("data/derivatives/{field_strength}/freesurfer/MP2RAGE_{mp2rage_map}_stats.tsv", field_strength=next(os.walk(bidspath))[1], mp2rage_map=["R1map_b1corr", "T1map_b1corr"])
