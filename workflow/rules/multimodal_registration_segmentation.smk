@@ -280,7 +280,7 @@ def mp2rage_to_dwi(wildcards):
 rule register_ihmt_to_MP2RAGE_ants:
     input:
         ref="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN.nii.gz",
-        moving="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.nii.gz",
+        moving="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.nii.gz",
         ref_mask="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz",
         moving_mask="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
     params:
@@ -546,7 +546,7 @@ rule gather_MP2RAGE_to_ihmt_ants:
 
 rule register_qMT_to_MP2RAGE_ants:
     input:
-        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr_brain_denoised_n4.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr_brain_denoised_n4.nii.gz",
         moving = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised_n4.nii.gz",
         ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{qMT_params}_mt-off_part-mag_sos_brain_mask.nii.gz"
@@ -605,10 +605,10 @@ rule apply_reg_qMT_to_MP2RAGE_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         qMTmaps=("MPFmap" "MTRmap" "R1map" "T1map")
-        mkdir -p {params.sessiondir}/{params.regto}
+        mkdir -p {params.sessiondir}/reg2MP2RAGE
         for map in "${{qMTmaps[@]}}"; do
             moving="{params.sessiondir}/{params.qMTprefix}_"$map".nii.gz"
-            out="{params.sessiondir}/{params.regto}/{params.qMTprefix}_"$map"_{params.regto}.nii.gz"
+            out="{params.sessiondir}/reg2MP2RAGE/{params.qMTprefix}_"$map"_{params.regto}.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms \
                 --dimensionality 3 \
@@ -758,10 +758,10 @@ rule apply_reg_MP2RAGE_to_qMT_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
-        mkdir -p {params.mp2rage_acqdir}/{params.regto}
+        mkdir -p {params.mp2rage_acqdir}/reg2qMT
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="{params.mp2rage_acqdir}/{params.subject}_"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/{params.regto}/{params.subject}_"$map"_{params.regto}.nii.gz"
+            out="{params.mp2rage_acqdir}/reg2qMT/{params.subject}_"$map"_{params.regto}.nii.gz"
 
             #apply inverse of qMT to MP2RAGE registration
             antsApplyTransforms \
@@ -847,7 +847,7 @@ rule apply_reg_DWI_to_MP2RAGE_bbregister:
 
         for map in "${{dkimaps[@]}}"; do
             moving="{params.acqdir}/dki/{params.dwiprefix}_"$map".nii.gz"
-            out="{params.acqdir}/reg2MP2RAGE/dki/{params.dwiprefix}_{params.regto}_"$map".nii.gz"
+            out="{params.acqdir}/reg2MP2RAGE/dki/{params.dwiprefix}_"$map"_{params.regto}.nii.gz"
             if [ -f $moving ]; then
                 mri_vol2vol --mov $moving --targ {input.target} --o $out --reg {input.reg} --no-save-reg
             fi
@@ -983,10 +983,10 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
-        mkdir -p {params.mp2rage_acqdir}/{params.regto}
+        mkdir -p {params.mp2rage_acqdir}/reg2DWI
         for map in "${{MP2RAGEmaps[@]}}"; do
             target="{params.mp2rage_acqdir}/{params.mp2rage_subject}_"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/{params.regto}/{params.mp2rage_subject}_"$map"_{params.regto}.nii.gz"
+            out="{params.mp2rage_acqdir}/reg2DWI/{params.mp2rage_subject}_"$map"_{params.regto}.nii.gz"
 
             #apply inverse of qMT to MP2RAGE registration
             mri_vol2vol --mov {input.b0} --targ $target --inv --o $out --reg {input.reg} --no-save-reg
