@@ -11,6 +11,7 @@ wildcard_constraints:
     seq = config["qMT_sequence"],
     part = 'mag|phase'
 
+bidspath = Path("data/rawdata/bids")
 
 def qMT_to_mp2rage(wildcards):
     layout=layout_dict[wildcards.field_strength]
@@ -544,6 +545,13 @@ rule gather_MP2RAGE_to_ihmt_ants:
         """
 
 
+rule aggregate_multimodal_ihmt_mp2rage:
+    input:
+        expand("data/derivatives/{field_strength}/freesurfer/ihmt_stats.done", field_strength=next(os.walk(bidspath))[1]),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_ihmt.done", field_strength=next(os.walk(bidspath))[1]),
+        expand("data/derivatives/{field_strength}/ihmt/ihmt_to_MP2RAGE.done", field_strength=next(os.walk(bidspath))[1])
+
+
 rule register_qMT_to_MP2RAGE_ants:
     input:
         ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr_brain_denoised_n4.nii.gz",
@@ -793,6 +801,13 @@ rule gather_MP2RAGE_to_qMT_ants:
         """
 
 
+rule aggregate_multimodal_qMT_mp2rage:
+    input:
+        expand("data/derivatives/{field_strength}/freesurfer/qMT_stats.done", field_strength=next(os.walk(bidspath))[1]),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_qMT.done", field_strength=next(os.walk(bidspath))[1]),
+        expand("data/derivatives/{field_strength}/qMT/qMT_to_MP2RAGE.done", field_strength=next(os.walk(bidspath))[1])
+
+
 rule register_DWI_to_MP2RAGE_bbregister:
     input:
         meanb0="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/sub-{subject}_ses-{session}_acq-DWI{dwi_params}_designer_meanb0_brain.nii.gz",
@@ -1009,3 +1024,9 @@ rule gather_MP2RAGE_to_dwi_bbregister:
 
         touch {output}
         """
+
+rule aggregate_multimodal_dwi_mp2rage:
+    input:
+        expand("data/derivatives/{field_strength}/freesurfer/dwi_stats.done", field_strength=next(os.walk(bidspath))[1]),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_DWI.done", field_strength=next(os.walk(bidspath))[1]),
+        expand("data/derivatives/{field_strength}/dwi/DWI_to_MP2RAGE.done", field_strength=next(os.walk(bidspath))[1])
