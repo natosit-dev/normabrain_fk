@@ -4,6 +4,7 @@ import glob
 import shutil
 from pathlib import Path
 
+bidspath = Path("data/rawdata/bids")
 
 def get_raw_ihmt(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.nii.gz'))[0] #get first run
@@ -21,6 +22,18 @@ def get_ihmt_protocol_name(wildcards):
         meta = json.load(f)
         ihmt_protocol_name = meta["ProtocolName"]
     return ihmt_protocol_name
+
+def aggregate_ihmt_maps(wildcards):
+    layout=layout_dict[wildcards.field_strength]
+    ihmt_map_list = []
+    subjectlist = layout.get_subject(suffix="ihmt")
+    for subject in subjectlist:
+        sessionlist = layout.get_session(suffix="ihmt", subject=subject)
+        for session in sessionlist:
+            ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
+            for ihmt in ihmt_acqlist:
+                ihmt_map_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "preproc/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_MTmap_brain_denoised_n4.nii.gz")
+    return ihmt_map_list
         
 rule denoise_ihmt:
     input:
@@ -329,4 +342,21 @@ rule N4BiasFieldCorrection_ihmt:
         -o {output}
         """
 
-        
+  
+rule aggregate_ihmt_maps_by_field_strength:
+    input:
+        aggregate_ihmt_maps
+    output:
+        "data/derivatives/{field_strength}/ihmt/ihmt_maps.done"
+    log:
+        "logs/{field_strength}/ihmt/ihmt_maps.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        touch {output}
+        """
+
+rule aggregate_ihmt_maps:
+    input:
+        expand("data/derivatives/{field_strength}/ihmt/ihmt_maps.done", field_strength=next(os.walk(bidspath))[1])
