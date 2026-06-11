@@ -7,7 +7,7 @@ from bids import BIDSLayout
 import logging
 
 wildcard_constraints:
-    seq = config["qMT_sequence"]
+    seq = config["qmt_sequence"]
 
 bidspath = Path("data/rawdata/bids")
 
@@ -29,10 +29,10 @@ def qsm_nii_list(wildcards):
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
-                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qMT_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qmt_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
-                qsm_nii_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qMT_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.nii.gz")
+                qsm_nii_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qmt_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.nii.gz")
     qsm_nii_list = list(set(qsm_nii_list))
     return qsm_nii_list
 
@@ -51,10 +51,10 @@ def qsm_json_list(wildcards):
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
-                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qMT_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qmt_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
-                qsm_json_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qMT_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.json")
+                qsm_json_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qmt_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.json")
     qsm_json_list = list(set(qsm_json_list))
     return qsm_json_list
 
@@ -73,10 +73,10 @@ def qsm_mask_list(wildcards):
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
-                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qMT_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qmt_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
-                qsm_mask_list.append("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qMT_sequence"] + "mt0" + mpm + "_mask.nii.gz")
+                qsm_mask_list.append("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qmt_sequence"] + "mt0" + mpm + "_mask.nii.gz")
     qsm_mask_list = list(set(qsm_mask_list))
     return qsm_mask_list
 

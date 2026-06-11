@@ -7,8 +7,8 @@ from pathlib import Path
 
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["qMT_contrasts"]]),
-    seq = config["qMT_sequence"],
+    contrast = '|'.join([re.escape(x) for x in config["qmt_contrasts"].split()]),
+    seq = config["qmt_sequence"],
     part = 'mag|phase'
 
 bidspath = Path("data/rawdata/bids")
@@ -30,7 +30,7 @@ def qMT_to_mp2rage(wildcards):
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             for mpm in mpm_acqlist:
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
                 apply_reg_list.append("data/derivatives/{field_strength}/qMT/sub-" + subject + "/ses-" + session + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_applyreg2" + mp2rage_first_acq + ".done")
     counts = Counter(apply_reg_list)
@@ -125,7 +125,7 @@ def qMT_statslist(wildcards):
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
                 acq = acq.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     acq = acq.replace(contrast, "")
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/qMT_stats.done")
     counts = Counter(statslist)
@@ -186,7 +186,7 @@ def freesurfer_subjectlist_qMT(wildcards):
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
                 acq = acq.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     acq = acq.replace(contrast, "")
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
     counts = Counter(fs_subjectlist)
@@ -251,7 +251,7 @@ def mp2rage_to_qMT(wildcards):
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
                 apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2qMT/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2" + mpm + ".done")
     counts = Counter(apply_reg_list)

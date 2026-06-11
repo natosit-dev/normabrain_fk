@@ -5,8 +5,8 @@ import glob
 from collections import Counter
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["qMT_contrasts"]]),
-    seq = config["qMT_sequence"],
+    contrast = '|'.join([re.escape(x) for x in config["qmt_contrasts"].split()]),
+    seq = config["qmt_sequence"],
     part = 'mag|phase'
 
 bidspath = Path("data/rawdata/bids")
@@ -98,7 +98,7 @@ def aggregate_qMT(wildcards):
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
                 qMT_list.append("data/derivatives/{field_strength}/qMT/sub-" + subject + "/ses-" + session + "/preproc/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_T1map_brain_denoised_n4.nii.gz")
     counts = Counter(qMT_list)

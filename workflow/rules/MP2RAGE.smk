@@ -7,15 +7,11 @@ from lxml import etree
 import re
 from collections import Counter
 
-wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["qMT_contrasts"]]),
-    seq = config["qMT_sequence"],
-    part = 'mag|phase'
 
 def mp2rage_echo_spacing(wildcards):
     protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
     protocol_name_pattern = "*" + protocol_name + "*/*.xml"
-    search_path = Path(config["protocol_path"]) / wildcards.field_strength
+    search_path = Path(config["protocol_path"])
     xml_path_list = sorted(search_path.rglob(protocol_name_pattern, case_sensitive=False))
     if len(xml_path_list) > 0:
         xml_path = xml_path_list[0]
