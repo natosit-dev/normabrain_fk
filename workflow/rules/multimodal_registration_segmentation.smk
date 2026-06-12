@@ -12,6 +12,10 @@ wildcard_constraints:
     part = 'mag|phase'
 
 bidspath = Path("data/rawdata/bids")
+try:
+    field_strength_list=next(os.walk(bidspath))[1]
+except:
+    field_strength_list=[]
 
 def qMT_to_mp2rage(wildcards):
     layout=layout_dict[wildcards.field_strength]
@@ -547,9 +551,9 @@ rule gather_MP2RAGE_to_ihmt_ants:
 
 rule aggregate_multimodal_ihmt_mp2rage:
     input:
-        expand("data/derivatives/{field_strength}/freesurfer/ihmt_stats.done", field_strength=next(os.walk(bidspath))[1]),
-        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_ihmt.done", field_strength=next(os.walk(bidspath))[1]),
-        expand("data/derivatives/{field_strength}/ihmt/ihmt_to_MP2RAGE.done", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/freesurfer/ihmt_stats.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_ihmt.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/ihmt/ihmt_to_MP2RAGE.done", field_strength=field_strength_list)
 
 
 rule register_qMT_to_MP2RAGE_ants:
@@ -803,9 +807,9 @@ rule gather_MP2RAGE_to_qMT_ants:
 
 rule aggregate_multimodal_qMT_mp2rage:
     input:
-        expand("data/derivatives/{field_strength}/freesurfer/qMT_stats.done", field_strength=next(os.walk(bidspath))[1]),
-        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_qMT.done", field_strength=next(os.walk(bidspath))[1]),
-        expand("data/derivatives/{field_strength}/qMT/qMT_to_MP2RAGE.done", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/freesurfer/qMT_stats.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_qMT.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/qMT/qMT_to_MP2RAGE.done", field_strength=field_strength_list)
 
 
 rule register_DWI_to_MP2RAGE_bbregister:
@@ -1027,6 +1031,6 @@ rule gather_MP2RAGE_to_dwi_bbregister:
 
 rule aggregate_multimodal_dwi_mp2rage:
     input:
-        expand("data/derivatives/{field_strength}/freesurfer/dwi_stats.done", field_strength=next(os.walk(bidspath))[1]),
-        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_DWI.done", field_strength=next(os.walk(bidspath))[1]),
-        expand("data/derivatives/{field_strength}/dwi/DWI_to_MP2RAGE.done", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/freesurfer/dwi_stats.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_DWI.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/dwi/DWI_to_MP2RAGE.done", field_strength=field_strength_list)

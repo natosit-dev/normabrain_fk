@@ -279,4 +279,4 @@ rule qsmxt:
 
 rule aggregate_qsmxt:
     input:
-        expand("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/", field_strength=field_strength_list)

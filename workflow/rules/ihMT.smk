@@ -5,6 +5,10 @@ import shutil
 from pathlib import Path
 
 bidspath = Path("data/rawdata/bids")
+try:
+    field_strength_list=next(os.walk(bidspath))[1]
+except:
+    field_strength_list=[]
 
 def get_raw_ihmt(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.nii.gz'))[0] #get first run
@@ -359,4 +363,4 @@ rule aggregate_ihmt_maps_by_field_strength:
 
 rule aggregate_ihmt_maps:
     input:
-        expand("data/derivatives/{field_strength}/ihmt/ihmt_maps.done", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/ihmt/ihmt_maps.done", field_strength=field_strength_list)

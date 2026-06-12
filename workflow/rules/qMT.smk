@@ -751,4 +751,4 @@ rule aggregate_qMT_by_field_strength:
 
 rule aggregate_qMT:
     input:
-        expand("data/derivatives/{field_strength}/qMT/qMT.done", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/qMT/qMT.done", field_strength=field_strength_list)

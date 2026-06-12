@@ -2,6 +2,10 @@ import glob
 from pathlib import Path
 
 bidspath = Path("data/rawdata/bids")
+try:
+    field_strength_list=next(os.walk(bidspath))[1]
+except:
+    field_strength_list=[]
 
 def get_dwi_nii(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_dwi.nii.gz'))
@@ -43,6 +47,9 @@ rule nyu_designer:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         rm -rf {params.preproc}
+        if command -v eddy_cuda >/dev/null 2>&1; then
+            export PATH="$(dirname "$(command -v eddy_cuda)"):$PATH"
+        fi
         designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}
         cp {params.preproc}/sigma.nii {output.noisemap}
         rm -rf {params.preproc}
@@ -167,4 +174,4 @@ rule aggregate_dki_by_field_strength:
 
 rule aggregate_dki:
     input:
-        expand("data/derivatives/{field_strength}/dwi/dki.done", field_strength=next(os.walk(bidspath))[1])
+        expand("data/derivatives/{field_strength}/dwi/dki.done", field_strength=field_strength_list)

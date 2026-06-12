@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 #default variable values
 input_dicoms_path=""
@@ -313,12 +313,15 @@ if [ "$all" = true ]; then
     target_string=""
 fi
 
-#always run bids first
-if [ "$dry_run" = false ]; then
-    echo "Running bidsify module first, as the rest of the pipeline depends on this."
-    snakemake --config input_dicoms_path="/DATA_CEMEREM/data/users/ttroalen/vida/normadev/" protocol_path="/DATA_CNS/PROJECTS/NORMABRAIN/NORMA_DEV_CPP/" --sdm conda --cores 1 gather_add_csa_data_to_meta
-fi
 
-cmd_string="snakemake${config_string}${mem_string}${sdm_string}${cores_string}${gpu_string}${rerun_incomplete_string}${dry_run_string}${dag_string1}${target_string}${dag_string2}"
+#always run bids first
+echo "Running bidsify module first, as the rest of the pipeline depends on this."
+cmd_string="snakemake${config_string} --sdm conda --cores 1 ${dry_run_string}${dag_string1} gather_add_csa_data_to_meta${dag_string2}"
 echo "Running snakemake command ${cmd_string}"
 eval ${cmd_string}
+
+if [ "$reg_seg" = true ] || [ "$mp2rage" = true ] || [ "$ihmt" = true ] || [ "$qmt" = true ] || [ "$qsm" = true ] || [ "$dwi" = true ] || [ "$all" = true ]; then
+    cmd_string="snakemake${config_string}${mem_string}${sdm_string}${cores_string}${gpu_string}${rerun_incomplete_string}${dry_run_string}${dag_string1}${target_string}${dag_string2}"
+    echo "Running snakemake command ${cmd_string}"
+    eval ${cmd_string}
+fi
