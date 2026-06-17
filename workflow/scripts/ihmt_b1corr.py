@@ -1,25 +1,25 @@
 import argparse
 import json
-from brainhack import Tukey, Sequence, Signal, System, Simulator, Corrector
+from ihmt import Tukey, Sequence, Signal, System, Simulator, Corrector, Duration, Frequency, Angle
 from pathlib import Path
 from nibabel import load, Nifti1Image
 
 
-def ihmt_b1corr(ihmt_nifti: str, b1map_nifti: str, mask_nifti: str, map_type: str):
+def ihmt_b1corr(ihmt_nifti: str, ihmt_json: str, b1map_nifti: str, mask_nifti: str, map_type: str):
     #limit possible values of map_type
     assert map_type in ["MT0", "MTs_Positive", "MTs_Negative", "MTd_CM", "MTd_ALT", "MTs", "ihMT_CM", "ihMT_ALT", "BP", "MTsR_Positive", "MTsR_Negative", "MTsR", "MTdR_CM", "MTdR_ALT", "ihMTR_CM", "ihMTR_ALT", "BPR", "ALL"]
     #make file strings Paths
     ihmt_nifti = Path(ihmt_nifti)
-    ihmt_json = ihmt_nifti.with_ext("").with_ext(".json")
+    ihmt_json = Path(ihmt_json)
     with open(ihmt_json, "r") as f:
         ihmt_meta = json.load(f)
     b1map_nifti = Path(b1map_nifti)
     mask_nifti = Path(mask_nifti)
 
-    param_paths = {
-        flipAngle: b1map_nifti,
-        mask: mask_nifti
-    }
+    param_paths = dict(
+        flipAngle = b1map_nifti,
+        mask = mask_nifti
+    )
 
     data_paths = {
         getattr(Signal, map_type): ihmt_nifti
@@ -36,18 +36,23 @@ def ihmt_b1corr(ihmt_nifti: str, b1map_nifti: str, mask_nifti: str, map_type: st
     param_maps['mask'] = param_maps['mask'].astype(bool)
 
     for key, val in data_paths.items():
+        norm = 1
+        if key in [Signal.MTsR_Positive, Signal.MTsR_Negative, Signal.MTsR, Signal.MTdR_CM, Signal.MTdR_ALT, Signal.ihMTR_CM, Signal.ihMTR_ALT, Signal.BPR]:
+            norm = 100
         if affine is None or header is None:
             tmp = load(val)
             affine = tmp.affine
             header = tmp.header
-            data_maps[key] = tmp.get_fdata()
-    
+            data_maps[key] = norm * tmp.get_fdata()
+        else:
+            data_maps[key] = norm * load(val).get_fdata()
+
     #parameters need to be converted to seconds and degrees
     pulse = Tukey(
         shape = ihmt_meta["TukeyShape"],
-        duration = ihmt_meta["PulseDuration_us"] * 1e-6,
-        offset = ihmt_meta["FrequencyOffset_hz"],
-        flipAngle = ihmt_meta["FlipAngle_deg"],
+        duration = Duration.from_micro(ihmt_meta["PulseDuration_us"]),
+        offset = Frequency.from_hertz(ihmt_meta["FrequencyOffset_hz"]),
+        flipAngle = Angle.from_degrees(ihmt_meta["FlipAngle_deg"]),
     )
 
     seq = Sequence(
@@ -58,8 +63,55 @@ def ihmt_b1corr(ihmt_nifti: str, b1map_nifti: str, mask_nifti: str, map_type: st
         N_burst = ihmt_meta["NumberBursts"],
         N_adc = ihmt_meta["TurboFactor"],
         N_dummyADC = ihmt_meta["DummyEchoes"],
-        dt_interPulse = ihmt_meta["PulseRepetitionTime_us"] * 1e-6,
-        TR_burst = ihmt_meta["BurstRepetitionTime_us"] * 1e-6,
-        dt_lastBurst = (ihmt_meta["TotalPrepDuration_us"] * 1e-6) - (ihmt_meta["BurstRepetitionTime_us"] * 1e-6 * (ihmt_meta["NumberBursts"] - 1)),
-        es = 
+        dt_interPulse = Duration.from_micro(ihmt_meta["PulseRepetitionTime_us"]),
+        TR_burst = Duration.from_micro(ihmt_meta["BurstRepetitionTime_us"]),
+        dt_lastBurst = Duration.from_micro(ihmt_meta["TotalPrepDuration_us"]) - (Duration.from_micro(ihmt_meta["BurstRepetitionTime_us"]) * (ihmt_meta["NumberBursts"] - 1)),
+        es = Duration.from_milli(ihmt_meta["EchoSpacing_ms"]),
+        tr = Duration.from_seconds(ihmt_meta["RepetitionTime"]),
+        readout_flipAngle = Angle.from_degrees(ihmt_meta["FlipAngle"]),
     )
+    sys = System(
+        pulse = pulse,
+        poolFree_M0=1,
+        poolFree_T1=1,
+        poolFree_T2=.5,
+        poolFreeBound_exchangeRate=10,
+        poolBound_M0=.1,
+        poolBound_T1=1,
+        poolBound_T2=10e-6,
+        poolBound_T1D=10e-3,
+        poolBound_lineshapeAsymmetry=-593.83,
+    )
+    sim = Simulator(
+        system = sys,
+        sequence = seq,
+        export_readMatrix=False,
+        output_vectorSlice=slice(1)
+    )
+    cor1D = Corrector.Simple(simulator=sim)
+    param_maps['flipAngle'] *= 1e-3 * pulse.flipAngle
+    corData = cor1D.apply(parameter_maps=param_maps, data_maps=data_maps)
+
+    for value in [*list(corData.values()), *list(data_maps.values()), *list(param_maps.values())]:
+        value.setflags(write=True)
+        value[~param_maps['mask']] = 0
+        value.setflags(write=False)
+
+    suffix="b1corr"
+    for key, value in corData.items():
+       Nifti1Image(value, affine, header).to_filename(data_paths[key].with_stem(data_paths[key].stem.replace(".nii", "") + "_b1corr.nii"))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description=
+        """
+        Apply B1+ correction to ihMT derived maps and raw volumes. Must be a 3D volume with the map type specified.
+        """
+    )
+    parser.add_argument("ihmt_nifti", type=str, help="Path to the ihMT map nifti.")
+    parser.add_argument("ihmt_json", type=str, help="Path to the ihMT map json BIDS sidecar file.")
+    parser.add_argument("b1map_nifti", type=str, help="Path to the B1+ flip angle map nifti, in the same space as the ihMT map.")
+    parser.add_argument("mask_nifti", type=str, help="Path to the mask nifit, in the same space as the ihMT map.")
+    parser.add_argument("map_type", type=str, help='ihMT derived map or raw volume type. Must be one of "MT0", "MTs_Positive", "MTs_Negative", "MTd_CM", "MTd_ALT", "MTs", "ihMT_CM", "ihMT_ALT", "BP", "MTsR_Positive", "MTsR_Negative", "MTsR", "MTdR_CM", "MTdR_ALT", "ihMTR_CM", "ihMTR_ALT", "BPR", "ALL"')
+    args = parser.parse_args()
+    ihmt_b1corr(args.ihmt_nifti, args.ihmt_json, args.b1map_nifti, args.mask_nifti, args.map_type)

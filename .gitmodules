@@ -4,3 +4,12 @@
 [submodule "workflow/scripts/tMPPCA"]
 	path = workflow/scripts/tMPPCA
 	url = git@github.com:lsoustelle/tMPPCA.git
+[submodule "ihMT"]
+	path = ihMT
+	url = git@github.com:SirTwinkleberry/ihMT.git
+[submodule "workflow/script"]
+	path = workflow/script
+	url = git@github.com:SirTwinkleberry/ihMT.git
+[submodule "workflow/scripts/tim_ihMT"]
+	path = workflow/scripts/tim_ihMT
+	url = git@github.com:SirTwinkleberry/ihMT.git
