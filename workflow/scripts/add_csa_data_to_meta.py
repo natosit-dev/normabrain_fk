@@ -82,6 +82,8 @@ def add_csa_data_to_meta(bidspath: str):
                     # jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[42]'])
                     # jsondata['PartialFourier_percent'] = float(csa_data['sWipMemBlock.alFree[9]'])
                     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[1]'])
+                    jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                    jsondata["DummyEchoes"] = 0
                 elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4":
                     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[20]'])
                     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[21]'])
@@ -96,6 +98,8 @@ def add_csa_data_to_meta(bidspath: str):
                     # jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[14]'])
                     # jsondata['PartialFourier_percent'] = float(csa_data['sWipMemBlock.alFree[9]'])
                     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.alFree[24]']) / 100
+                    jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                    jsondata["DummyEchoes"] = float(csa_data["sWipMemBlock.alFree[32]"])
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)

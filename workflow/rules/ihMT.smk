@@ -13,6 +13,9 @@ except:
 def get_raw_ihmt(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.nii.gz'))[0] #get first run
 
+def get_raw_ihmt_json(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0] #get first run
+
 def get_ihmt_contrast_type(wildcards):
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0]
     with open(json_path, "r") as f:
@@ -38,9 +41,28 @@ def aggregate_ihmt_maps(wildcards):
             for ihmt in ihmt_acqlist:
                 ihmt_map_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "/preproc/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_MTmap_brain_denoised_n4.nii.gz")
     return ihmt_map_list
-        
+
+
+
+rule add_xml_data_to_meta_ihmt:
+    input:
+        json_path = get_raw_ihmt_json,
+        protocol_path = config["protocol_path"]
+    output:
+        temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_addXMLdata.done")
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_addXMLdata.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        python3 workflow/scripts/add_xml_data_to_meta.py {input.json_path} {input.protocol_path}
+        touch {output}
+        """
+
+
 rule denoise_ihmt:
     input:
+        addXMLdone = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_addXMLdata.done",
         raw_img = get_raw_ihmt
     output:
         out=temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_denoise.nii"),
