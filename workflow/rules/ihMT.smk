@@ -47,6 +47,7 @@ def aggregate_ihmt_maps(wildcards):
 rule add_xml_data_to_meta_ihmt:
     input:
         json_path = get_raw_ihmt_json,
+    params:
         protocol_path = config["protocol_path"]
     output:
         temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_addXMLdata.done")
@@ -55,7 +56,7 @@ rule add_xml_data_to_meta_ihmt:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        python3 workflow/scripts/add_xml_data_to_meta.py {input.json_path} {input.protocol_path}
+        python3 workflow/scripts/add_xml_data_to_meta.py {input.json_path} {params.protocol_path}
         touch {output}
         """
 

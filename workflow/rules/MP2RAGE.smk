@@ -13,31 +13,40 @@ try:
 except:
     field_strength_list=[]
 
-def mp2rage_echo_spacing(wildcards):
-    protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
-    protocol_name_pattern = "*" + protocol_name + "*/*.xml"
-    search_path = Path(config["protocol_path"])
-    xml_path_list = sorted(search_path.rglob(protocol_name_pattern, case_sensitive=False))
-    if len(xml_path_list) > 0:
-        xml_path = xml_path_list[0]
-        xml_tree = etree.parse(xml_path)
-        xml_root = xml_tree.getroot()
-        echo_spacing_unit = xml_root.xpath(".//SubStep[ProtHeaderInfo[HeaderProtPath[contains(text(), 'mp2r')]]]/Card/ProtParameter[Label[contains(text(), 'Echo Spacing')]]/ValueAndUnit")[0].text
-        numeric_const_pattern = r'[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
-        rx = re.compile(numeric_const_pattern, re.VERBOSE)
-        echo_spacing = float(rx.findall( echo_spacing_unit )[0])
-    else:
-        echo_spacing = 7.4
-    return echo_spacing
+# def mp2rage_echo_spacing(wildcards):
+#     protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
+#     protocol_name_pattern = "*" + protocol_name + "*/*.xml"
+#     search_path = Path(config["protocol_path"])
+#     xml_path_list = sorted(search_path.rglob(protocol_name_pattern, case_sensitive=False))
+#     if len(xml_path_list) > 0:
+#         xml_path = xml_path_list[0]
+#         xml_tree = etree.parse(xml_path)
+#         xml_root = xml_tree.getroot()
+#         echo_spacing_unit = xml_root.xpath(".//SubStep[ProtHeaderInfo[HeaderProtPath[contains(text(), 'mp2r')]]]/Card/ProtParameter[Label[contains(text(), 'Echo Spacing')]]/ValueAndUnit")[0].text
+#         numeric_const_pattern = r'[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
+#         rx = re.compile(numeric_const_pattern, re.VERBOSE)
+#         echo_spacing = float(rx.findall( echo_spacing_unit )[0])
+#     else:
+#         echo_spacing = 7.4
+#     return echo_spacing
 
 def get_inv1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-1_MP2RAGE.nii.gz'))[0]
 
+def get_inv1_json(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-1_MP2RAGE.json'))[0]
+
 def get_inv2(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-2_MP2RAGE.nii.gz'))[0]
 
+def get_inv2_json(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-2_MP2RAGE.json'))[0]
+
 def get_unit1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_UNIT1.nii.gz'))[0]
+
+def get_unit1_json(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_UNIT1.json'))[0]
 
 def get_preproc_uniden_list(wildcards):
     # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
@@ -123,14 +132,35 @@ def aggregate_mp2rage(wildcards):
     return sorted(mp2rage_list)
 
 
+rule add_xml_data_to_meta_mp2rage:
+    input:
+        inv1_json = get_inv1_json,
+        inv2_json = get_inv2_json,
+        unit1_json = get_unit1_json,
+    params:
+        protocol_path = config["protocol_path"]
+    output:
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_addXMLdata.done")
+    log:
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_addXMLdata.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        python3 workflow/scripts/add_xml_data_to_meta.py {input.inv1_json} {params.protocol_path}
+        python3 workflow/scripts/add_xml_data_to_meta.py {input.inv2_json} {params.protocol_path}
+        python3 workflow/scripts/add_xml_data_to_meta.py {input.unit1_json} {params.protocol_path}
+        touch {output}
+        """
+
+
 rule json_for_uncorr_qT1:
     input:
+        addXMLdone = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_addXMLdata.done",
         b1map_nifti = get_last_b1map_run,
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
     params:
-        echo_spacing = mp2rage_echo_spacing,
         uncorr_qT1 = True
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map.json"
@@ -150,7 +180,6 @@ rule json_for_uncorr_qT1:
         -inv2_nifti {input.inv2_nifti} \
         -unit1_nifti {input.unit1_nifti} \
         -output_json {output} \
-        -echo_spacing {params.echo_spacing} \
         -threads {threads} \
         -uncorr_qT1 {params.uncorr_qT1}
         """
@@ -187,8 +216,6 @@ rule json_for_mp2proc:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1
-    params:
-        echo_spacing = mp2rage_echo_spacing
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_mp2proc.json"
     threads:
@@ -207,7 +234,6 @@ rule json_for_mp2proc:
         -inv2_nifti {input.inv2_nifti} \
         -unit1_nifti {input.unit1_nifti} \
         -output_json {output} \
-        -echo_spacing {params.echo_spacing} \
         -threads {threads}
         """
 
