@@ -17,7 +17,11 @@ Some freesurfer tools require a freesurfer license. You can obtain a freesurfer 
 
 ihMT MoCo also requires a license agreement. Please sign the license agreement and download the code at https://crmbm.univ-amu.fr/resources/ihmt-moco/. Once you have obtained the code, save it to ```.snakemake/scripts/ihMT_MoCo.sh```
 
+The first time the pipeline runs, all required singularity images and conda environments are constructed. This requires an internet connection. If Spinal Cord Toolbox is not present on the system, it is installed via the qMT.smk rule install_sct. 
+
 # Useage
+
+Note that the first time you run the pipeline on your system will be slower, as the associated conda and singularity environments must be downloaded and constructed. 
 
 In the same folder as the repository, run ```bash run_workflow.bash [OPTIONS]```. This will generate and run a snakemake command. To run the whole pipeline on all subjects using all available cores, run ```bash run_workflow.bash -i [path/to/DICOMS/folder] --protocol_path [path/to/protocol/xmls/folder] --all```.  Run ```bash run_workflow.bash -h``` for more information on required and optional flags, including GPU implementation and changing the default memory limits.
 

@@ -244,8 +244,8 @@ rule qsmxt:
         qsm_nii_list,
         qsm_json_list,
         # qsm_mask_list,
-        t1w_nii_list,
-        t1w_json_list
+        # t1w_nii_list,
+        # t1w_json_list
     params:
         qsm_folder="data/derivatives/{field_strength}/QSM/"
     output:
