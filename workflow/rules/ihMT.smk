@@ -220,7 +220,10 @@ rule calculate_ihmt_maps:
         ihMTmap_freqalt="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_freqalt_ihMTmap.nii.gz",
         #ihMTR depending on contrast type
         ihMTR_cosmod="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_cosmod_ihMTR.nii.gz",
-        ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_freqalt_ihMTR.nii.gz"      
+        ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_freqalt_ihMTR.nii.gz",
+        #bandpass
+        BP="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_BP.nii.gz",  
+        BPR="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_BPR.nii.gz",      
     container:
         "docker://nyudiffusionmri/designer2:v2.0.15"
     log:
@@ -266,6 +269,12 @@ rule calculate_ihmt_maps:
             mrcalc 0 {params.mts_sum} {params.mtd_cosmod_sum} -subtract -max {params.ihMTmap_cosmod} -force
             mrcalc 1 0 {params.ihMTmap_cosmod} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_cosmod} -force
             cp {params.ihMTmap_cosmod} {output.MTmap}
+        fi
+
+        if [ -f {params.mtd_freqalt} ] && [ -f {params.mtd_cosmod} ]
+        then
+            mrcalc 0 {params.mtd_freqalt_sum} {params.mtd_cosmod_sum} -subtract -max {params.BP} -force
+            mrcalc 1 0 {params.BP} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.BPR} -force
         fi
         """
 
@@ -388,7 +397,10 @@ rule b1corr_ihmt:
         ihMTmap_freqalt="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_freqalt_ihMTmap.nii.gz",
         #ihMTR depending on contrast type
         ihMTR_cosmod="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_cosmod_ihMTR.nii.gz",
-        ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_freqalt_ihMTR.nii.gz"
+        ihMTR_freqalt="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_freqalt_ihMTR.nii.gz",
+        #bandpass
+        BP="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_BP.nii.gz",  
+        BPR="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_BPR.nii.gz",      
     conda:
         "../envs/ihMT.yaml"
     log:
@@ -428,6 +440,16 @@ rule b1corr_ihmt:
         if [ -f {params.ihMTR_freqalt} ]
         then
             python3 workflow/scripts/ihmt_b1corr.py {params.ihMTR_freqalt} {input.ihmt_json} {input.b1map} {input.mask} "ihMTR_ALT"
+        fi
+
+        if [ -f {params.BP} ]
+        then
+            python3 workflow/scripts/ihmt_b1corr.py {params.BP} {input.ihmt_json} {input.b1map} {input.mask} "BP"
+        fi
+
+        if [ -f {params.BPR} ]
+        then
+            python3 workflow/scripts/ihmt_b1corr.py {params.BPR} {input.ihmt_json} {input.b1map} {input.mask} "BPR"
         fi
 
         touch {output}

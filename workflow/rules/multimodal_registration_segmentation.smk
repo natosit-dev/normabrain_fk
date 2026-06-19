@@ -341,7 +341,7 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR")
         mkdir -p "{params.acqdir}/reg2MP2RAGE"
         for map in "${{MTmaps[@]}}"; do
             moving="{params.acqdir}/{params.subject}_"$map".nii.gz"
@@ -437,7 +437,7 @@ rule ihmt_stats:
 
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR")
         
         for map in "${{MTmaps[@]}}"; do
             ihmt="{params.ihmtprefix}_${{map}}.nii.gz"
@@ -472,7 +472,7 @@ rule ihmt_tsv:
         
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR")
         
         for map in "${{MTmaps[@]}}"; do
             asegstats2table --subjects {params.subjectlist} --statsfile ihmt_${{map}}.stats -t $SUBJECTS_DIR/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
