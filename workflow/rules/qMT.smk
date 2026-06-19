@@ -87,6 +87,8 @@ def pdwmag_preproc(wildcards):
 def aggregate_qMT(wildcards):
     layout=layout_dict[wildcards.field_strength]
     qMT_list = []
+    T1map_list = []
+    MTRmap_list = []
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
     subjectlist = list(set(subjectlist_tb1tfl) & set(subjectlist_tb1tfl))
@@ -100,9 +102,13 @@ def aggregate_qMT(wildcards):
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
                 for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
-                qMT_list.append("data/derivatives/{field_strength}/qMT/sub-" + subject + "/ses-" + session + "/preproc/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_T1map_brain_denoised_n4.nii.gz")
-    counts = Counter(qMT_list)
-    qMT_list = [reg for reg, count in counts.items() if count > 3]
+                T1map_list.append("data/derivatives/{field_strength}/qMT/sub-" + subject + "/ses-" + session + "/preproc/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_T1map_brain_denoised_n4.nii.gz")
+                MTRmap_list.append("data/derivatives/{field_strength}/qMT/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_MTRmap.nii.gz")
+    counts_T1map = Counter(T1map_list)
+    T1map_list = [reg for reg, count in counts_T1map.items() if count > 3]
+    counts_MTRmap = Counter(MTRmap_list)
+    MTRmap_list = [reg for reg, count in counts_MTRmap.items() if count > 3]
+    qMT_list = T1map_list + MTRmap_list
     return qMT_list
 
 
