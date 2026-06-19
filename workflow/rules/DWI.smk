@@ -23,7 +23,7 @@ def aggregate_dki(wildcards):
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for dwi in dwi_acqlist:
                 dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
-                dki_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/acq-DWI" + dwi + "/dki/sub-" + subject + "_ses-" + session + "_acq-DWI" + dwi + "_rtk.nii.gz")
+                dki_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/acq-DWI" + dwi + "/dki/")
     return dki_list
 
 rule nyu_designer:
@@ -49,6 +49,9 @@ rule nyu_designer:
         rm -rf {params.preproc}
         if command -v eddy_cuda >/dev/null 2>&1; then
             export PATH="$(dirname "$(command -v eddy_cuda)"):$PATH"
+        fi
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
         fi
         designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}
         cp {params.preproc}/sigma.nii {output.noisemap}
