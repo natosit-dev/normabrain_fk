@@ -16,6 +16,9 @@ def get_raw_ihmt(wildcards):
 def get_raw_ihmt_json(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0] #get first run
 
+def get_raw_b1map_json(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-famp*_TB1TFL.json'))[-1] #select last run
+
 def get_ihmt_contrast_type(wildcards):
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0]
     with open(json_path, "r") as f:
@@ -243,6 +246,7 @@ rule calculate_ihmt_maps:
 
         if [ -f {params.mtd_freqalt} ]
         then
+            mrmath {params.mtd_freqalt} sum {params.mtd_freqalt_sum} -axis 3 -force
             mrmath {params.mtd_freqalt} mean {params.mtd_freqalt_avg} -axis 3 -force
             mrcalc 1 0 1 {params.mtd_freqalt_avg} {input.mt0} 0 -max -div nan 0 -replace -subtract -max -min {params.MTRd_freqalt} -force
             cp {params.MTRd_freqalt} {output.MTmap}
@@ -250,6 +254,7 @@ rule calculate_ihmt_maps:
 
         if [ -f {params.mtd_cosmod} ]
         then
+            mrmath {params.mtd_cosmod} sum {params.mtd_cosmod_sum} -axis 3 -force
             mrmath {params.mtd_cosmod} mean {params.mtd_cosmod_avg} -axis 3 -force
             mrcalc 1 0 1 {params.mtd_cosmod_avg} {input.mt0} 0 -max -div nan 0 -replace -subtract -max -min {params.MTRd_cosmod} -force
             cp {params.MTRd_cosmod} {output.MTmap}
@@ -257,7 +262,6 @@ rule calculate_ihmt_maps:
 
         if [ -f {params.mts} ] && [ -f {params.mtd_freqalt} ]
         then
-            mrmath {params.mtd_freqalt} sum {params.mtd_freqalt_sum} -axis 3 -force
             mrcalc 0 {params.mts_sum} {params.mtd_freqalt_sum} -subtract -max {params.ihMTmap_freqalt} -force
             mrcalc 1 0 {params.ihMTmap_freqalt} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_freqalt} -force
             cp {params.ihMTmap_freqalt} {output.MTmap}
@@ -265,7 +269,6 @@ rule calculate_ihmt_maps:
 
         if [ -f {params.mts} ] && [ -f {params.mtd_cosmod} ]
         then
-            mrmath {params.mtd_cosmod} sum {params.mtd_cosmod_sum} -axis 3 -force
             mrcalc 0 {params.mts_sum} {params.mtd_cosmod_sum} -subtract -max {params.ihMTmap_cosmod} -force
             mrcalc 1 0 {params.ihMTmap_cosmod} {input.mt0} 0 -max -div nan 0 -replace -max -min {params.ihMTR_cosmod} -force
             cp {params.ihMTmap_cosmod} {output.MTmap}
@@ -384,6 +387,7 @@ rule b1corr_ihmt:
         split_dir="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/split",
         ihmt_json=get_raw_ihmt_json,
         b1map="data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2IHMT/sub-{subject}_ses-{session}_acq-famp_reg2{ihmt_params}_smooth_norm.nii.gz",
+        b1map_json=get_raw_b1map_json,
         mask="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
     output:
         temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_b1corr.done")
@@ -409,47 +413,47 @@ rule b1corr_ihmt:
         """
         if [ -f {params.MTRs} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.MTRs} {input.ihmt_json} {input.b1map} {input.mask} "MTsR"
+            python3 workflow/scripts/ihmt_b1corr.py {params.MTRs} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTsR"
         fi
 
         if [ -f {params.MTRd_cosmod} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.MTRd_cosmod} {input.ihmt_json} {input.b1map} {input.mask} "MTdR_CM"
+            python3 workflow/scripts/ihmt_b1corr.py {params.MTRd_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTdR_CM"
         fi
 
         if [ -f {params.MTRd_freqalt} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.MTRd_freqalt} {input.ihmt_json} {input.b1map} {input.mask} "MTdR_ALT"
+            python3 workflow/scripts/ihmt_b1corr.py {params.MTRd_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTdR_ALT"
         fi
 
         if [ -f {params.ihMTmap_cosmod} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTmap_cosmod} {input.ihmt_json} {input.b1map} {input.mask} "ihMT_CM"
+            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTmap_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMT_CM"
         fi
 
         if [ -f {params.ihMTmap_freqalt} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTmap_freqalt} {input.ihmt_json} {input.b1map} {input.mask} "ihMT_ALT"
+            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTmap_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMT_ALT"
         fi
 
         if [ -f {params.ihMTR_cosmod} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTR_cosmod} {input.ihmt_json} {input.b1map} {input.mask} "ihMTR_CM"
+            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTR_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMTR_CM"
         fi
 
         if [ -f {params.ihMTR_freqalt} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTR_freqalt} {input.ihmt_json} {input.b1map} {input.mask} "ihMTR_ALT"
+            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTR_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMTR_ALT"
         fi
 
         if [ -f {params.BP} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.BP} {input.ihmt_json} {input.b1map} {input.mask} "BP"
+            python3 workflow/scripts/ihmt_b1corr.py {params.BP} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "BP"
         fi
 
         if [ -f {params.BPR} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.BPR} {input.ihmt_json} {input.b1map} {input.mask} "BPR"
+            python3 workflow/scripts/ihmt_b1corr.py {params.BPR} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "BPR"
         fi
 
         touch {output}

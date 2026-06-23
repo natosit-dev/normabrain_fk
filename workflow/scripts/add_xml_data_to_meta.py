@@ -10,7 +10,7 @@ def echo_spacing_from_xml(json_path: str, protocol_path: str):
     with open(json_path, "r") as f:
          meta = json.load(f)
     protocol_name = meta["StudyDescription"].split(" ")[-1]
-    xml_search_pattern = "*" + protocol_name + "*/*.xml"
+    xml_search_pattern = "*" + protocol_name + "*.xml"
     xml_path_list = sorted(protocol_path.rglob(xml_search_pattern, case_sensitive=False))
     acq_string = meta["SeriesDescription"]
     try:
