@@ -50,7 +50,8 @@ def symlink_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: s
 
             #remove dicoms with NoAV in the name
             for dicom in list(new_folder.rglob('*NoAV*.dcm', recurse_symlinks=True)):
-                os.remove(dicom.parent)
+                if dicom.parent.exists():
+                    os.remove(dicom.parent)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

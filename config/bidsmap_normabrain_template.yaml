@@ -1316,11 +1316,11 @@ DICOM:
       suffix: <ScanningSequence>
   - attributes:
       <<: *leaveout_attributes_dicom
-      ProtocolName: (?i).*(Scout|scout|localizer|t2_haste_sag_ipat2|AAhead|aahead|tracew|rr|RR).*
+      ProtocolName: (?i).*(Scout|scout|localizer|t2_haste_sag_ipat2|AAhead|aahead|tracew).*
     bids: *leaveout_bids_dicom
   - attributes:
       <<: *leaveout_attributes_dicom
-      SeriesDescription: (?i).*(Scout|scout|localizer|t2_haste_sag_ipat2|AAhead|aahead|tracew|rr|RR).*
+      SeriesDescription: (?i).*(Scout|scout|localizer|t2_haste_sag_ipat2|AAhead|aahead|tracew).*
     bids: *leaveout_bids_dicom
   - attributes:
       <<: *leaveout_attributes_dicom
