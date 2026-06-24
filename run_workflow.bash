@@ -246,7 +246,7 @@ if [ "$mem_mb" -eq 0 ]; then
 fi
 
 if [ "$cores" -eq 0 ]; then
-    cores_string=""
+    cores_string=" --cores 'all'"
 fi
 
 if [ "$reg_seg" = true ]; then #--reg_seg with no other flags functions the same as --all
