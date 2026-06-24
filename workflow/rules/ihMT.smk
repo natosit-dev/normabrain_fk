@@ -59,7 +59,7 @@ rule add_xml_data_to_meta_ihmt:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        python3 workflow/scripts/add_xml_data_to_meta.py {input.json_path} {params.protocol_path}
+        python workflow/scripts/add_xml_data_to_meta.py {input.json_path} {params.protocol_path}
         touch {output}
         """
 
@@ -413,47 +413,47 @@ rule b1corr_ihmt:
         """
         if [ -f {params.MTRs} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.MTRs} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTsR"
+            python workflow/scripts/ihmt_b1corr.py {params.MTRs} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTsR"
         fi
 
         if [ -f {params.MTRd_cosmod} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.MTRd_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTdR_CM"
+            python workflow/scripts/ihmt_b1corr.py {params.MTRd_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTdR_CM"
         fi
 
         if [ -f {params.MTRd_freqalt} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.MTRd_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTdR_ALT"
+            python workflow/scripts/ihmt_b1corr.py {params.MTRd_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTdR_ALT"
         fi
 
         if [ -f {params.ihMTmap_cosmod} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTmap_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMT_CM"
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTmap_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMT_CM"
         fi
 
         if [ -f {params.ihMTmap_freqalt} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTmap_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMT_ALT"
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTmap_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMT_ALT"
         fi
 
         if [ -f {params.ihMTR_cosmod} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTR_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMTR_CM"
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTR_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMTR_CM"
         fi
 
         if [ -f {params.ihMTR_freqalt} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.ihMTR_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMTR_ALT"
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTR_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMTR_ALT"
         fi
 
         if [ -f {params.BP} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.BP} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "BP"
+            python workflow/scripts/ihmt_b1corr.py {params.BP} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "BP"
         fi
 
         if [ -f {params.BPR} ]
         then
-            python3 workflow/scripts/ihmt_b1corr.py {params.BPR} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "BPR"
+            python workflow/scripts/ihmt_b1corr.py {params.BPR} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "BPR"
         fi
 
         touch {output}

@@ -54,7 +54,7 @@ def add_csa_data_to_meta(bidspath: str):
                 #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
                 #Get ihMT contrast type. If it's blank and the sequence version does not include the string "MC" then set it to Basic. If it's blank and the sequence version does include the string "MC" set it to Frequency Alternated.
-                jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
+                # jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
                 if isinstance(csa_data.get('sWipMemBlock.alFree[2]'), str):
                     ContrastType = int(csa_data['sWipMemBlock.alFree[2]'])
                 else:

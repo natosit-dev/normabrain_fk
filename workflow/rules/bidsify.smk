@@ -31,7 +31,11 @@ checkpoint symlink_dicoms_by_field_strength:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        python3 workflow/scripts/symlink_dicoms_by_field_strength.py {input} {output} {params.subject_list}
+        if [ "{params.subject_list}" = "*" ]; then
+            python workflow/scripts/symlink_dicoms_by_field_strength.py "{input}" "{output}" "*"
+        else
+            python workflow/scripts/symlink_dicoms_by_field_strength.py "{input}" "{output}" {params.subject_list}
+        fi
         """
 
 
@@ -91,7 +95,7 @@ checkpoint add_csa_data_to_meta:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        python3 workflow/scripts/add_csa_data_to_meta.py {params.outdir}
+        python workflow/scripts/add_csa_data_to_meta.py {params.outdir}
         """
 
 

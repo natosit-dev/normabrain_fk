@@ -339,7 +339,7 @@ rule sos:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        python3 workflow/scripts/sos_images.py {input} {output}
+        python workflow/scripts/sos_images.py {input} {output}
         """
 
 
@@ -647,7 +647,7 @@ rule fit_JSPqMT_CLI:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        python3 workflow/scripts/luca_qMT/qmt/fit_JSPqMT_CLI.py \
+        python workflow/scripts/luca_qMT/qmt/fit_JSPqMT_CLI.py \
         {input.mt_off},{input.mt_on} \
         {input.pdw},{input.t1w} \
         {output.mpfmap} \

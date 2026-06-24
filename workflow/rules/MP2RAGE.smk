@@ -146,9 +146,9 @@ rule add_xml_data_to_meta_mp2rage:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        python3 workflow/scripts/add_xml_data_to_meta.py {input.inv1_json} {params.protocol_path}
-        python3 workflow/scripts/add_xml_data_to_meta.py {input.inv2_json} {params.protocol_path}
-        python3 workflow/scripts/add_xml_data_to_meta.py {input.unit1_json} {params.protocol_path}
+        python workflow/scripts/add_xml_data_to_meta.py {input.inv1_json} {params.protocol_path}
+        python workflow/scripts/add_xml_data_to_meta.py {input.inv2_json} {params.protocol_path}
+        python workflow/scripts/add_xml_data_to_meta.py {input.unit1_json} {params.protocol_path}
         touch {output}
         """
 
@@ -174,7 +174,7 @@ rule json_for_uncorr_qT1:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        python3 workflow/scripts/create_json_for_mp2proc.py \
+        python workflow/scripts/create_json_for_mp2proc.py \
         -b1map_nifti {input.b1map_nifti} \
         -inv1_nifti {input.inv1_nifti} \
         -inv2_nifti {input.inv2_nifti} \
@@ -228,7 +228,7 @@ rule json_for_mp2proc:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        python3 workflow/scripts/create_json_for_mp2proc.py \
+        python workflow/scripts/create_json_for_mp2proc.py \
         -b1map_nifti {input.b1map_nifti} \
         -inv1_nifti {input.inv1_nifti} \
         -inv2_nifti {input.inv2_nifti} \
