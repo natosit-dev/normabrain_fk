@@ -15,5 +15,6 @@ dependencies:
   - gxx_linux-64
   - ants=2.6.2
   - mrtrix3=3.0.7
+  - pip=26.1.2
   - pip:
     - -e ../../workflow/scripts/luca_qMT

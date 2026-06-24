@@ -1,14 +1,14 @@
 name: snakemake
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
 dependencies:
-  - python=3.13.11
+  - python=3.13.14
   - snakemake=9.14.5
   - graphviz=12.2.1
   - snakefmt=0.11.2
-  - conda
-  - pip
+  - conda=26.5.3
+  - pip=26.1.2
   - pip:
-    - snakebids==0.15.0
+    - pybids==0.21.0
     - lxml==6.0.2
