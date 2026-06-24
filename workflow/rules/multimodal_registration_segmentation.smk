@@ -437,7 +437,7 @@ rule ihmt_stats:
 
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         
         for map in "${{MTmaps[@]}}"; do
             ihmt="{params.ihmtprefix}_${{map}}.nii.gz"

@@ -316,7 +316,7 @@ fi
 
 #always run bids first
 echo "Running bidsify module first, as the rest of the pipeline depends on this."
-cmd_string="snakemake${config_string} --keep-incomplete --sdm conda --cores 1 ${dry_run_string}${dag_string1} gather_add_csa_data_to_meta${dag_string2}"
+cmd_string="snakemake${config_string} --sdm conda --cores 1 ${dry_run_string}${dag_string1} gather_add_csa_data_to_meta${dag_string2}"
 echo "Running snakemake command ${cmd_string}"
 eval ${cmd_string}
 

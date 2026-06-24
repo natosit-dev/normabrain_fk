@@ -23,7 +23,7 @@ checkpoint symlink_dicoms_by_field_strength:
     params:
         subject_list=config["subject_list_dicom"]
     output:
-        directory("data/rawdata/dicoms")
+        update(directory("data/rawdata/dicoms"))
     conda:
         "../envs/bidscoin.yaml"
     log:
