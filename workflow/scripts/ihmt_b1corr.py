@@ -68,7 +68,7 @@ def ihmt_b1corr(ihmt_nifti: str, ihmt_json: str, b1map_nifti: str, b1map_json: s
         N_pulsePerOffset=1,
         N_pulse = ihmt_meta["NumberPulses"],
         N_burst = ihmt_meta["NumberBursts"],
-        N_adc = ihmt_meta["TurboFactor"] + ihmt_meta["DummyEchoes"],
+        N_adc = ihmt_meta["TurboFactor"],
         N_dummyADC = ihmt_meta["DummyEchoes"],
         dt_interPulse = Duration.from_micro(ihmt_meta["PulseRepetitionTime_us"]),
         TR_burst = Duration.from_micro(ihmt_meta["BurstRepetitionTime_us"]),
