@@ -454,7 +454,7 @@ rule ihmt_stats:
 rule ihmt_tsv:
     input:
         ihmt_statslist,
-        "data/rawdata/bidsify.done"
+        # "data/rawdata/bidsify.done"
     params:
         subjectlist=freesurfer_subjectlist_ihmt,
         subjects_dir="data/derivatives/{field_strength}/freesurfer/"
@@ -472,11 +472,13 @@ rule ihmt_tsv:
         
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         
-        for map in "${{MTmaps[@]}}"; do
-            asegstats2table --subjects {params.subjectlist} --statsfile ihmt_${{map}}.stats -t $SUBJECTS_DIR/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
-        done
+        if ! [ -n {params.subjectlist} ]; then
+            for map in "${{MTmaps[@]}}"; do
+                asegstats2table --subjects {params.subjectlist} --statsfile ihmt_${{map}}.stats -t $SUBJECTS_DIR/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+            done
+        fi
         touch {output}
         """
 
@@ -739,9 +741,11 @@ rule qMT_tsv:
 
         qMTmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         
-        for map in "${{qMTmaps[@]}}"; do
-            asegstats2table --subjects {params.subjectlist} --statsfile qMT_${{map}}.stats -t $SUBJECTS_DIR/qMT_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
-        done
+        if ! [ -n {params.subjectlist} ]; then
+            for map in "${{qMTmaps[@]}}"; do
+                asegstats2table --subjects {params.subjectlist} --statsfile qMT_${{map}}.stats -t $SUBJECTS_DIR/qMT_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+            done
+        fi
         touch {output}
         """
 
@@ -971,9 +975,11 @@ rule dwi_tsv:
 
         dkimaps=("ad" "ak" "color_fa" "fa" "kfa" "md" "mk" "mkt" "rd" "rk" "rtk")
         
-        for map in "${{dkimaps[@]}}"; do
-            asegstats2table --subjects {params.subjectlist} --statsfile dki_${{map}}.stats -t $SUBJECTS_DIR/dki_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
-        done
+        if ! [ -n {params.subjectlist} ]; then
+            for map in "${{dkimaps[@]}}"; do
+                asegstats2table --subjects {params.subjectlist} --statsfile dki_${{map}}.stats -t $SUBJECTS_DIR/dki_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+            done
+        fi
         touch {output}
         """
 
