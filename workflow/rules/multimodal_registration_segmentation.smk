@@ -341,7 +341,7 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         mkdir -p "{params.acqdir}/reg2MP2RAGE"
         for map in "${{MTmaps[@]}}"; do
             moving="{params.acqdir}/{params.subject}_"$map".nii.gz"
@@ -399,7 +399,7 @@ rule apply_reg_seg_to_ihmt_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         #choose ref based on what maps are available
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         for map in "${{MTmaps[@]}}"; do
             ref_init="{params.refprefix}_"$map".nii.gz"
             if [ -f $ref_init ]; then #if file exists, then set ref
@@ -507,7 +507,7 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         #set reference based on what maps are availble
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         for map in "${{MTmaps[@]}}"; do
             ref_init="{params.ihmt_prefix}_"$map".nii.gz"
             if [ -f $ref_init ]; then #if file exists, then set ref
