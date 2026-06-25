@@ -216,7 +216,7 @@ mem_string=" --resources mem_mb=${mem_mb}"
 cores_string=" --cores ${cores}"
 sdm_string=" --sdm conda apptainer"
 rerun_incomplete_string=" --rerun-incomplete"
-gpu_string=""
+gpu_string=' --singularity-args " -e"'
 dag_string1=""
 dag_string2=""
 dry_run_string=""

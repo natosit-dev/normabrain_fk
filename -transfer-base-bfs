@@ -1,0 +1,8 @@
+-hires
+-parallel
+-3T
+-i
+data/derivatives/3T/MP2RAGE/sub-rfl260123normanoel/ses-1/acq-mp2ragewipsag1isocs5/sub-rfl260123normanoel_ses-1_acq-mp2ragewipsag1isocs5_T1w_UNIDEN_b1corr_cropped.nii.gz
+-all
+-s
+sub-rfl260123normanoel_ses-1_acq-mp2ragewipsag1isocs5
