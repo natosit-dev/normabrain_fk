@@ -36,7 +36,9 @@ def get_ihmt_protocol_name(wildcards):
 def aggregate_ihmt_maps(wildcards):
     layout=layout_dict[wildcards.field_strength]
     ihmt_map_list = []
-    subjectlist = layout.get_subject(suffix="ihmt")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_dwi = layout.get_subject(suffix="dwi")
+    subjectlist = list(set(subjectlist_tb1tfl) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist = layout.get_session(suffix="ihmt", subject=subject)
         for session in sessionlist:
