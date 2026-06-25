@@ -8,10 +8,10 @@ except:
     field_strength_list=[]
 
 def get_dwi_nii(wildcards):
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_dwi.nii.gz'))
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_*dwi.nii.gz'))[0]
 
 def get_b0_nii(wildcards):
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*b0*{wildcards.dwi_params}*_dir-AP_dwi.nii.gz'))
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*b0*{wildcards.dwi_params}*_dir-AP_*dwi.nii.gz'))[0]
 
 def aggregate_dki(wildcards):
     layout=layout_dict[wildcards.field_strength]
@@ -22,7 +22,7 @@ def aggregate_dki(wildcards):
         for session in sessionlist:
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for dwi in dwi_acqlist:
-                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "")
                 dki_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/acq-DWI" + dwi + "/dki/")
     return dki_list
 
