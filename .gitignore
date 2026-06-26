@@ -18,3 +18,5 @@ snakemake*/
 *.mps
 crash*
 -*
+*.svg
+*.html
