@@ -37,8 +37,9 @@ def aggregate_ihmt_maps(wildcards):
     layout=layout_dict[wildcards.field_strength]
     ihmt_map_list = []
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
-    subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
+    subjectlist_ihmt = layout.get_subject(suffix="ihmt")
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist = layout.get_session(suffix="ihmt", subject=subject)
         for session in sessionlist:
@@ -413,49 +414,60 @@ rule b1corr_ihmt:
        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_b1corr.log"
     shell:
         """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        
         if [ -f {params.MTRs} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.MTRs} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTsR"
+            python workflow/scripts/ihmt_b1corr.py {params.MTRs} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "MTsR" || \
+            python workflow/scripts/ihmt_b1corr.py {params.MTRs} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "MTsR"
         fi
 
         if [ -f {params.MTRd_cosmod} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.MTRd_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTdR_CM"
+            python workflow/scripts/ihmt_b1corr.py {params.MTRd_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "MTdR_CM" || \
+            python workflow/scripts/ihmt_b1corr.py {params.MTRd_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "MTdR_CM"
         fi
 
         if [ -f {params.MTRd_freqalt} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.MTRd_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "MTdR_ALT"
+            python workflow/scripts/ihmt_b1corr.py {params.MTRd_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "MTdR_ALT" || \
+            python workflow/scripts/ihmt_b1corr.py {params.MTRd_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "MTdR_ALT" 
         fi
 
         if [ -f {params.ihMTmap_cosmod} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.ihMTmap_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMT_CM"
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTmap_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "ihMT_CM" || \
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTmap_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "ihMT_CM"
         fi
 
         if [ -f {params.ihMTmap_freqalt} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.ihMTmap_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMT_ALT"
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTmap_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "ihMT_ALT" || \
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTmap_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "ihMT_ALT"
         fi
 
         if [ -f {params.ihMTR_cosmod} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.ihMTR_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMTR_CM"
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTR_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "ihMTR_CM" || \
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTR_cosmod} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "ihMTR_CM"
         fi
 
         if [ -f {params.ihMTR_freqalt} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.ihMTR_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "ihMTR_ALT"
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTR_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "ihMTR_ALT" || \
+            python workflow/scripts/ihmt_b1corr.py {params.ihMTR_freqalt} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "ihMTR_ALT"
         fi
 
         if [ -f {params.BP} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.BP} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "BP"
+            python workflow/scripts/ihmt_b1corr.py {params.BP} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "BP" || \
+            python workflow/scripts/ihmt_b1corr.py {params.BP} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "BP"
         fi
 
         if [ -f {params.BPR} ]
         then
-            python workflow/scripts/ihmt_b1corr.py {params.BPR} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "BPR"
+            python workflow/scripts/ihmt_b1corr.py {params.BPR} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} {wildcards.field_strength} "BPR" || \
+            python workflow/scripts/ihmt_b1corr.py {params.BPR} {input.ihmt_json} {input.b1map} {input.b1map_json} {input.mask} "custom" "BPR"
         fi
 
         touch {output}

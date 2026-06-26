@@ -1,11 +1,14 @@
 import argparse
 import json
+import yaml
 from ihmt import Tukey, Sequence, Signal, System, Simulator, Corrector, Duration, Frequency, Angle
 from pathlib import Path
 from nibabel import load, Nifti1Image
 
 
-def ihmt_b1corr(ihmt_nifti: str, ihmt_json: str, b1map_nifti: str, b1map_json: str, mask_nifti: str, map_type: str):
+def ihmt_b1corr(ihmt_nifti: str, ihmt_json: str, b1map_nifti: str, b1map_json: str, mask_nifti: str, field_strength: str, map_type: str):
+    #limit possible values of field_strength
+    assert field_strength in ["3T", "7T", "custom"]
     #limit possible values of map_type
     assert map_type in ["MT0", "MTs_Positive", "MTs_Negative", "MTd_CM", "MTd_ALT", "MTs", "ihMT_CM", "ihMT_ALT", "BP", "MTsR_Positive", "MTsR_Negative", "MTsR", "MTdR_CM", "MTdR_ALT", "ihMTR_CM", "ihMTR_ALT", "BPR", "ALL"]
     #make file strings Paths
@@ -20,7 +23,10 @@ def ihmt_b1corr(ihmt_nifti: str, ihmt_json: str, b1map_nifti: str, b1map_json: s
 
     mask_nifti = Path(mask_nifti)
 
-    # b1map_nifti = b1map_nifti * ihmt_meta["FlipAngle_deg"] * ihmt_meta["TxRefAmp"] / b1map_meta["TxRefAmp"]
+    #load system config file
+    system_config_path = Path(__file__).with_name("ihmt_b1corr_system_config.yaml")
+    with system_config_path.open("r") as f:
+        system_config = yaml.safe_load(f)
 
     param_paths = dict(
         flipAngle = b1map_nifti,
@@ -77,18 +83,23 @@ def ihmt_b1corr(ihmt_nifti: str, ihmt_json: str, b1map_nifti: str, b1map_json: s
         tr = Duration.from_seconds(ihmt_meta["RepetitionTime"]),
         readout_flipAngle = Angle.from_degrees(ihmt_meta["FlipAngle"]),
     )
-    sys = System(
-        pulse = pulse,
-        poolFree_M0=1,
-        poolFree_T1=1,
-        poolFree_T2=.5,
-        poolFreeBound_exchangeRate=10,
-        poolBound_M0=.1,
-        poolBound_T1=1,
-        poolBound_T2=10e-6,
-        poolBound_T1D=10e-3,
-        poolBound_lineshapeAsymmetry=0,
-    )
+    
+    if field_strength == "7T":
+        sys = System(
+            pulse = pulse,
+            **system_config['7T_system']
+        )
+    elif field_strength == "3T":
+        sys = System(
+            pulse = pulse,
+            **system_config['3T_system']
+        )
+    else:
+        sys = System(
+            pulse = pulse,
+            **system_config['custom_system']
+        )
+        
     sim = Simulator(
         system = sys,
         sequence = seq,
@@ -120,6 +131,7 @@ if __name__ == '__main__':
     parser.add_argument("b1map_nifti", type=str, help="Path to the B1+ flip angle map nifti, in the same space as the ihMT map, normalized by the B1+ target flip angle.")
     parser.add_argument("b1map_json", type=str, help="Path to the B1+ flip angle map json metadata BIDS sidecar.")
     parser.add_argument("mask_nifti", type=str, help="Path to the mask nifit, in the same space as the ihMT map.")
+    parser.add_argument("field_strength", type=str, help="Field strength used to collect the MRI data. Must be one of '7T', '3T', or 'custom'. If 'custom', edit the system values in ihmt_b1corr_system_config.yaml under 'custom_system'.")
     parser.add_argument("map_type", type=str, help='ihMT derived map or raw volume type. Must be one of "MT0", "MTs_Positive", "MTs_Negative", "MTd_CM", "MTd_ALT", "MTs", "ihMT_CM", "ihMT_ALT", "BP", "MTsR_Positive", "MTsR_Negative", "MTsR", "MTdR_CM", "MTdR_ALT", "ihMTR_CM", "ihMTR_ALT", "BPR", "ALL"')
     args = parser.parse_args()
-    ihmt_b1corr(args.ihmt_nifti, args.ihmt_json, args.b1map_nifti, args.b1map_json, args.mask_nifti, args.map_type)
+    ihmt_b1corr(args.ihmt_nifti, args.ihmt_json, args.b1map_nifti, args.b1map_json, args.mask_nifti, args.field_strength, args.map_type)
