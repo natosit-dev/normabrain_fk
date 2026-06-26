@@ -990,7 +990,7 @@ DICOM:
       IntendedFor:
   - attributes:
       <<: *fmap_dicomattr
-      ProtocolName: (?i).*(fmap|field.?map|B0.?map|b0.?map).*
+      ProtocolName: (?i).*(field.?map|B0.?map|b0.?map).*
       EchoNumbers: '2'
       ImageType: .*'P'.*
     bids:
@@ -999,7 +999,7 @@ DICOM:
     meta: *fmap_meta
   - attributes:
       <<: *fmap_dicomattr
-      ProtocolName: (?i).*(fmap|field.?map|B0.?map|b0.?map).*
+      ProtocolName: (?i).*(field.?map|B0.?map|b0.?map).*
       EchoNumbers: '1'
       ImageType: .*'M'.*
     bids:
@@ -1008,7 +1008,7 @@ DICOM:
     meta: *fmap_meta
   - attributes:
       <<: *fmap_dicomattr
-      ProtocolName: (?i).*(fmap|field.?map|B0.?map|b0.?map).*
+      ProtocolName: (?i).*(field.?map|B0.?map|b0.?map).*
       EchoNumbers: '2'
       ImageType: .*'M'.*
     bids:
@@ -1017,7 +1017,7 @@ DICOM:
     meta: *fmap_meta
   - attributes:
       <<: *fmap_dicomattr
-      ProtocolName: (?i).*(fmap|field.?map|B0.?map|b0.?map).*
+      ProtocolName: (?i).*(field.?map|B0.?map|b0.?map).*
       EchoNumbers: '1'
       ImageType: .*'P'.*
     bids:
@@ -1026,7 +1026,7 @@ DICOM:
     meta: *fmap_meta
   - attributes:
       <<: *fmap_dicomattr
-      ProtocolName: (?i).*(fmap|field.?map|B0.?map|b0.?map).*
+      ProtocolName: (?i).*(field.?map|B0.?map|b0.?map).*
       EchoNumbers: '2'
       ImageType: .*'P'.*
     bids:
@@ -1035,14 +1035,14 @@ DICOM:
     meta: *fmap_meta
   - attributes:
       <<: *fmap_dicomattr
-      ProtocolName: (?i).*(fmap|field.?map|B0.?map|b0.?map).*
+      ProtocolName: (?i).*(field.?map|B0.?map|b0.?map).*
     bids:
       <<: *fmap_dicoment_fieldmaps
       suffix: fieldmap
     meta: *fmap_meta
   - attributes:
       <<: *fmap_dicomattr
-      ProtocolName: (?i).*(fmap|field.?map|B0.?map|b0.?map).*
+      ProtocolName: (?i).*(field.?map|B0.?map|b0.?map).*
     bids:
       <<: *fmap_dicoment_fieldmaps
       suffix: magnitude
@@ -2091,7 +2091,7 @@ PAR:
   - attributes: &fmap_parattr
       series_type:
       exam_name:
-      protocol_name: (?i).*(fmap|field.?map|B0.?map|b0.?map).*
+      protocol_name: (?i).*(field.?map|B0.?map|b0.?map).*
       tech:
       diffusion:
       fov:
