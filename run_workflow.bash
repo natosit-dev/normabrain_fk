@@ -5,7 +5,7 @@ input_dicoms_path=""
 protocol_path=""
 subject_list_dicom="*"
 qmt_sequence="vibeMT"
-qmt_contrasts='["mt0", "mtw", "pdw", "t1w"]'
+qmt_contrasts='mt0 mtw pdw t1w'
 mem_mb=0
 cores=0
 all=false
@@ -21,21 +21,58 @@ dag=false
 dry_run=false
 config="config/snakemake_config.yaml"
 
-parse_yaml() { #function from https://stackoverflow.com/a/21189044
-   local prefix=$2
-   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
-   sed -ne "s|^\($s\):|\1|" \
-        -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
-   awk -F$fs '{
-      indent = length($1)/2;
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
-      }
-   }'
+trim_whitespace() {
+    local value=$1
+
+    value=${value#"${value%%[![:space:]]*}"}
+    value=${value%"${value##*[![:space:]]}"}
+    printf '%s' "$value"
+}
+
+load_config() {
+    local config_file=$1
+    local config_line
+    local config_key
+    local config_value
+
+    while IFS= read -r config_line; do
+        config_line=$(trim_whitespace "$config_line")
+
+        case $config_line in
+            ''|'#'*)
+                continue
+                ;;
+        esac
+
+        config_key=${config_line%%:*}
+        config_value=${config_line#*:}
+
+        config_key=$(trim_whitespace "$config_key")
+        config_value=$(trim_whitespace "$config_value")
+        config_value=${config_value%\"}
+        config_value=${config_value#\"}
+        config_value=${config_value%\'}
+        config_value=${config_value#\'}
+
+        case $config_key in
+            input_dicoms_path)
+                input_dicoms_path=$config_value
+                ;;
+            protocol_path)
+                protocol_path=$config_value
+                ;;
+            subject_list_dicom)
+                subject_list_dicom=$config_value
+                ;;
+            qmt_sequence)
+                qmt_sequence=$config_value
+                ;;
+            qmt_contrasts)
+                qmt_contrasts=$config_value
+                ;;
+            
+        esac
+    done < "$config_file"
 }
 
 usage() { #function to display script help
@@ -82,72 +119,72 @@ handle_options() { #function for handling options when this script is called
                 exit 0
                 ;;
             -i | --input_dicoms_path*)
-                if ! has_argument $@; then
+                if ! has_argument \"$@\"; then
                     echo "ERROR: Input DICOMS folder not specified." >&2
                     exit 1
                 fi
 
-                input_dicoms_path=$(extract_argument $@)
+                input_dicoms_path=$(extract_argument \"$@\")
 
                 shift
                 ;;
             --protocol_path*)
-                if ! has_argument $@; then
+                if ! has_argument \"$@\"; then
                     echo "ERROR: XML protocol folder not specified." >&2
                     exit 1
                 fi
 
-                protocol_path=$(extract_argument $@)
+                protocol_path=$(extract_argument \"$@\")
 
                 shift
                 ;;
             --subject_list_dicom*)
-                if ! has_argument $@; then
+                if ! has_argument \"$@\"; then
                     echo "ERROR: Subject list not specified." >&2
                     exit 1
                 fi
 
-                subject_list_dicom=$(extract_argument $@)
+                subject_list_dicom=$(extract_argument \"$@\")
 
                 shift
                 ;;
             --qmt_sequence*)
-                if ! has_argument $@; then
+                if ! has_argument \"$@\"; then
                     echo "ERROR: qMT sequence not specified." >&2
                     exit 1
                 fi
 
-                qmt_sequence=$(extract_argument $@)
+                qmt_sequence=$(extract_argument \"$@\")
 
                 shift
                 ;;
             --qmt_contrasts*)
-                if ! has_argument $@; then
+                if ! has_argument \"$@\"; then
                     echo "ERROR: qMT contrasts not specified." >&2
                     exit 1
                 fi
 
-                qmt_contrasts=$(extract_argument $@)
+                qmt_contrasts=$(extract_argument \"$@\")
 
                 shift
                 ;;
             --mem_mb*)
-                if ! has_argument $@; then
+                if ! has_argument \"$@\"; then
                     echo "ERROR: Memory not specified." >&2
                     exit 1
                 fi
 
-                mem_mb=$(extract_argument $@)
+                mem_mb=$(extract_argument \"$@\")
 
                 shift
                 ;;
             -c | --cores*)
-                if ! has_argument $@; then
+                if ! has_argument \"$@\"; then
                     echo "ERROR: Cores not specified." >&2
                     exit 1
                 fi
 
-                cores=$(extract_argument $@)
+                cores=$(extract_argument \"$@\")
 
                 shift
                 ;;
@@ -185,12 +222,12 @@ handle_options() { #function for handling options when this script is called
                 dry_run=true
                 ;;
             --config*)
-                if ! has_argument $@; then
+                if ! has_argument \"$@\"; then
                     echo "ERROR: Path to configuration file not specified" >&2
                     exit 1
                 fi
 
-                config=$(extract_argument $@)
+                config=$(extract_argument \"$@\")
 
                 shift
                 ;;
@@ -206,21 +243,23 @@ handle_options() { #function for handling options when this script is called
 handle_options "$@"
 
 #config may override default variable values defined above
-eval $(parse_yaml "$config")
+load_config "$config"
 
 handle_options "$@"
 
 #create command string based on arguments from flags in handle_options
-config_string=" --config input_dicoms_path='${input_dicoms_path}' protocol_path='${protocol_path}' subject_list_dicom='${subject_list_dicom}' qmt_sequence='${qmt_sequence}' qmt_contrasts='${qmt_contrasts}'"
-mem_string=" --resources mem_mb=${mem_mb}"
-cores_string=" --cores ${cores}"
-sdm_string=" --sdm conda apptainer"
-rerun_incomplete_string=" --rerun-incomplete"
-gpu_string=' --singularity-args " -e"'
-dag_string1=""
-dag_string2=""
-dry_run_string=""
-target_string=""
+config_args=(
+    --config
+    "input_dicoms_path=${input_dicoms_path}"
+    "protocol_path=${protocol_path}"
+    "subject_list_dicom=${subject_list_dicom}"
+    "qmt_sequence=${qmt_sequence}"
+    "qmt_contrasts=${qmt_contrasts}"
+)
+first_pass_args=(--sdm conda --cores 1)
+main_args=(--rerun-incomplete)
+target_args=()
+dag_mode=false
 
 if [ "$all" = false ] && [ "$reg_seg" = false ] && [ "$bids" = false ] && [ "$mp2rage" = false ] && [ "$ihmt" = false ] && [ "$qmt" = false ] && [ "$dwi" = false ] && [ "$qsm" = false ]; then
     echo "ERROR: Invalid command. Must use at least one of --all --bids --mp2rage --ihmt --qmt --dwi --qsm --reg_seg" >&2
@@ -242,86 +281,90 @@ if ! [ -n "$subject_list_dicom" ]; then
 fi
 
 if [ "$mem_mb" -eq 0 ]; then
-    mem_string=""
+    :
+else
+    main_args+=(--resources "mem_mb=${mem_mb}")
 fi
 
 if [ "$cores" -eq 0 ]; then
-    cores_string=" --cores 'all'"
+    main_args+=(--cores all)
+else
+    main_args+=(--cores "$cores")
 fi
 
 if [ "$reg_seg" = true ]; then #--reg_seg with no other flags functions the same as --all
-    target_string=""
+    target_args=()
 fi
 
 if [ "$bids" = true ]; then
-    target_string=" gather_add_csa_data_to_meta"
+    target_args+=(gather_add_csa_data_to_meta)
 fi
 
 if [ "$mp2rage" = true ]; then
-    target_string+=" aggregate_mp2rage"
+    target_args+=(aggregate_mp2rage)
 fi
 
 if [ "$ihmt" = true ]; then
-    target_string+=" aggregate_ihmt_maps"
+    target_args+=(aggregate_ihmt_maps)
 fi
 
 if [ "$ihmt" = true ] && [ "$reg_seg" = true ]; then
-    target_string+=" aggregate_multimodal_ihmt_mp2rage"
+    target_args+=(aggregate_multimodal_ihmt_mp2rage)
 fi
 
 if [ "$qmt" = true ]; then
-    target_string+=" aggregate_qMT"
+    target_args+=(aggregate_qMT)
 fi
 
 if [ "$qmt" = true ] && [ "$reg_seg" = true ]; then
-    target_string+=" aggregate_multimodal_qMT_mp2rage"
+    target_args+=(aggregate_multimodal_qMT_mp2rage)
 fi
 
 if [ "$dwi" = true ]; then
-    target_string+=" aggregate_dki"
+    target_args+=(aggregate_dki)
 fi
 
 if [ "$dwi" = true ] && [ "$reg_seg" = true ]; then
-    target_string+=" aggregate_multimodal_dwi_mp2rage"
+    target_args+=(aggregate_multimodal_dwi_mp2rage)
 fi
 
 if [ "$qsm" = true ]; then
-    target_string+=" aggregate_qsmxt"
+    target_args+=(aggregate_qsmxt)
 fi
 
 if [ "$use_gpu" = true ]; then
-    gpu_string=' --singularity-args "--nv -e"'
+    main_args+=(--singularity-args "--nv -e")
 fi
 
 #change most strings to blank if running dag
 if [ "$dag" = true ]; then
-    resources_string=""
-    sdm_string=""
-    cores_string=""
-    gpu_string=""
-    rerun_incomplete_string=""
-    mem_string=""
-    dag_string1=" --dag dot" 
-    dag_string2=" | sed -n '/digraph/,/}/p' | dot -Tsvg > pipeline_dag.svg"
+    dag_mode=true
+    main_args=()
 fi
 
 if [ "$dry_run" = true ]; then
-    dry_run_string=" --dry-run"
+    main_args+=(--dry-run)
 fi
 
 if [ "$all" = true ]; then
-    target_string=""
+    target_args=()
 fi
 
 
 #always run bids first
 echo "Running bidsify module first, as the rest of the pipeline depends on this."
-cmd_string="snakemake${config_string} --sdm conda --cores 1 ${dry_run_string}${dag_string1} gather_add_csa_data_to_meta${dag_string2}"
-echo "Running snakemake command ${cmd_string}"
-eval ${cmd_string}
+echo "Running snakemake command: snakemake ${config_args[*]} ${first_pass_args[*]} ${main_args[*]} gather_add_csa_data_to_meta"
+if [ "$dag_mode" = true ]; then
+    snakemake "${config_args[@]}" "${first_pass_args[@]}" --dag dot gather_add_csa_data_to_meta | sed -n '/digraph/,/}/p' | dot -Tsvg > pipeline_dag.svg
+else
+    snakemake "${config_args[@]}" "${first_pass_args[@]}" gather_add_csa_data_to_meta
+fi
 
 if [ "$reg_seg" = true ] || [ "$mp2rage" = true ] || [ "$ihmt" = true ] || [ "$qmt" = true ] || [ "$qsm" = true ] || [ "$dwi" = true ] || [ "$all" = true ]; then
-    cmd_string="snakemake${config_string}${mem_string}${sdm_string}${cores_string}${gpu_string}${rerun_incomplete_string}${dry_run_string}${dag_string1}${target_string}${dag_string2}"
-    echo "Running snakemake command ${cmd_string}"
-    eval ${cmd_string}
+    echo "Running snakemake command: snakemake ${config_args[*]} ${main_args[*]} ${target_args[*]}"
+    if [ "$dag_mode" = true ]; then
+        snakemake "${config_args[@]}" "${main_args[@]}" --dag dot "${target_args[@]}" | sed -n '/digraph/,/}/p' | dot -Tsvg > pipeline_dag.svg
+    else
+        snakemake "${config_args[@]}" "${main_args[@]}" "${target_args[@]}"
+    fi
 fi
