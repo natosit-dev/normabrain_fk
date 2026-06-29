@@ -522,7 +522,7 @@ rule mp2rage_stats:
 rule mp2rage_tsv:
     input:
         mp2rage_statslist,
-        "data/rawdata/bidsify.done"
+        # "data/rawdata/bidsify.done"
     params:
         subjects_dir="data/derivatives/{field_strength}/freesurfer/",
         subjects_list=freesurfer_subjectlist_mp2rage,

@@ -76,7 +76,7 @@ def dwi_to_mp2rage(wildcards):
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             for dwi in dwi_acqlist:
-                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "")
+                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
                 apply_reg_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/acq-DWI" + dwi + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-DWI" + dwi + "_applyreg2" + mp2rage_first_acq + ".done" )
     return apply_reg_list
 
@@ -151,7 +151,7 @@ def dwi_statslist(wildcards):
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for acq in acqlist:
-                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "")
+                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-DWI" + acq + "/stats/dwi_stats.done")
     return sorted(statslist)
 
@@ -213,7 +213,7 @@ def freesurfer_subjectlist_dwi(wildcards):
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for acq in acqlist:
-                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "")
+                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-DWI" + acq)
     fs_subjectlist = list(set(fs_subjectlist))
     fs_subjectarray = " ".join(fs_subjectlist)
@@ -278,7 +278,7 @@ def mp2rage_to_dwi(wildcards):
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for dwi in dwi_acqlist:
-                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "")
+                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
                 apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2DWI/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2DWI" + dwi + ".done")
     return apply_reg_list
 
