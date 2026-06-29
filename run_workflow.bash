@@ -355,7 +355,7 @@ fi
 
 #always run bids first
 echo "Running bidsify module first, as the rest of the pipeline depends on this."
-echo "Running snakemake command: snakemake "${config_args[@]}" "${first_pass_args[@]}" gather_add_csa_data_to_meta"
+echo "Running snakemake command: snakemake ${config_args[@]} ${first_pass_args[@]} gather_add_csa_data_to_meta"
 if [ "$dag_mode" = true ]; then
     echo "saving DAG to bids_dag.svg, not running the pipeline"
     snakemake "${config_args[@]}" "${first_pass_args[@]}" --dag dot gather_add_csa_data_to_meta | sed -n '/digraph/,/}/p' | dot -Tsvg > bids_dag.svg
@@ -364,7 +364,7 @@ else
 fi
 
 if [ "$reg_seg" = true ] || [ "$mp2rage" = true ] || [ "$ihmt" = true ] || [ "$qmt" = true ] || [ "$qsm" = true ] || [ "$dwi" = true ] || [ "$all" = true ]; then
-    echo "Running snakemake command: snakemake "${config_args[@]}" "${main_args[@]}" "${target_args[@]}""
+    echo "Running snakemake command: snakemake ${config_args[@]} ${main_args[@]} ${target_args[@]}"
     if [ "$dag_mode" = true ]; then
         echo "saving DAG to pipeline_dag.svg, not running the pipeline"
         snakemake "${config_args[@]}" "${main_args[@]}" --dag dot "${target_args[@]}" | sed -n '/digraph/,/}/p' | dot -Tsvg > pipeline_dag.svg

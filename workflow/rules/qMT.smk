@@ -90,12 +90,14 @@ def aggregate_qMT(wildcards):
     T1map_list = []
     MTRmap_list = []
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_tb1tfl) & set(subjectlist_tb1tfl))
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_tb1tfl))
     for subject in subjectlist:
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_tb1tfl) & set(sessionlist_tb1tfl))
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_tb1tfl))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:

@@ -19,13 +19,15 @@ def qsm_nii_list(wildcards):
     qsm_nii_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
@@ -41,13 +43,15 @@ def qsm_json_list(wildcards):
     qsm_json_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
@@ -63,13 +67,15 @@ def qsm_mask_list(wildcards):
     qsm_mask_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
@@ -88,13 +94,15 @@ def t1w_nii_list(wildcards):
     t1w_nii_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mp2rage_first_acq = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             t1w_nii_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_T1w.nii.gz")
@@ -106,13 +114,15 @@ def t1w_json_list(wildcards):
     t1w_json_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mp2rage_first_acq = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             t1w_json_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_T1w.json")

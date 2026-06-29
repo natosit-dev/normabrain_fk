@@ -17,7 +17,7 @@ def get_raw_ihmt_json(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0] #get first run
 
 def get_raw_b1map_json(wildcards):
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-famp*_TB1TFL.json'))[-1] #select last run
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-famp*_TB1*.json'))[-1] #select last run
 
 def get_ihmt_contrast_type(wildcards):
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.ihmt_params}*_ihmt.json'))[0]
@@ -41,7 +41,10 @@ def aggregate_ihmt_maps(wildcards):
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
     subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
-        sessionlist = layout.get_session(suffix="ihmt", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
+        sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for ihmt in ihmt_acqlist:

@@ -22,13 +22,15 @@ def qMT_to_mp2rage(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
@@ -46,13 +48,15 @@ def ihmt_to_mp2rage(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
@@ -65,13 +69,15 @@ def dwi_to_mp2rage(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_dwi))
         for session in sessionlist:
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
@@ -100,13 +106,15 @@ def ihmt_statslist(wildcards):
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for acq in acqlist:
@@ -118,13 +126,15 @@ def qMT_statslist(wildcards):
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
@@ -141,13 +151,15 @@ def dwi_statslist(wildcards):
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="dwi", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for acq in acqlist:
@@ -160,13 +172,15 @@ def freesurfer_subjectlist_ihmt(wildcards):
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for acq in acqlist:
@@ -179,13 +193,15 @@ def freesurfer_subjectlist_qMT(wildcards):
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
@@ -203,13 +219,15 @@ def freesurfer_subjectlist_dwi(wildcards):
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_dwi))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for acq in acqlist:
@@ -224,13 +242,15 @@ def mp2rage_to_ihmt(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
@@ -243,13 +263,15 @@ def mp2rage_to_qMT(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
@@ -267,13 +289,15 @@ def mp2rage_to_dwi(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_dwi))
         for session in sessionlist:
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)

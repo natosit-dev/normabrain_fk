@@ -85,11 +85,13 @@ def mp2rage_statslist(wildcards):
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mp2rage))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mp2rage))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for acq in acqlist:
@@ -102,11 +104,13 @@ def freesurfer_subjectlist_mp2rage(wildcards):
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mp2rage))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mp2rage))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for acq in acqlist:
@@ -120,11 +124,13 @@ def aggregate_mp2rage(wildcards):
     mp2rage_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mp2rage))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mp2rage))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for acq in acqlist:
@@ -540,7 +546,10 @@ rule mp2rage_tsv:
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        asegstats2table --subjects {params.subjects_list} --statsfile {params.statsfile} -t {output} --meas mean --common-segs --no-segno 0
+        if ! [ -n {params.subjects_list} ]; then
+            asegstats2table --subjects {params.subjects_list} --statsfile {params.statsfile} -t {output} --meas mean --common-segs --no-segno 0
+        fi
+        touch {output}       
         """
 
 
