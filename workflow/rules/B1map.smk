@@ -207,7 +207,7 @@ rule apply_reg_b1_to_mp2rage:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        if ! [ -n {input.reg} ]; then
+        if [ -f {input.reg} ]; then
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
@@ -285,7 +285,7 @@ rule apply_reg_b1map_to_qMT_t1w_ants:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        if ! [ -n {input.reg} ]; then
+        if [ -f {input.reg} ]; then
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
@@ -363,7 +363,7 @@ rule apply_reg_b1_to_ihmt:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        if ! [ -n {input.reg} ]; then
+        if [ -f {input.reg} ]; then
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \

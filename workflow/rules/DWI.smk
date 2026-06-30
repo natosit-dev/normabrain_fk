@@ -7,13 +7,28 @@ try:
 except:
     field_strength_list=[]
 
-def get_dwi_nii(wildcards):
-    #get first run
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_*dwi.nii.gz'))[0]
+def get_dwi_mag_nii(wildcards):
+    #try filename with part-mag first, then use more generic name
+    try:
+        dwi_mag = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_part-mag_*dwi.nii.gz'))[0]
+    except:
+        dwi_mag = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_*dwi.nii.gz'))[0]    
+    return dwi_mag
 
-def get_b0_nii(wildcards):
-    #get first run
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*b0*{wildcards.dwi_params}*_dir-AP_*dwi.nii.gz'))[0]
+def get_dwi_phase_nii(wildcards):
+    try:
+        dwi_phase = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_part-phase_*dwi.nii.gz'))[0]
+    except:
+        dwi_phase = []
+    return dwi_phase
+
+def get_b0_mag_nii(wildcards):
+    #try filename with part-mag first, then use more generic name
+    try:
+        b0_mag = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-AP_part-mag_*dwi.nii.gz'))[0]
+    except:
+        b0_mag = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-AP_*dwi.nii.gz'))[0]    
+    return b0_mag
 
 def aggregate_dki(wildcards):
     layout=layout_dict[wildcards.field_strength]
@@ -30,8 +45,9 @@ def aggregate_dki(wildcards):
 
 rule nyu_designer:
     input:
-        dwi=get_dwi_nii,
-        b0=get_b0_nii
+        dwi=get_dwi_mag_nii,
+        b0=get_b0_mag_nii,
+        phase=get_dwi_phase_nii
     params:
         preproc="data/derivatives/{field_strength}/dwi/sub-{subject}/ses-{session}/acq-DWI{dwi_params}/preproc/"
     output:
@@ -55,7 +71,13 @@ rule nyu_designer:
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
         fi
-        designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}
+
+        if [ -f {input.phase} ]; then
+            designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -phase $HOME/{input.phase} -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}
+        else
+            designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}
+        fi
+        
         cp {params.preproc}/sigma.nii {output.noisemap}
         rm -rf {params.preproc}
         """
