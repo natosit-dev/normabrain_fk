@@ -1,9 +1,9 @@
 3T_system:
   poolFree_M0: 1.0
-  poolFree_T1: 1.450
+  poolFree_T1: 1.0
   poolFree_T2: 0.015
-  poolFreeBound_exchangeRate: 19
-  poolBound_M0: 0.08
+  poolFreeBound_exchangeRate: 21
+  poolBound_M0: 0.16
   poolBound_T1: 1
   poolBound_T2: 0.00001
   poolBound_T1D: 0.01
