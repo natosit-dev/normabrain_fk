@@ -8,7 +8,7 @@ from csa_header_scripts.return_csa_header_parse_by_my_self import return_csa
 def add_csa_data_to_meta(bidspath: str):    
     #define search patterns for different sequence types
     perf_pattern = 'perf/*'
-    t1b1fl_pattern = 'fmap/*TB1TFL*'
+    tb1fl_pattern = 'fmap/*TB1TFL*'
     vibemt_pattern = 'anat/*vibe*_MPM*'
     mp2rage_pattern = 'anat/*MP2RAGE*'  
     ihmt_pattern = 'anat/*ihmt*'
@@ -53,6 +53,8 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
+                if type(mrprotocol) is dict:
+                    csa_data = mrprotocol
                 #Get ihMT contrast type. If it's blank and the sequence version does not include the string "MC" then set it to Basic. If it's blank and the sequence version does include the string "MC" set it to Frequency Alternated.
                 # jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
                 if isinstance(csa_data.get('sWipMemBlock.alFree[2]'), str):
@@ -68,7 +70,31 @@ def add_csa_data_to_meta(bidspath: str):
                 elif ContrastType == 3:
                     jsondata['ContrastType'] = "BandPass (no single)"
                 #add relevant fields from csa header to json sidecar
-                if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v3MC":
+                if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\ihMT_crmbm":
+                    jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[3]'])
+                    jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[4]'])
+                    jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[5]'])
+                    jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[6]'])
+                    jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[7]'])
+                    jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[9]'])
+                    jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[8]'])
+                    jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[10]'])
+                    jsondata['TukeyShape'] = 0.2
+                    jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                    jsondata["DummyEchoes"] = 0
+                elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4p0":
+                    jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[3]'])
+                    jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[4]'])
+                    jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[5]'])
+                    jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[6]'])
+                    jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[7]'])
+                    jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[9]'])
+                    jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[8]'])
+                    jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[10]'])
+                    jsondata['TukeyShape'] = 0.2
+                    jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                    jsondata["DummyEchoes"] = int(csa_data['sWipMemBlock.alFree[19]'])
+                elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v3MC":
                     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[24]'])
                     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[25]'])
                     jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[26]'])
@@ -77,10 +103,6 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[29]'])
                     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[5]'])
                     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[7]'])
-                    # jsondata['PulseSpoiler_usmTperm'] = float(csa_data['sWipMemBlock.alFree[40]'])
-                    # jsondata['DummyScanTime_us'] = float(csa_data['sWipMemBlock.alFree[13]'])
-                    # jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[42]'])
-                    # jsondata['PartialFourier_percent'] = float(csa_data['sWipMemBlock.alFree[9]'])
                     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[1]'])
                     jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
                     jsondata["DummyEchoes"] = 0
@@ -93,10 +115,6 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[26]'])
                     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[27]'])
                     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[28]'])
-                    # jsondata['PulseSpoiler_usmTperm'] = float(csa_data['sWipMemBlock.alFree[12]'])
-                    # jsondata['DummyScanTime_us'] = float(csa_data['sWipMemBlock.alFree[31]']) * float(csa_data['alTR[0]'])
-                    # jsondata['PhaseCyclingAngle_deg'] = float(csa_data['sWipMemBlock.alFree[14]'])
-                    # jsondata['PartialFourier_percent'] = float(csa_data['sWipMemBlock.alFree[9]'])
                     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.alFree[24]']) / 100
                     jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
                     jsondata["DummyEchoes"] = float(csa_data["sWipMemBlock.alFree[32]"])
@@ -136,8 +154,8 @@ def add_csa_data_to_meta(bidspath: str):
                     json.dump(jsondata, jf, indent=4)
             
             #get list of t1b1fl target files that match the pattern
-            t1b1fl_targets = sorted([match for match in session.rglob(t1b1fl_pattern) if match.suffixes[0] in ('.tsv','.nii')])
-            for target in t1b1fl_targets:
+            tb1fl_targets = sorted([match for match in session.rglob(tb1fl_pattern) if match.suffixes[0] in ('.tsv','.nii')])
+            for target in tb1fl_targets:
                 print(target)
                 for source, row in provdata.iterrows():
                     if isinstance(row['targets'], str) and target.name.replace('_run-1', "") in row['targets']:
