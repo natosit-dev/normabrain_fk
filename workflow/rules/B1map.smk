@@ -16,8 +16,38 @@ def get_target_flip(wildcards):
     json_path = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-famp*_TB1*.json'))[-1] #select last run
     with open(json_path, "r") as f:
         b1map_meta = json.load(f)
-    return b1map_meta["target_fa_deg"] * 10
+    try: #set default to 900 for now
+        target_fa = b1map_meta["target_fa_deg"] * 10
+    except:
+        target_fa = 900
+    return target_fa
 
+def get_b1anat2mp2rage_reg(wildcards):
+    #get b1anat2mp2rage registration if b1anat exists, otherwise return a blank string (applyAntsTransforms will then reslice instead of register)
+    try:
+        b1anat = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-anat*_TB1*.nii.gz'))[-1]
+        b1anat2mp2rage_reg = "data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/reg2MP2RAGE/sub-{wildcards.subject}_ses-{wildcards.session}_b1_reg2{wildcards.mp2rage_params}_0GenericAffine.mat"
+    except:
+       b1anat2mp2rage_reg = []
+    return b1anat2mp2rage
+
+def get_b1anat2qMT_reg(wildcards):
+    #get b1anat2qMT registration if b1anat exists, otherwise return a blank string (applyAntsTransforms will then reslice instead of register)
+    try:
+        b1anat = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-anat*_TB1*.nii.gz'))[-1]
+        b1anat2qMT_reg = "data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/reg2qMT/sub-{wildcards.subject}_ses-{wildcards.session}_b1_reg2{wildcards.seq}t1w{wildcards.qMT_params}_0GenericAffine.mat"
+    except:
+       b1anat2qMT_reg = []
+    return b1anat2qMT
+
+def get_b1anat2ihmt_reg(wildcards):
+    #get b1anat2ihmt registration if b1anat exists, otherwise return a blank string (applyAntsTransforms will then reslice instead of register)
+    try:
+        b1anat = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-anat*_TB1*.nii.gz'))[-1]
+        b1anat2ihmt_reg = "data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/reg2IHMT/sub-{wildcards.subject}_ses-{wildcards.session}_b1_reg2{wildcards.ihmt_params}_0GenericAffine.mat"
+    except:
+       b1anat2ihmt_reg = []
+    return b1anat2ihmt_reg
 
 #rules for registering with ANTs
 
@@ -161,7 +191,7 @@ rule apply_reg_b1_to_mp2rage:
     input:
         moving = get_last_b1map_run,
         ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map.nii.gz",
-        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_b1_reg2{mp2rage_params}_0GenericAffine.mat"
+        reg = get_b1anat2mp2rage_reg
     output:
         temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_acq-famp_reg2{mp2rage_params}_ants.nii.gz")
     conda:
@@ -177,14 +207,24 @@ rule apply_reg_b1_to_mp2rage:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        antsApplyTransforms \
-        --dimensionality 3 \
-        --interpolation Linear \
-        --verbose 1 \
-        -i {input.moving} \
-        -r {input.ref} \
-        -t {input.reg} \
-        -o {output}
+        if ! [ -n {input.reg} ]; then
+            antsApplyTransforms \
+            --dimensionality 3 \
+            --interpolation Linear \
+            --verbose 1 \
+            -i {input.moving} \
+            -r {input.ref} \
+            -t {input.reg} \
+            -o {output}
+        else
+           antsApplyTransforms \
+            --dimensionality 3 \
+            --interpolation Linear \
+            --verbose 1 \
+            -i {input.moving} \
+            -r {input.ref} \
+            -o {output} 
+        fi
         """
 
 
@@ -229,7 +269,7 @@ rule apply_reg_b1map_to_qMT_t1w_ants:
     input:
         moving = get_last_b1map_run,
         ref = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{qMT_params}_mt-off_part-mag_sos.nii.gz",
-        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2qMT/sub-{subject}_ses-{session}_b1_reg2{seq}t1w{qMT_params}_0GenericAffine.mat"
+        reg = get_b1anat2qMT_reg
     output:
         temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2qMT/sub-{subject}_ses-{session}_acq-famp_reg2{seq}t1w{qMT_params}_ants.nii.gz")
     conda:
@@ -245,14 +285,24 @@ rule apply_reg_b1map_to_qMT_t1w_ants:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        antsApplyTransforms \
-        --dimensionality 3 \
-        --interpolation Linear \
-        --verbose 1 \
-        -i {input.moving} \
-        -r {input.ref} \
-        -t {input.reg} \
-        -o {output}
+        if ! [ -n {input.reg} ]; then
+            antsApplyTransforms \
+            --dimensionality 3 \
+            --interpolation Linear \
+            --verbose 1 \
+            -i {input.moving} \
+            -r {input.ref} \
+            -t {input.reg} \
+            -o {output}
+        else
+           antsApplyTransforms \
+            --dimensionality 3 \
+            --interpolation Linear \
+            --verbose 1 \
+            -i {input.moving} \
+            -r {input.ref} \
+            -o {output} 
+        fi
         """
 
 
@@ -297,7 +347,7 @@ rule apply_reg_b1_to_ihmt:
     input:
         moving = get_last_b1map_run,
         ref = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.nii.gz",
-        reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2IHMT/sub-{subject}_ses-{session}_b1_reg2{ihmt_params}_0GenericAffine.mat"
+        reg = get_b1anat2ihmt_reg
     output:
         temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2IHMT/sub-{subject}_ses-{session}_acq-famp_reg2{ihmt_params}_ants.nii.gz")
     conda:
@@ -313,14 +363,24 @@ rule apply_reg_b1_to_ihmt:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        antsApplyTransforms \
-        --dimensionality 3 \
-        --interpolation Linear \
-        --verbose 1 \
-        -i {input.moving} \
-        -r {input.ref} \
-        -t {input.reg} \
-        -o {output}
+        if ! [ -n {input.reg} ]; then
+            antsApplyTransforms \
+            --dimensionality 3 \
+            --interpolation Linear \
+            --verbose 1 \
+            -i {input.moving} \
+            -r {input.ref} \
+            -t {input.reg} \
+            -o {output}
+        else
+           antsApplyTransforms \
+            --dimensionality 3 \
+            --interpolation Linear \
+            --verbose 1 \
+            -i {input.moving} \
+            -r {input.ref} \
+            -o {output} 
+        fi
         """
 
 
