@@ -48,7 +48,7 @@ def aggregate_ihmt_maps(wildcards):
         for session in sessionlist:
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for ihmt in ihmt_acqlist:
-                ihmt_map_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_b1corr.done")
+                ihmt_map_list.append("data/derivatives/{field_strength}/ihmt/sub-" + subject + "/ses-" + session + "/acq-" + ihmt + "/sub-" + subject + "_ses-" + session + "_acq-" + ihmt + "_b1corr_brain.done")
     return ihmt_map_list
 
 
@@ -314,6 +314,8 @@ rule apply_brainmask_ihmt:
     input:
         input_image = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap.nii.gz",
         brain_mask = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
+    params:
+        ihmtprefix="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}"
     output:
         temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain.nii.gz")
     conda:
@@ -326,7 +328,16 @@ rule apply_brainmask_ihmt:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         export FSLOUTPUTTYPE='NIFTI_GZ'
+        
         fslmaths {input.input_image} -mas {input.brain_mask} {output}
+        
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR")
+        for map in "${{MTmaps[@]}}"; do
+            ihmt="{params.ihmtprefix}_${{map}}.nii.gz"
+            if [ -f $ihmt ]; then
+                fslmaths $ihmt -mas {input.brain_mask} "{params.ihmtprefix}_${{map}}_brain.nii.gz"
+            fi
+        done
         """
 
 
@@ -475,6 +486,37 @@ rule b1corr_ihmt:
 
         touch {output}
         """ 
+
+
+rule apply_brainmask_ihmt_b1corr:
+    input:
+        b1corr_done = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_b1corr.done",
+        brain_mask = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
+    params:
+        ihmtprefix="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}"
+    output:
+        temp("data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_b1corr_brain.done")
+    conda:
+        "../envs/fslmaths.yaml"
+    resources: 
+        mem_mb=500
+    log:
+        "logs/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        export FSLOUTPUTTYPE='NIFTI_GZ'
+                
+        MTmaps=("MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
+        for map in "${{MTmaps[@]}}"; do
+            ihmt="{params.ihmtprefix}_${{map}}.nii.gz"
+            if [ -f $ihmt ]; then
+                fslmaths $ihmt -mas {input.brain_mask} "{params.ihmtprefix}_${{map}}_brain.nii.gz"
+            fi
+        done
+        touch {output}
+        """
+
 
 rule aggregate_ihmt_maps_by_field_strength:
     input:
