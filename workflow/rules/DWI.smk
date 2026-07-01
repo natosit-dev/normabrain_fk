@@ -72,7 +72,7 @@ rule nyu_designer:
             export CUDA_VISIBLE_DEVICES=0
         fi
 
-        if [ -f {input.phase} ]; then
+        if [ {input.phase} ]; then
             designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -phase $HOME/{input.phase} -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}
         else
             designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}

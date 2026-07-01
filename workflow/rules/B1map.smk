@@ -44,7 +44,7 @@ def get_b1anat2ihmt_reg(wildcards):
     #get b1anat2ihmt registration if b1anat exists, otherwise return a blank string (applyAntsTransforms will then reslice instead of register)
     try:
         b1anat = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-anat*_TB1*.nii.gz'))[-1]
-        b1anat2ihmt_reg = "data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/reg2IHMT/sub-{wildcards.subject}_ses-{wildcards.session}_b1_reg2{wildcards.ihmt_params}_0GenericAffine.mat"
+        b1anat2ihmt_reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2IHMT/sub-{subject}_ses-{session}_b1_reg2{ihmt_params}_0GenericAffine.mat"
     except:
        b1anat2ihmt_reg = []
     return b1anat2ihmt_reg
@@ -207,7 +207,7 @@ rule apply_reg_b1_to_mp2rage:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        if [ -f {input.reg} ]; then
+        if [ {input.reg} ]; then
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
@@ -285,7 +285,7 @@ rule apply_reg_b1map_to_qMT_t1w_ants:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        if [ -f {input.reg} ]; then
+        if [ {input.reg} ]; then
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
@@ -363,7 +363,7 @@ rule apply_reg_b1_to_ihmt:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        if [ -f {input.reg} ]; then
+        if [ {input.reg} ]; then
             antsApplyTransforms \
             --dimensionality 3 \
             --interpolation Linear \
