@@ -26,6 +26,7 @@ checkpoint symlink_dicoms_by_field_strength:
         update(directory("data/rawdata/dicoms"))
     conda:
         "../envs/bidscoin.yaml"
+    threads: 1
     log:
         "logs/symlink_dicoms_by_field_strength.log"
     shell:
@@ -50,6 +51,7 @@ rule bidsmapper:
         outcode="data/rawdata/bids/{field_strength}/code/bidscoin/bidsmapper.log"
     conda:
         "../envs/bidscoin.yaml"
+    threads: 1
     log:
         "logs/{field_strength}/bidsmapper.log"
     shell:
@@ -71,6 +73,7 @@ checkpoint bidscoiner:
         outcode="data/rawdata/bids/{field_strength}/code/bidscoin/bidscoiner.log"
     conda:
         "../envs/bidscoin.yaml"
+    threads: 1
     log:
         "logs/{field_strength}/bidscoiner.log"
     shell:
@@ -90,6 +93,7 @@ checkpoint add_csa_data_to_meta:
         outdir="data/rawdata/bids/{field_strength}"
     conda:
         "../envs/bidscoin.yaml"
+    threads: 1
     log:
         "logs/{field_strength}/add_csa_data_to_meta.log"
     shell:
@@ -104,6 +108,7 @@ rule gather_add_csa_data_to_meta:
         aggregate_add_csa
     output:
         "data/rawdata/bidsify.done"
+    threads: 1
     log:
         "logs/bidsify.log"
     priority: 50
