@@ -69,7 +69,7 @@ def ihmt_b1corr(ihmt_nifti: str, ihmt_json: str, b1map_nifti: str, b1map_json: s
     )
 
     seq = Sequence(
-        signal = Signal.ALL,
+        signal = Signal.from_str(map_type),
         pulse = pulse,
         N_pulsePerOffset=1,
         N_pulse = ihmt_meta["NumberPulses"],
