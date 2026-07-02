@@ -346,7 +346,7 @@ rule register_b1anat_to_ihmt:
 rule apply_reg_b1_to_ihmt:
     input:
         moving = get_last_b1map_run,
-        ref = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.nii.gz",
+        ref = "data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap.nii.gz",
         reg = get_b1anat2ihmt_reg
     output:
         temp("data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2IHMT/sub-{subject}_ses-{session}_acq-famp_reg2{ihmt_params}_ants.nii.gz")
