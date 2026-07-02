@@ -256,9 +256,13 @@ config_args=(
     "qmt_sequence=${qmt_sequence}"
     "qmt_contrasts=${qmt_contrasts}"
 )
+config_string=" --config input_dicoms_path='${input_dicoms_path}' protocol_path='${protocol_path}' subject_list_dicom='${subject_list_dicom}' qmt_sequence='${qmt_sequence}' qmt_contrasts='${qmt_contrasts}'"
 first_pass_args=(--sdm conda --cores 1)
+first_pass_string=" --sdm conda --cores 1"
 main_args=(--sdm conda apptainer --rerun-incomplete)
+main_string=" --sdm conda apptainer --rerun-incomplete"
 target_args=()
+target_string=""
 dag_mode=false
 
 if [ "$all" = false ] && [ "$reg_seg" = false ] && [ "$bids" = false ] && [ "$mp2rage" = false ] && [ "$ihmt" = false ] && [ "$qmt" = false ] && [ "$dwi" = false ] && [ "$qsm" = false ]; then
@@ -284,78 +288,96 @@ if [ "$mem_mb" -eq 0 ]; then
     :
 else
     main_args+=(--resources "mem_mb=${mem_mb}")
+    main_string+=" --resources mem_mb=${mem_mb}"
 fi
 
 if [ "$cores" -eq 0 ]; then
     main_args+=(--cores all)
+    main_string+=" --cores all"
 else
     main_args+=(--cores "$cores")
+    main_string+=" --cores ${cores}"
 fi
 
 if [ "$reg_seg" = true ]; then #--reg_seg with no other flags functions the same as --all
     target_args=()
+    target_string=""
 fi
 
 if [ "$bids" = true ]; then
     target_args+=(gather_add_csa_data_to_meta)
+    target_string+=" gather_add_csa_data_to_meta"
 fi
 
 if [ "$mp2rage" = true ]; then
     target_args+=(aggregate_mp2rage)
+    target_string+=" aggregate_mp2rage"
 fi
 
 if [ "$ihmt" = true ]; then
     target_args+=(aggregate_ihmt_maps)
+    target_string+=" aggregate_ihmt_maps"
 fi
 
 if [ "$ihmt" = true ] && [ "$reg_seg" = true ]; then
     target_args+=(aggregate_multimodal_ihmt_mp2rage)
+    target_string+=" aggregate_multimodal_ihmt_mp2rage"
 fi
 
 if [ "$qmt" = true ]; then
     target_args+=(aggregate_qMT)
+    target_string+=" aggregate_qMT"
 fi
 
 if [ "$qmt" = true ] && [ "$reg_seg" = true ]; then
     target_args+=(aggregate_multimodal_qMT_mp2rage)
+    target_string+=" aggregate_multimodal_qMT_mp2rage"
 fi
 
 if [ "$dwi" = true ]; then
     target_args+=(aggregate_dki)
+    target_string+=" aggregate_dki"
 fi
 
 if [ "$dwi" = true ] && [ "$reg_seg" = true ]; then
     target_args+=(aggregate_multimodal_dwi_mp2rage)
+    target_string+=" aggregate_multimodal_dwi_mp2rage"
 fi
 
 if [ "$qsm" = true ]; then
     target_args+=(aggregate_qsmxt)
+    target_string+=" aggregate_qsmxt"
 fi
 
 if [ "$use_gpu" = true ]; then
     main_args+=(--singularity-args "--nv -e")
+    main_string+=" --singularity-args '--nv -e'"
 else
     main_args+=(--singularity-args " -e")
+    main_string+=" --singularity-args ' -e'"
 fi
 
 #change most strings to blank if running dag
 if [ "$dag" = true ]; then
     dag_mode=true
     main_args=()
+    main_string=""
 fi
 
 if [ "$dry_run" = true ]; then
     main_args+=(--dry-run)
+    main_string+=" --dry-run"
 fi
 
 if [ "$all" = true ]; then
     target_args=()
+    target_string=""
 fi
 
 
 #always run bids first
 echo "Running bidsify module first, as the rest of the pipeline depends on this."
-echo "Running snakemake command: snakemake ${config_args[@]} ${first_pass_args[@]} gather_add_csa_data_to_meta"
+echo "Running snakemake command: snakemake ${config_string} ${first_pass_string} gather_add_csa_data_to_meta"
 if [ "$dag_mode" = true ]; then
     echo "saving DAG to bids_dag.svg, not running the pipeline"
     snakemake "${config_args[@]}" "${first_pass_args[@]}" --dag dot gather_add_csa_data_to_meta | sed -n '/digraph/,/}/p' | dot -Tsvg > bids_dag.svg
@@ -364,7 +386,7 @@ else
 fi
 
 if [ "$reg_seg" = true ] || [ "$mp2rage" = true ] || [ "$ihmt" = true ] || [ "$qmt" = true ] || [ "$qsm" = true ] || [ "$dwi" = true ] || [ "$all" = true ]; then
-    echo "Running snakemake command: snakemake ${config_args[@]} ${main_args[@]} ${target_args[@]}"
+    echo "Running snakemake command: snakemake ${config_string} ${main_string} ${target_string}"
     if [ "$dag_mode" = true ]; then
         echo "saving DAG to pipeline_dag.svg, not running the pipeline"
         snakemake "${config_args[@]}" "${main_args[@]}" --dag dot "${target_args[@]}" | sed -n '/digraph/,/}/p' | dot -Tsvg > pipeline_dag.svg
