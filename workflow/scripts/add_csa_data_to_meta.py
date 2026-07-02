@@ -140,6 +140,8 @@ def add_csa_data_to_meta(bidspath: str):
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 #get csa data from source dicom
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
+                if type(mrprotocol) is dict:
+                    csa_data = mrprotocol
                 #convert string boolean values to actual booleans
                 if jsondata['BackgroundSuppression'] == 'true' or jsondata['BackgroundSuppression'] == 'YES':
                     jsondata['BackgroundSuppression'] = True
@@ -164,6 +166,8 @@ def add_csa_data_to_meta(bidspath: str):
                 jsonfile = target.with_suffix('').with_suffix('.json')
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
+                if type(mrprotocol) is dict:
+                    csa_data = mrprotocol
                 #add Target_FA_deg field to json sidecar from csa data
                 jsondata['target_fa_deg'] = float(csa_data['sWipMemBlock.adFree[0]'])
                 with jsonfile.open('w') as jf:
@@ -180,6 +184,8 @@ def add_csa_data_to_meta(bidspath: str):
                 jsonfile = target.with_suffix('').with_suffix('.json')
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
+                if type(mrprotocol) is dict:
+                    csa_data = mrprotocol
                 # if MT state is stored as a string in the csa header, convert to int and add to json sidecar, otherwise set it to 0
                 if isinstance(csa_data.get('sWipMemBlock.alFree[0]'), str):
                     jsondata['mt_state'] = int(csa_data['sWipMemBlock.alFree[0]'])
@@ -233,6 +239,8 @@ def add_csa_data_to_meta(bidspath: str):
                 jsonfile = target.with_suffix('').with_suffix('.json')
                 jsondata = bids.poolmetadata(datasource, jsonfile, bids.Meta({}), ['.json'])
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
+                if type(mrprotocol) is dict:
+                    csa_data = mrprotocol
                 #add TR to json sidecar from csa data
                 jsondata['tr_ms'] = float(csa_data['alTR[0]']) / 1000
                 #add TI1 and TI2 to json sidecar from csa data if they are stored as strings
