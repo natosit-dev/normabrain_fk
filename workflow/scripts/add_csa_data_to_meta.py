@@ -8,7 +8,7 @@ from csa_header_scripts.return_csa_header_parse_by_my_self import return_csa
 def add_csa_data_to_meta(bidspath: str):    
     #define search patterns for different sequence types
     perf_pattern = 'perf/*'
-    tb1fl_pattern = 'fmap/*TB1TFL*'
+    tb1fl_pattern = 'fmap/*TB1*'
     vibemt_pattern = 'anat/*vibe*_MPM*'
     mp2rage_pattern = 'anat/*MP2RAGE*'  
     ihmt_pattern = 'anat/*ihmt*'
@@ -55,22 +55,20 @@ def add_csa_data_to_meta(bidspath: str):
                 csa_data, mrprotocol, cas = return_csa(sourcedir)
                 if type(mrprotocol) is dict:
                     csa_data = mrprotocol
-                #Get ihMT contrast type. If it's blank and the sequence version does not include the string "MC" then set it to Basic. If it's blank and the sequence version does include the string "MC" set it to Frequency Alternated.
-                # jsondata['SequenceVersion'] = str(csa_data['tSequenceFileName'])
+                
+                #Parameters that are the same for all ihMT protocols
                 if isinstance(csa_data.get('sWipMemBlock.alFree[2]'), str):
                     ContrastType = int(csa_data['sWipMemBlock.alFree[2]'])
                 else:
                     ContrastType = 0
-                if ContrastType == 0:
-                    jsondata['ContrastType'] = 'Frequency Alternated'
-                elif ContrastType == 1:
-                    jsondata['ContrastType'] = 'Cosine Modulated'
-                elif ContrastType == 2:
-                    jsondata['ContrastType'] = 'Frequency Alternated and Cosine Modulated'
-                elif ContrastType == 3:
-                    jsondata['ContrastType'] = "BandPass (no single)"
-                #add relevant fields from csa header to json sidecar
-                if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\ihMT_crmbm":
+                jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+
+                #parameters for 7T terra protocols
+                if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\ihMT_crmbm" or jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4p0":
+                    if ContrastType == 1:
+                        jsondata['ContrastType'] = 'Frequency Alternated'
+                    elif ContrastType == 2:
+                        jsondata['ContrastType'] = 'Cosine Modulated'
                     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[3]'])
                     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[4]'])
                     jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[5]'])
@@ -80,21 +78,29 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[8]'])
                     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[10]'])
                     jsondata['TukeyShape'] = 0.2
-                    jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                #parameters for 3T vida protocols
+                elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v3MC" or jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4":
+                    if ContrastType == 0:
+                        jsondata['ContrastType'] = 'Frequency Alternated'
+                    elif ContrastType == 1:
+                        jsondata['ContrastType'] = 'Cosine Modulated'
+                    elif ContrastType == 2:
+                        jsondata['ContrastType'] = 'Frequency Alternated and Cosine Modulated'
+                    elif ContrastType == 3:
+                        jsondata['ContrastType'] = "BandPass (no single)"
+
+                #DummyEchoes for version 3 protocols
+                if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\ihMT_crmbm" or jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v3MC":
                     jsondata["DummyEchoes"] = 0
+                #DummyEchoes for version 4 protocol at 7T
                 elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4p0":
-                    jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[3]'])
-                    jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[4]'])
-                    jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[5]'])
-                    jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[6]'])
-                    jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[7]'])
-                    jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[9]'])
-                    jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[8]'])
-                    jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[10]'])
-                    jsondata['TukeyShape'] = 0.2
-                    jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
                     jsondata["DummyEchoes"] = int(csa_data['sWipMemBlock.alFree[19]'])
-                elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v3MC":
+                #DummyEchoes for version 4 protocol at 3T
+                elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4":
+                    jsondata["DummyEchoes"] = float(csa_data["sWipMemBlock.alFree[32]"])
+
+                #Parameters for version 3 protocol at 3T
+                if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v3MC":
                     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[24]'])
                     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[25]'])
                     jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[26]'])
@@ -104,8 +110,7 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[5]'])
                     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[7]'])
                     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[1]'])
-                    jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
-                    jsondata["DummyEchoes"] = 0
+                #Parameters for version 4 protocol at 3T
                 elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4":
                     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[20]'])
                     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[21]'])
@@ -116,8 +121,68 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[27]'])
                     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[28]'])
                     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.alFree[24]']) / 100
-                    jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
-                    jsondata["DummyEchoes"] = float(csa_data["sWipMemBlock.alFree[32]"])
+                
+                # if ContrastType == 0:
+                #     jsondata['ContrastType'] = 'Frequency Alternated'
+                # elif ContrastType == 1 and jsondata["MagneticFieldStrength"] == 3:
+                #     jsondata['ContrastType'] = 'Cosine Modulated'
+                # elif ContrastType == 1 and jsondata["MagneticFieldStrength"] == 7:
+                #     jsondata['ContrastType'] = 'Frequency Alternated'
+                # elif ContrastType == 2 and jsondata["MagneticFieldStrength"] == 3:
+                #     jsondata['ContrastType'] = 'Frequency Alternated and Cosine Modulated'
+                # elif ContrastType == 2 and jsondata["MagneticFieldStrength"] == 7
+                #     jsondata['ContrastType'] = 'Cosine Modulated'
+                # elif ContrastType == 3:
+                #     jsondata['ContrastType'] = "BandPass (no single)"
+                # #add relevant fields from csa header to json sidecar
+                # if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\ihMT_crmbm":
+                #     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[3]'])
+                #     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[4]'])
+                #     jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[5]'])
+                #     jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[6]'])
+                #     jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[7]'])
+                #     jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[9]'])
+                #     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[8]'])
+                #     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[10]'])
+                #     jsondata['TukeyShape'] = 0.2
+                #     jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                #     jsondata["DummyEchoes"] = 0
+                # elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4p0":
+                #     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[3]'])
+                #     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[4]'])
+                #     jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[5]'])
+                #     jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[6]'])
+                #     jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[7]'])
+                #     jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[9]'])
+                #     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[8]'])
+                #     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[10]'])
+                #     jsondata['TukeyShape'] = 0.2
+                #     jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                #     jsondata["DummyEchoes"] = int(csa_data['sWipMemBlock.alFree[19]'])
+                # elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v3MC":
+                #     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[24]'])
+                #     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[25]'])
+                #     jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[26]'])
+                #     jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[27]'])
+                #     jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[28]'])
+                #     jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[29]'])
+                #     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[5]'])
+                #     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[7]'])
+                #     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[1]'])
+                #     jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                #     jsondata["DummyEchoes"] = 0
+                # elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4":
+                #     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[20]'])
+                #     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[21]'])
+                #     jsondata['FrequencyOffset_hz'] = float(csa_data['sWipMemBlock.alFree[22]'])
+                #     jsondata['FlipAngle_deg'] = float(csa_data['sWipMemBlock.alFree[23]'])
+                #     jsondata['NumberPulses'] = int(csa_data['sWipMemBlock.alFree[25]'])
+                #     jsondata['NumberBursts'] = int(csa_data['sWipMemBlock.alFree[26]'])
+                #     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[27]'])
+                #     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[28]'])
+                #     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.alFree[24]']) / 100
+                #     jsondata["TurboFactor"] = float(csa_data["sFastImaging.lTurboFactor"])
+                #     jsondata["DummyEchoes"] = float(csa_data["sWipMemBlock.alFree[32]"])
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
@@ -169,7 +234,10 @@ def add_csa_data_to_meta(bidspath: str):
                 if type(mrprotocol) is dict:
                     csa_data = mrprotocol
                 #add Target_FA_deg field to json sidecar from csa data
-                jsondata['target_fa_deg'] = float(csa_data['sWipMemBlock.adFree[0]'])
+                if isinstance(csa_data.get('sWipMemBlock.adFree[0]'), str):
+                    jsondata['target_fa_deg'] = float(csa_data['sWipMemBlock.adFree[0]'])
+                elif jsondata["MagneticFieldStrength"] == 7:
+                    jsondata['target_fa_deg'] = 900
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
 
