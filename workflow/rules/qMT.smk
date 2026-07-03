@@ -5,10 +5,11 @@ import glob
 from collections import Counter
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["qMT_contrasts"]]),
-    seq = config["qMT_sequence"],
+    contrast = '|'.join([re.escape(x) for x in config["qmt_contrasts"].split()]),
+    seq = config["qmt_sequence"],
     part = 'mag|phase'
 
+bidspath = Path("data/rawdata/bids")
 
 def get_echos(wildcards):
     #get the list of echo files and sort it
@@ -82,6 +83,35 @@ def pdwmag_preproc(wildcards):
     except:
         mag_preproc = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}pdw{qMT_params}_mt-off_part-mag_echos4d.nii"
     return mag_preproc
+
+def aggregate_qMT(wildcards):
+    layout=layout_dict[wildcards.field_strength]
+    qMT_list = []
+    T1map_list = []
+    MTRmap_list = []
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
+    subjectlist_mpm = layout.get_subject(suffix="MPM")
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_tb1tfl))
+    for subject in subjectlist:
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
+        sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_tb1tfl))
+        for session in sessionlist:
+            mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
+            for mpm in mpm_acqlist:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["qmt_contrasts"].split():
+                    mpm = mpm.replace(contrast, "")
+                T1map_list.append("data/derivatives/{field_strength}/qMT/sub-" + subject + "/ses-" + session + "/preproc/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_T1map_brain_denoised_n4.nii.gz")
+                MTRmap_list.append("data/derivatives/{field_strength}/qMT/sub-" + subject + "/ses-" + session + "/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_MTRmap.nii.gz")
+    counts_T1map = Counter(T1map_list)
+    T1map_list = [reg for reg, count in counts_T1map.items() if count > 3]
+    counts_MTRmap = Counter(MTRmap_list)
+    MTRmap_list = [reg for reg, count in counts_MTRmap.items() if count > 3]
+    qMT_list = T1map_list + MTRmap_list
+    return qMT_list
 
 
 rule concat_echos:
@@ -311,7 +341,7 @@ rule sos:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        python3 workflow/scripts/sos_images.py {input} {output}
+        python workflow/scripts/sos_images.py {input} {output}
         """
 
 
@@ -619,7 +649,7 @@ rule fit_JSPqMT_CLI:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        python3 workflow/scripts/luca_qMT/qmt/fit_JSPqMT_CLI.py \
+        python workflow/scripts/luca_qMT/qmt/fit_JSPqMT_CLI.py \
         {input.mt_off},{input.mt_on} \
         {input.pdw},{input.t1w} \
         {output.mpfmap} \
@@ -642,7 +672,7 @@ rule apply_brainmask_T1map:
         input_image = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map.nii.gz",
         brain_mask = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{qMT_params}_mt-off_part-mag_sos_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain.nii.gz")
+        temp("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain.nii.gz")
     conda:
         "../envs/fslmaths.yaml"
     resources: 
@@ -659,10 +689,10 @@ rule apply_brainmask_T1map:
 
 rule DenoiseImage_T1map:
     input:
-        input_image = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain.nii.gz",
+        input_image = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain.nii.gz",
         mask_image = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{qMT_params}_mt-off_part-mag_sos_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised.nii.gz")
+        temp("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -688,10 +718,10 @@ rule DenoiseImage_T1map:
 
 rule N4BiasFieldCorrection_T1map:
     input:
-        input_image = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised.nii.gz",
+        input_image = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised.nii.gz",
         mask_image = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{qMT_params}_mt-off_part-mag_sos_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised_n4.nii.gz")
+        "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised_n4.nii.gz"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -712,3 +742,21 @@ rule N4BiasFieldCorrection_T1map:
         -x {input.mask_image} \
         -o {output}
         """
+
+rule aggregate_qMT_by_field_strength:
+    input:
+        aggregate_qMT
+    output:
+        "data/derivatives/{field_strength}/qMT/qMT.done"
+    log:
+        "logs/{field_strength}/qMT/qMT.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        touch {output}
+        """
+
+rule aggregate_qMT:
+    input:
+        expand("data/derivatives/{field_strength}/qMT/qMT.done", field_strength=field_strength_list)

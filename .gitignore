@@ -16,3 +16,7 @@ snakemake*/
 *tmp*
 *.svg
 *.mps
+crash*
+-*
+*.svg
+*.html

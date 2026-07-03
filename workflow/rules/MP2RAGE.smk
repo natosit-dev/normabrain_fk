@@ -7,36 +7,46 @@ from lxml import etree
 import re
 from collections import Counter
 
-wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["qMT_contrasts"]]),
-    seq = config["qMT_sequence"],
-    part = 'mag|phase'
+bidspath = Path("data/rawdata/bids")
+try:
+    field_strength_list=next(os.walk(bidspath))[1]
+except:
+    field_strength_list=[]
 
-def mp2rage_echo_spacing(wildcards):
-    protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
-    protocol_name_pattern = "*" + protocol_name + "*/*.xml"
-    search_path = Path(config["protocol_path"]) / wildcards.field_strength
-    xml_path_list = sorted(search_path.rglob(protocol_name_pattern, case_sensitive=False))
-    if len(xml_path_list) > 0:
-        xml_path = xml_path_list[0]
-        xml_tree = etree.parse(xml_path)
-        xml_root = xml_tree.getroot()
-        echo_spacing_unit = xml_root.xpath(".//SubStep[ProtHeaderInfo[HeaderProtPath[contains(text(), 'mp2r')]]]/Card/ProtParameter[Label[contains(text(), 'Echo Spacing')]]/ValueAndUnit")[0].text
-        numeric_const_pattern = r'[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
-        rx = re.compile(numeric_const_pattern, re.VERBOSE)
-        echo_spacing = float(rx.findall( echo_spacing_unit )[0])
-    else:
-        echo_spacing = 7.4
-    return echo_spacing
+# def mp2rage_echo_spacing(wildcards):
+#     protocol_name = wildcards.subject.replace("sub-", "").lstrip("0123456789.-")
+#     protocol_name_pattern = "*" + protocol_name + "*/*.xml"
+#     search_path = Path(config["protocol_path"])
+#     xml_path_list = sorted(search_path.rglob(protocol_name_pattern, case_sensitive=False))
+#     if len(xml_path_list) > 0:
+#         xml_path = xml_path_list[0]
+#         xml_tree = etree.parse(xml_path)
+#         xml_root = xml_tree.getroot()
+#         echo_spacing_unit = xml_root.xpath(".//SubStep[ProtHeaderInfo[HeaderProtPath[contains(text(), 'mp2r')]]]/Card/ProtParameter[Label[contains(text(), 'Echo Spacing')]]/ValueAndUnit")[0].text
+#         numeric_const_pattern = r'[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
+#         rx = re.compile(numeric_const_pattern, re.VERBOSE)
+#         echo_spacing = float(rx.findall( echo_spacing_unit )[0])
+#     else:
+#         echo_spacing = 7.4
+#     return echo_spacing
 
 def get_inv1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-1_MP2RAGE.nii.gz'))[0]
 
+def get_inv1_json(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-1_MP2RAGE.json'))[0]
+
 def get_inv2(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-2_MP2RAGE.nii.gz'))[0]
 
+def get_inv2_json(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_inv-2_MP2RAGE.json'))[0]
+
 def get_unit1(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_UNIT1.nii.gz'))[0]
+
+def get_unit1_json(wildcards):
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.mp2rage_params}*_UNIT1.json'))[0]
 
 def get_preproc_uniden_list(wildcards):
     # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
@@ -75,11 +85,13 @@ def mp2rage_statslist(wildcards):
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mp2rage))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mp2rage))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for acq in acqlist:
@@ -92,11 +104,13 @@ def freesurfer_subjectlist_mp2rage(wildcards):
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl))
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mp2rage))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl))
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mp2rage))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
             for acq in acqlist:
@@ -104,15 +118,55 @@ def freesurfer_subjectlist_mp2rage(wildcards):
     fs_subjectarray = " ".join(fs_subjectlist)
     return fs_subjectarray
 
+def aggregate_mp2rage(wildcards):
+    # bidspath = Path("data/rawdata/bids/" + wildcards.field_strength)
+    layout=layout_dict[wildcards.field_strength]
+    mp2rage_list = []
+    subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
+    subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
+    subjectlist = list((set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mp2rage))
+    for subject in subjectlist:
+        sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
+        sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
+        sessionlist = list((set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mp2rage))
+        for session in sessionlist:
+            acqlist = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)
+            for acq in acqlist:
+                mp2rage_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + acq + "/preproc/sub-" + subject + "_ses-" + session + "_acq-" + acq + "_T1map_b1corr_brain_denoised_n4.nii.gz")
+    return sorted(mp2rage_list)
+
+
+rule add_xml_data_to_meta_mp2rage:
+    input:
+        inv1_json = get_inv1_json,
+        inv2_json = get_inv2_json,
+        unit1_json = get_unit1_json,
+    params:
+        protocol_path = config["protocol_path"]
+    output:
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_addXMLdata.done")
+    log:
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_addXMLdata.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+        python workflow/scripts/add_xml_data_to_meta.py {input.inv1_json} {params.protocol_path}
+        python workflow/scripts/add_xml_data_to_meta.py {input.inv2_json} {params.protocol_path}
+        python workflow/scripts/add_xml_data_to_meta.py {input.unit1_json} {params.protocol_path}
+        touch {output}
+        """
+
 
 rule json_for_uncorr_qT1:
     input:
+        addXMLdone = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_addXMLdata.done",
         b1map_nifti = get_last_b1map_run,
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1,
     params:
-        echo_spacing = mp2rage_echo_spacing,
         uncorr_qT1 = True
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map.json"
@@ -126,13 +180,12 @@ rule json_for_uncorr_qT1:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        python3 workflow/scripts/create_json_for_mp2proc.py \
+        python workflow/scripts/create_json_for_mp2proc.py \
         -b1map_nifti {input.b1map_nifti} \
         -inv1_nifti {input.inv1_nifti} \
         -inv2_nifti {input.inv2_nifti} \
         -unit1_nifti {input.unit1_nifti} \
         -output_json {output} \
-        -echo_spacing {params.echo_spacing} \
         -threads {threads} \
         -uncorr_qT1 {params.uncorr_qT1}
         """
@@ -169,8 +222,6 @@ rule json_for_mp2proc:
         inv1_nifti = get_inv1,
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1
-    params:
-        echo_spacing = mp2rage_echo_spacing
     output:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_mp2proc.json"
     threads:
@@ -183,13 +234,12 @@ rule json_for_mp2proc:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        python3 workflow/scripts/create_json_for_mp2proc.py \
+        python workflow/scripts/create_json_for_mp2proc.py \
         -b1map_nifti {input.b1map_nifti} \
         -inv1_nifti {input.inv1_nifti} \
         -inv2_nifti {input.inv2_nifti} \
         -unit1_nifti {input.unit1_nifti} \
         -output_json {output} \
-        -echo_spacing {params.echo_spacing} \
         -threads {threads}
         """
 
@@ -361,7 +411,7 @@ rule crop_mp2rage_256:
     input:
         "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}.nii.gz"
     output:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_cropped.nii.gz"
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_cropped.nii.gz")
     resources:
         mem_mb=1000
     conda:
@@ -478,7 +528,7 @@ rule mp2rage_stats:
 rule mp2rage_tsv:
     input:
         mp2rage_statslist,
-        "data/rawdata/bidsify.done"
+        # "data/rawdata/bidsify.done"
     params:
         subjects_dir="data/derivatives/{field_strength}/freesurfer/",
         subjects_list=freesurfer_subjectlist_mp2rage,
@@ -496,7 +546,10 @@ rule mp2rage_tsv:
         export SUBJECTS_DIR=$HOME/{params.subjects_dir}
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        asegstats2table --subjects {params.subjects_list} --statsfile {params.statsfile} -t {output} --meas mean --common-segs --no-segno 0
+        if ! [ -n {params.subjects_list} ]; then
+            asegstats2table --subjects {params.subjects_list} --statsfile {params.statsfile} -t {output} --meas mean --common-segs --no-segno 0
+        fi
+        touch {output}       
         """
 
 
@@ -529,7 +582,7 @@ rule apply_brainmask_qT1:
         input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}.nii.gz",
         brain_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain.nii.gz")
     conda:
         "../envs/fslmaths.yaml"
     resources: 
@@ -546,10 +599,10 @@ rule apply_brainmask_qT1:
 
 rule DenoiseImage_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain.nii.gz",
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain.nii.gz",
         mask_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised.nii.gz")
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -575,10 +628,10 @@ rule DenoiseImage_qT1:
 
 rule N4BiasFieldCorrection_qT1:
     input:
-        input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised.nii.gz",
+        input_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised.nii.gz",
         mask_image = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised_n4.nii.gz")
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{qT1}_brain_denoised_n4.nii.gz"
     conda:
         "../envs/qMT.yaml"
     resources: 
@@ -600,3 +653,21 @@ rule N4BiasFieldCorrection_qT1:
         -o {output}
         """
 
+rule aggregate_mp2rage_by_field_strength:
+    input:
+        aggregate_mp2rage
+    output:
+        "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE.done"
+    log:
+        "logs/{field_strength}/MP2RAGE/MP2RAGE.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        touch {output}
+        """
+
+rule aggregate_mp2rage:
+    input:
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/freesurfer/MP2RAGE_{mp2rage_map}_stats.tsv", field_strength=field_strength_list, mp2rage_map=["R1map_b1corr", "T1map_b1corr"])

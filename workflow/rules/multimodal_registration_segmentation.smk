@@ -7,29 +7,36 @@ from pathlib import Path
 
 
 wildcard_constraints:
-    contrast = '|'.join([re.escape(x) for x in config["qMT_contrasts"]]),
-    seq = config["qMT_sequence"],
+    contrast = '|'.join([re.escape(x) for x in config["qmt_contrasts"].split()]),
+    seq = config["qmt_sequence"],
     part = 'mag|phase'
 
+bidspath = Path("data/rawdata/bids")
+try:
+    field_strength_list=next(os.walk(bidspath))[1]
+except:
+    field_strength_list=[]
 
 def qMT_to_mp2rage(wildcards):
     layout=layout_dict[wildcards.field_strength]
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             for mpm in mpm_acqlist:
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
                 apply_reg_list.append("data/derivatives/{field_strength}/qMT/sub-" + subject + "/ses-" + session + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-" + mpm + "_applyreg2" + mp2rage_first_acq + ".done")
     counts = Counter(apply_reg_list)
@@ -41,13 +48,15 @@ def ihmt_to_mp2rage(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
@@ -60,18 +69,20 @@ def dwi_to_mp2rage(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_dwi))
         for session in sessionlist:
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             for dwi in dwi_acqlist:
-                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
                 apply_reg_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/acq-DWI" + dwi + "/reg2MP2RAGE/sub-" + subject + "_ses-" + session + "_acq-DWI" + dwi + "_applyreg2" + mp2rage_first_acq + ".done" )
     return apply_reg_list
 
@@ -95,13 +106,15 @@ def ihmt_statslist(wildcards):
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for acq in acqlist:
@@ -113,18 +126,20 @@ def qMT_statslist(wildcards):
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
                 acq = acq.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     acq = acq.replace(contrast, "")
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-" + acq + "/stats/qMT_stats.done")
     counts = Counter(statslist)
@@ -136,17 +151,19 @@ def dwi_statslist(wildcards):
     statslist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="dwi", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for acq in acqlist:
-                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
                 statslist.append("data/derivatives/{field_strength}/freesurfer/sub-" + subject + "_ses-" + session + "_acq-DWI" + acq + "/stats/dwi_stats.done")
     return sorted(statslist)
 
@@ -155,13 +172,15 @@ def freesurfer_subjectlist_ihmt(wildcards):
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
             for acq in acqlist:
@@ -174,18 +193,20 @@ def freesurfer_subjectlist_qMT(wildcards):
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for acq in acqlist:
                 acq = acq.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     acq = acq.replace(contrast, "")
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-" + acq)
     counts = Counter(fs_subjectlist)
@@ -198,17 +219,19 @@ def freesurfer_subjectlist_dwi(wildcards):
     fs_subjectlist = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_dwi))
         for session in sessionlist:
             acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for acq in acqlist:
-                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                acq = acq.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
                 fs_subjectlist.append("sub-" + subject + "_ses-" + session + "_acq-DWI" + acq)
     fs_subjectlist = list(set(fs_subjectlist))
     fs_subjectarray = " ".join(fs_subjectlist)
@@ -219,13 +242,15 @@ def mp2rage_to_ihmt(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_ihmt = layout.get_subject(suffix="ihmt")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_ihmt))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_ihmt))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_ihmt = layout.get_session(suffix="ihmt", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_ihmt))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_ihmt))
         for session in sessionlist:
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             ihmt_acqlist = layout.get_acquisition(suffix="ihmt", subject=subject, session=session)
@@ -238,19 +263,21 @@ def mp2rage_to_qMT(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
                 mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
                 apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2qMT/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2" + mpm + ".done")
     counts = Counter(apply_reg_list)
@@ -262,25 +289,27 @@ def mp2rage_to_dwi(wildcards):
     apply_reg_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_dwi = layout.get_subject(suffix="dwi")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_dwi))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_dwi))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_dwi = layout.get_session(suffix="dwi", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_dwi))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_dwi))
         for session in sessionlist:
             mp2rage_first_acq=layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
             for dwi in dwi_acqlist:
-                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "")
+                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
                 apply_reg_list.append("data/derivatives/{field_strength}/MP2RAGE/sub-" + subject + "/ses-" + session + "/acq-" + mp2rage_first_acq + "/reg2DWI/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_applyreg2DWI" + dwi + ".done")
     return apply_reg_list
 
 rule register_ihmt_to_MP2RAGE_ants:
     input:
         ref="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN.nii.gz",
-        moving="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.nii.gz",
+        moving="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/preproc/sub-{subject}_ses-{session}_acq-{ihmt_params}_MTmap_brain_denoised_n4.nii.gz",
         ref_mask="data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz",
         moving_mask="data/derivatives/{field_strength}/ihmt/sub-{subject}/ses-{session}/acq-{ihmt_params}/sub-{subject}_ses-{session}_acq-{ihmt_params}_ihmt_brain_mask.nii.gz"
     params:
@@ -336,7 +365,7 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
 
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         mkdir -p "{params.acqdir}/reg2MP2RAGE"
         for map in "${{MTmaps[@]}}"; do
             moving="{params.acqdir}/{params.subject}_"$map".nii.gz"
@@ -359,7 +388,6 @@ rule apply_reg_ihmt_to_MP2RAGE_ants:
 rule gather_ihmt_to_MP2RAGE_ants:
     input:
         ihmt_to_mp2rage,
-        "data/rawdata/bidsify.done"
     output:
         "data/derivatives/{field_strength}/ihmt/ihmt_to_MP2RAGE.done"
     log:
@@ -394,7 +422,7 @@ rule apply_reg_seg_to_ihmt_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         #choose ref based on what maps are available
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         for map in "${{MTmaps[@]}}"; do
             ref_init="{params.refprefix}_"$map".nii.gz"
             if [ -f $ref_init ]; then #if file exists, then set ref
@@ -432,7 +460,7 @@ rule ihmt_stats:
 
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         
         for map in "${{MTmaps[@]}}"; do
             ihmt="{params.ihmtprefix}_${{map}}.nii.gz"
@@ -449,7 +477,6 @@ rule ihmt_stats:
 rule ihmt_tsv:
     input:
         ihmt_statslist,
-        "data/rawdata/bidsify.done"
     params:
         subjectlist=freesurfer_subjectlist_ihmt,
         subjects_dir="data/derivatives/{field_strength}/freesurfer/"
@@ -467,11 +494,13 @@ rule ihmt_tsv:
         
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         
-        for map in "${{MTmaps[@]}}"; do
-            asegstats2table --subjects {params.subjectlist} --statsfile ihmt_${{map}}.stats -t $SUBJECTS_DIR/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
-        done
+        if ! [ -n {params.subjectlist} ]; then
+            for map in "${{MTmaps[@]}}"; do
+                asegstats2table --subjects {params.subjectlist} --statsfile ihmt_${{map}}.stats -t $SUBJECTS_DIR/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+            done
+        fi
         touch {output}
         """
 
@@ -500,7 +529,7 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         #set reference based on what maps are availble
-        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd")
+        MTmaps=("MTRs" "cosmod_MTRd" "freqalt_MTRd" "cosmod_ihMTmap" "freqalt_ihMTmap" "cosmod_ihMTR" "freqalt_ihMTR" "BP" "BPR" "MTRs_b1corr" "cosmod_MTRd_b1corr" "freqalt_MTRd_b1corr" "cosmod_ihMTmap_b1corr" "freqalt_ihMTmap_b1corr" "cosmod_ihMTR_b1corr" "freqalt_ihMTR_b1corr" "BP_b1corr" "BPR_b1corr")
         for map in "${{MTmaps[@]}}"; do
             ref_init="{params.ihmt_prefix}_"$map".nii.gz"
             if [ -f $ref_init ]; then #if file exists, then set ref
@@ -531,7 +560,6 @@ rule apply_reg_MP2RAGE_to_ihmt_ants:
 rule gather_MP2RAGE_to_ihmt_ants:
     input:
         mp2rage_to_ihmt,
-        "data/rawdata/bidsify.done"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_ihmt.done"
     log:
@@ -544,10 +572,17 @@ rule gather_MP2RAGE_to_ihmt_ants:
         """
 
 
+rule aggregate_multimodal_ihmt_mp2rage:
+    input:
+        expand("data/derivatives/{field_strength}/freesurfer/ihmt_stats.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_ihmt.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/ihmt/ihmt_to_MP2RAGE.done", field_strength=field_strength_list)
+
+
 rule register_qMT_to_MP2RAGE_ants:
     input:
-        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr_brain_denoised_n4.nii.gz",
-        moving = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised_n4.nii.gz",
+        ref = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_b1corr_brain_denoised_n4.nii.gz",
+        moving = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}{qMT_params}_T1map_brain_denoised_n4.nii.gz",
         ref_mask = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1map_brain_mask.nii.gz",
         moving_mask = "data/derivatives/{field_strength}/qMT/sub-{subject}/ses-{session}/preproc/sub-{subject}_ses-{session}_acq-{seq}t1w{qMT_params}_mt-off_part-mag_sos_brain_mask.nii.gz"
     params:
@@ -605,10 +640,10 @@ rule apply_reg_qMT_to_MP2RAGE_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         qMTmaps=("MPFmap" "MTRmap" "R1map" "T1map")
-        mkdir -p {params.sessiondir}/{params.regto}
+        mkdir -p {params.sessiondir}/reg2MP2RAGE
         for map in "${{qMTmaps[@]}}"; do
             moving="{params.sessiondir}/{params.qMTprefix}_"$map".nii.gz"
-            out="{params.sessiondir}/{params.regto}/{params.qMTprefix}_"$map"_{params.regto}.nii.gz"
+            out="{params.sessiondir}/reg2MP2RAGE/{params.qMTprefix}_"$map"_{params.regto}.nii.gz"
             if [ -f $moving ]; then
                 antsApplyTransforms \
                 --dimensionality 3 \
@@ -627,7 +662,6 @@ rule apply_reg_qMT_to_MP2RAGE_ants:
 rule gather_qMT_to_MP2RAGE_ants:
     input:
         qMT_to_mp2rage,
-        "data/rawdata/bidsify.done"
     output:
         "data/derivatives/{field_strength}/qMT/qMT_to_MP2RAGE.done"
     log:
@@ -707,7 +741,6 @@ rule qMT_stats:
 rule qMT_tsv:
     input:
         qMT_statslist,
-        "data/rawdata/bidsify.done"
     output:
         "data/derivatives/{field_strength}/freesurfer/qMT_stats.done"
     params:
@@ -727,9 +760,11 @@ rule qMT_tsv:
 
         qMTmaps=("MPFmap" "MTRmap" "R1map" "T1map")
         
-        for map in "${{qMTmaps[@]}}"; do
-            asegstats2table --subjects {params.subjectlist} --statsfile qMT_${{map}}.stats -t $SUBJECTS_DIR/qMT_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
-        done
+        if ! [ -n {params.subjectlist} ]; then
+            for map in "${{qMTmaps[@]}}"; do
+                asegstats2table --subjects {params.subjectlist} --statsfile qMT_${{map}}.stats -t $SUBJECTS_DIR/qMT_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+            done
+        fi
         touch {output}
         """
 
@@ -758,10 +793,10 @@ rule apply_reg_MP2RAGE_to_qMT_ants:
         export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads}
 
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
-        mkdir -p {params.mp2rage_acqdir}/{params.regto}
+        mkdir -p {params.mp2rage_acqdir}/reg2qMT
         for map in "${{MP2RAGEmaps[@]}}"; do
             moving="{params.mp2rage_acqdir}/{params.subject}_"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/{params.regto}/{params.subject}_"$map"_{params.regto}.nii.gz"
+            out="{params.mp2rage_acqdir}/reg2qMT/{params.subject}_"$map"_{params.regto}.nii.gz"
 
             #apply inverse of qMT to MP2RAGE registration
             antsApplyTransforms \
@@ -780,7 +815,6 @@ rule apply_reg_MP2RAGE_to_qMT_ants:
 rule gather_MP2RAGE_to_qMT_ants:
     input:
         mp2rage_to_qMT,
-        "data/rawdata/bidsify.done"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_qMT.done"
     log:
@@ -791,6 +825,13 @@ rule gather_MP2RAGE_to_qMT_ants:
 
         touch {output}
         """
+
+
+rule aggregate_multimodal_qMT_mp2rage:
+    input:
+        expand("data/derivatives/{field_strength}/freesurfer/qMT_stats.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_qMT.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/qMT/qMT_to_MP2RAGE.done", field_strength=field_strength_list)
 
 
 rule register_DWI_to_MP2RAGE_bbregister:
@@ -847,7 +888,7 @@ rule apply_reg_DWI_to_MP2RAGE_bbregister:
 
         for map in "${{dkimaps[@]}}"; do
             moving="{params.acqdir}/dki/{params.dwiprefix}_"$map".nii.gz"
-            out="{params.acqdir}/reg2MP2RAGE/dki/{params.dwiprefix}_{params.regto}_"$map".nii.gz"
+            out="{params.acqdir}/reg2MP2RAGE/dki/{params.dwiprefix}_"$map"_{params.regto}.nii.gz"
             if [ -f $moving ]; then
                 mri_vol2vol --mov $moving --targ {input.target} --o $out --reg {input.reg} --no-save-reg
             fi
@@ -859,7 +900,6 @@ rule apply_reg_DWI_to_MP2RAGE_bbregister:
 rule gather_DWI_to_MP2RAGE_bbregister:
     input:
         dwi_to_mp2rage,
-        "data/rawdata/bidsify.done"
     output:
         "data/derivatives/{field_strength}/dwi/DWI_to_MP2RAGE.done"
     log:
@@ -932,7 +972,6 @@ rule dwi_stats:
 rule dwi_tsv:
     input:
         dwi_statslist,
-        "data/rawdata/bidsify.done"
     output:
         "data/derivatives/{field_strength}/freesurfer/dwi_stats.done"
     params:
@@ -952,9 +991,11 @@ rule dwi_tsv:
 
         dkimaps=("ad" "ak" "color_fa" "fa" "kfa" "md" "mk" "mkt" "rd" "rk" "rtk")
         
-        for map in "${{dkimaps[@]}}"; do
-            asegstats2table --subjects {params.subjectlist} --statsfile dki_${{map}}.stats -t $SUBJECTS_DIR/dki_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
-        done
+        if ! [ -n {params.subjectlist} ]; then
+            for map in "${{dkimaps[@]}}"; do
+                asegstats2table --subjects {params.subjectlist} --statsfile dki_${{map}}.stats -t $SUBJECTS_DIR/dki_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+            done
+        fi
         touch {output}
         """
 
@@ -983,10 +1024,10 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
         export FS_LICENSE=$HOME/.snakemake/scripts/.license
 
         MP2RAGEmaps=("R1map_b1corr" "T1map_b1corr" "T1w_UNIDEN_b1corr" "T1w_UNI_b1corr" "T1w_UNIDEN")
-        mkdir -p {params.mp2rage_acqdir}/{params.regto}
+        mkdir -p {params.mp2rage_acqdir}/reg2DWI
         for map in "${{MP2RAGEmaps[@]}}"; do
             target="{params.mp2rage_acqdir}/{params.mp2rage_subject}_"$map".nii.gz"
-            out="{params.mp2rage_acqdir}/{params.regto}/{params.mp2rage_subject}_"$map"_{params.regto}.nii.gz"
+            out="{params.mp2rage_acqdir}/reg2DWI/{params.mp2rage_subject}_"$map"_{params.regto}.nii.gz"
 
             #apply inverse of qMT to MP2RAGE registration
             mri_vol2vol --mov {input.b0} --targ $target --inv --o $out --reg {input.reg} --no-save-reg
@@ -998,7 +1039,6 @@ rule apply_reg_MP2RAGE_to_dwi_bbregister:
 rule gather_MP2RAGE_to_dwi_bbregister:
     input:
         mp2rage_to_dwi,
-        "data/rawdata/bidsify.done"
     output:
         "data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_DWI.done"
     log:
@@ -1009,3 +1049,9 @@ rule gather_MP2RAGE_to_dwi_bbregister:
 
         touch {output}
         """
+
+rule aggregate_multimodal_dwi_mp2rage:
+    input:
+        expand("data/derivatives/{field_strength}/freesurfer/dwi_stats.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/MP2RAGE/MP2RAGE_to_DWI.done", field_strength=field_strength_list),
+        expand("data/derivatives/{field_strength}/dwi/DWI_to_MP2RAGE.done", field_strength=field_strength_list)

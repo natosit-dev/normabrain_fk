@@ -1,3 +1,7 @@
+# Welcome to the NormaBRAIN Pipeline!
+
+While this pipeline was designed for use with the NormaBRAIN protocol for Aix Marseille Univ at 3T and 7T, it is flexible enough to be used with any Siemens dataset which includes all or some of the modalities implemented. The NormaBRAIN pipeline automatically organizes and symlinks the input DICOMS by field strength, and then generates a BIDS database for each field strength. It then automatically determines which modalities are available for each subject and session, and runs the appropriate pre-processing modules. It's flexible enough to use during protocol development: scans of the same modality with differing acquisition parameters are saved and processed separately. Parameters for each scan are automatically read from the DICOM headers and scanner protocol XMLs. Give it a try with your dataset!
+
 # Installation
 
 This repository utilizes git submodules. To clone, use the command ```git clone --recurse-submodules project_url```
@@ -13,19 +17,18 @@ Some freesurfer tools require a freesurfer license. You can obtain a freesurfer 
 
 ihMT MoCo also requires a license agreement. Please sign the license agreement and download the code at https://crmbm.univ-amu.fr/resources/ihmt-moco/. Once you have obtained the code, save it to ```.snakemake/scripts/ihMT_MoCo.sh```
 
+The first time the pipeline runs, all required singularity images and conda environments are constructed. This requires an internet connection. If Spinal Cord Toolbox is not present on the system, it is installed via the qMT.smk rule install_sct. 
+
 # Useage
 
-See ```run_workflow.sh``` for example useage. The pipeline is called with the Snakemake CLI, see https://snakemake.readthedocs.io/en/stable/ for documentation. Snakemake must be called with ```--sdm conda apptainer``` and the number of cores must be defined with ```--cores```. 
+Note that the first time you run the pipeline on your system will be slower, as the associated conda and singularity environments must be downloaded and constructed. 
 
-The raw DICOMS must first be organized into BIDS via the command ```snakemake--sdm conda --cores 2 data/rawdata/bids/{field_strength}/code/bidscoin/fixmeta.log``` for each field strength before the rest of the pipeline can be run. The template bidsmap used to organize raw DICOMS into BIDS can be edited at ```config/bidsmap_normabrain_template.yaml```.
+In the same folder as the repository, run ```bash run_workflow.bash [OPTIONS]```. This will generate and run a snakemake command. To run the whole pipeline on all subjects using all available cores, run ```bash run_workflow.bash -i [path/to/DICOMS/folder] --protocol_path [path/to/protocol/xmls/folder] --all```.  Run ```bash run_workflow.bash -h``` for more information on required and optional flags, including GPU implementation and changing the default memory limits.
 
-To use GPU, add the argument ```--singularity-args "--nv -e"```. To limit memory useage in MB, use the argument ```--resources mem_mb=...```. 
+DICOMS are symlinked to ```data/rawdata/dicoms``` and BIDS repositories for each field strength are generated in ```data/rawdata/bids```. All analyses and intermediate files are saved to ```data/derivatives```. 
 
-The following variables are defined either in ```config/snakemake_config.yaml``` or via the CLI after the ```--config``` argument:
-- ```input_dicoms_path``` (REQUIRED: path to the raw DICOMS from the scanner)
-- ```protocol_path``` (REQUIRED: path to the scanning protocol xml files)
-- ```MPM_sequence``` (REQUIRED: the base name of the qMT sequence used in the ProtocolName, "vibeMT" for NormaBRAIN)
-- ```MPM_contrasts``` (REQUIRED: the bracketed comma-separated list of contrasts collected for the MPM sequence as described in the ProtocolName, ["mt0", "mtw", "pdw", "t1w"] for NormaBRAIN)
-- ```subject_list_dicom``` (OPTIONAL: the space-separated list of subject folders in input_dicoms_path to include in the analysis. Default is all folders.)
+Users who wish to have more control over snakemake or output files can instead create their own snakemake commands. See https://snakemake.readthedocs.io/en/stable/ for documentation. This includes settings for working with SLURM and other cluster resource schedulers. Note that the BIDS repositories must be generated separately first for other modules to function (including BIDS generation completion as a requirement for rules in other modules will result in every subject being re-run whenever a new subject is added).
+ 
+The template bidsmap used to organize raw DICOMS into BIDS can be edited at ```config/bidsmap_normabrain_template.yaml```. The dictionary for saving paramters from the Siemens CSA header ("private header") to json metadata for each scan is in ```scripts/add_csa_data_to_meta.py```.
 
-By default, all subjects and sub-pipelines are run, as defined by the input files of "rule all" in ```workflow/Snakefile```. If you wish to only run a single subject or sub-pipeline, place the name of the target file at the end of the Snakemake command. For example, to generate freesurfer segmentation and mean ROI statistics for just the ihMT LoSar acquisition for subject 002 session 1 at 3T, run ```snakemake --resources mem_mb=9300 --sdm conda apptainer --cores 8 "data/derivatives/3T/freesurfer/sub-002_ses-1_acq-ihMTLoSar/stats/ihmt_stats.done"```. Snakemake will automatically also run the required MP2RAGE and B1map sub-pipelines, along with the ihMT sub-pipeline, for this field strength/subject/session to generate the segmentations.
+Calling snakemake without a target rule or file, or running run_workflow.bash with the --all flag, will run the whole pipeline on all subjects as defined by "rule all" in ```workflow/Snakefile```. If you wish to only run a single subject or sub-pipeline, place the name of the target file at the end of your snakemake command. For example, to generate freesurfer segmentation and mean ROI statistics for just the ihMT LoSar acquisition for subject 002 session 1 at 3T, run ```snakemake --resources mem_mb=9300 --sdm conda apptainer --cores 8 "data/derivatives/3T/freesurfer/sub-002_ses-1_acq-ihMTLoSar/stats/ihmt_stats.done"```. Snakemake will automatically also run the required MP2RAGE and B1map modules, along with the ihMT module, for this field strength/subject/session/acquistion to generate the segmentations. You may direct snakemake to target any rules or output files defined in the smk files in ```workflow/rules```.

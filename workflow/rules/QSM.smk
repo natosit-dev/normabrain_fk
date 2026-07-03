@@ -7,7 +7,9 @@ from bids import BIDSLayout
 import logging
 
 wildcard_constraints:
-    seq = config["qMT_sequence"]
+    seq = config["qmt_sequence"]
+
+bidspath = Path("data/rawdata/bids")
 
 def get_mt0_phase(wildcards):
     return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/anat/sub-{wildcards.subject}_ses-{wildcards.session}_acq-{wildcards.seq}mt0*{wildcards.qMT_params}*_echo-*_flip-*_mt-off_part-phase_MPM.nii.gz'))[0]
@@ -17,20 +19,22 @@ def qsm_nii_list(wildcards):
     qsm_nii_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
-                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qMT_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qmt_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
-                qsm_nii_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qMT_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.nii.gz")
+                qsm_nii_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qmt_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.nii.gz")
     qsm_nii_list = list(set(qsm_nii_list))
     return qsm_nii_list
 
@@ -39,20 +43,22 @@ def qsm_json_list(wildcards):
     qsm_json_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
-                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qMT_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qmt_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
-                qsm_json_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qMT_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.json")
+                qsm_json_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qmt_sequence"] + "mt0" + mpm + "_echo-1_part-phase_MEGRE.json")
     qsm_json_list = list(set(qsm_json_list))
     return qsm_json_list
 
@@ -61,20 +67,22 @@ def qsm_mask_list(wildcards):
     qsm_mask_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mpm_acqlist = layout.get_acquisition(suffix="MPM", subject=subject, session=session)
             for mpm in mpm_acqlist:
-                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qMT_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
-                for contrast in config["qMT_contrasts"]:
+                mpm = mpm.replace("6eco", "").replace("3eco", "").replace("sag", "").replace(config["qmt_sequence"], "").replace("mag", "").replace("pha", "").replace("DL", "")
+                for contrast in config["qmt_contrasts"].split():
                     mpm = mpm.replace(contrast, "")
-                qsm_mask_list.append("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qMT_sequence"] + "mt0" + mpm + "_mask.nii.gz")
+                qsm_mask_list.append("data/derivatives/{field_strength}/QSM/derivatives/brain_spine_mask/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + config["qmt_sequence"] + "mt0" + mpm + "_mask.nii.gz")
     qsm_mask_list = list(set(qsm_mask_list))
     return qsm_mask_list
 
@@ -86,13 +94,15 @@ def t1w_nii_list(wildcards):
     t1w_nii_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mp2rage_first_acq = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             t1w_nii_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_T1w.nii.gz")
@@ -104,13 +114,15 @@ def t1w_json_list(wildcards):
     t1w_json_list = []
     subjectlist_mp2rage = layout.get_subject(suffix="MP2RAGE")
     subjectlist_tb1tfl = layout.get_subject(suffix="TB1TFL")
+    subjectlist_tb1rfm = layout.get_subject(suffix="TB1RFM")
     subjectlist_mpm = layout.get_subject(suffix="MPM")
-    subjectlist = list(set(subjectlist_mp2rage) & set(subjectlist_tb1tfl) & set(subjectlist_mpm))
+    subjectlist = list(set(subjectlist_mp2rage) & (set(subjectlist_tb1tfl) | set(subjectlist_tb1rfm)) & set(subjectlist_mpm))
     for subject in subjectlist:
         sessionlist_mp2rage = layout.get_session(suffix="MP2RAGE", subject=subject)
         sessionlist_tb1tfl = layout.get_session(suffix="TB1TFL", subject=subject)
+        sessionlist_tb1rfm = layout.get_session(suffix="TB1RFM", subject=subject)
         sessionlist_mpm = layout.get_session(suffix="MPM", subject=subject)
-        sessionlist = list(set(sessionlist_mp2rage) & set(sessionlist_tb1tfl) & set(sessionlist_mpm))
+        sessionlist = list(set(sessionlist_mp2rage) & (set(sessionlist_tb1tfl) | set(sessionlist_tb1rfm)) & set(sessionlist_mpm))
         for session in sessionlist:
             mp2rage_first_acq = layout.get_acquisition(suffix="MP2RAGE", subject=subject, session=session)[0]
             t1w_json_list.append("data/derivatives/{field_strength}/QSM/sub-" + subject + "/ses-" + session + "/anat/sub-" + subject + "_ses-" + session + "_acq-" + mp2rage_first_acq + "_T1w.json")
@@ -241,9 +253,9 @@ rule qsmxt:
     input:
         qsm_nii_list,
         qsm_json_list,
-        qsm_mask_list,
-        t1w_nii_list,
-        t1w_json_list
+        # qsm_mask_list,
+        # t1w_nii_list,
+        # t1w_json_list
     params:
         qsm_folder="data/derivatives/{field_strength}/QSM/"
     output:
@@ -262,9 +274,11 @@ rule qsmxt:
         if command -v nvidia-smi; then
             export CUDA_VISIBLE_DEVICES=0
         fi
+        
+        rm -rf {params.qsm_folder}/derivatives/qsmxt-*
 
-        qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --gpu --auto_yes || \
-        qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --add_bet --n_procs {threads} --auto_yes
+        qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --n_procs {threads} --gpu --auto_yes || \
+        qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --n_procs {threads} --auto_yes
 
         #move qsmxt folder so it has a consistent name for snakemake
         rm -rf {output}
@@ -272,3 +286,7 @@ rule qsmxt:
         mv {params.qsm_folder}/derivatives/qsmxt-*/* {output}
         rm -rf {params.qsm_folder}/derivatives/qsmxt-*/*
         """
+
+rule aggregate_qsmxt:
+    input:
+        expand("data/derivatives/{field_strength}/QSM/derivatives/qsmxt/", field_strength=field_strength_list)

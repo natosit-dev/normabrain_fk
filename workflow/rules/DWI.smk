@@ -1,11 +1,32 @@
 import glob
+from pathlib import Path
+
+bidspath = Path("data/rawdata/bids")
+try:
+    field_strength_list=next(os.walk(bidspath))[1]
+except:
+    field_strength_list=[]
 
 def get_dwi_nii(wildcards):
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_dwi.nii.gz'))
+    #get first run
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*{wildcards.dwi_params}*_dir-PA_*dwi.nii.gz'))[0]
 
 def get_b0_nii(wildcards):
-    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*b0*{wildcards.dwi_params}*_dir-AP_dwi.nii.gz'))
+    #get first run
+    return sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/dwi/sub-{wildcards.subject}_ses-{wildcards.session}_acq-*b0*{wildcards.dwi_params}*_dir-AP_*dwi.nii.gz'))[0]
 
+def aggregate_dki(wildcards):
+    layout=layout_dict[wildcards.field_strength]
+    dki_list = []
+    subjectlist = layout.get_subject(suffix="dwi")
+    for subject in subjectlist:
+        sessionlist = layout.get_session(suffix="dwi", subject=subject)
+        for session in sessionlist:
+            dwi_acqlist = layout.get_acquisition(suffix="dwi", subject=subject, session=session)
+            for dwi in dwi_acqlist:
+                dwi = dwi.replace("dwi", "").replace("18iso", "").replace("2shb2ktra", "").replace("PA", "").replace("b0tra", "").replace("AP", "").replace("3shb3ktra", "").replace("pha", "")
+                dki_list.append("data/derivatives/{field_strength}/dwi/sub-" + subject + "/ses-" + session + "/acq-DWI" + dwi + "/dki/")
+    return dki_list
 
 rule nyu_designer:
     input:
@@ -28,6 +49,12 @@ rule nyu_designer:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         rm -rf {params.preproc}
+        if command -v eddy_cuda >/dev/null 2>&1; then
+            export PATH="$(dirname "$(command -v eddy_cuda)"):$PATH"
+        fi
+        if command -v nvidia-smi; then
+            export CUDA_VISIBLE_DEVICES=0
+        fi
         designer "{input.dwi}" "{output.mif}" -denoise -shrinkage frob -adaptive_patch -rician -degibbs -eddy -rpe_pair $HOME/{input.b0} -normalize -mask -scratch {params.preproc} -nocleanup -n_cores {threads} -nthreads {threads}
         cp {params.preproc}/sigma.nii {output.noisemap}
         rm -rf {params.preproc}
@@ -133,5 +160,23 @@ rule dki_tensor_dipy:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         mkdir -p {output}
-        python3 workflow/scripts/dki_tensor_dipy.py {input.img} {input.mask} {params.outprefix}
+        python workflow/scripts/dki_tensor_dipy.py {input.img} {input.mask} {params.outprefix}
         """
+
+rule aggregate_dki_by_field_strength:
+    input:
+        aggregate_dki
+    output:
+        "data/derivatives/{field_strength}/dwi/dki.done"
+    log:
+        "logs/{field_strength}/dwi/dki.log"
+    shell:
+        """
+        exec > >(tee {log}) 2>&1 #save output to log AND print to console
+
+        touch {output}
+        """
+
+rule aggregate_dki:
+    input:
+        expand("data/derivatives/{field_strength}/dwi/dki.done", field_strength=field_strength_list)

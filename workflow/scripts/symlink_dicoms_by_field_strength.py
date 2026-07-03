@@ -10,14 +10,14 @@ def symlink_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: s
     
     # List subjects folders, assuming they are the next directories in the hierarchy
     subjects = []
-    if subject_list != "*" :
+    if subject_list == "*" or subject_list == ["*"]:
+        subjects = lsdirs(rawfolder, '*')
+    else:
         for sub in subject_list:
             subject_folder = Path(rawfolder / sub)
             if subject_folder.is_dir():
                 subjects.append(subject_folder)
-    else:
-        subjects = lsdirs(rawfolder, '*')
-
+        
     #loop through the subjects folders
     for subject in subjects:
         # List session folders within each subject, assuming they are the next directories in the hierarchy
@@ -50,7 +50,8 @@ def symlink_dicoms_by_field_strength(source_dicoms_folder: str, output_folder: s
 
             #remove dicoms with NoAV in the name
             for dicom in list(new_folder.rglob('*NoAV*.dcm', recurse_symlinks=True)):
-                os.remove(dicom.parent)
+                if dicom.parent.exists():
+                    os.remove(dicom.parent)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

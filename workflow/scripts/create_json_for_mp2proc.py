@@ -2,7 +2,7 @@ import argparse
 import json
 from pathlib import Path
 
-def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_json: str, echo_spacing: float, threads: int, uncorr_qT1: bool=False,):
+def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, unit1_nifti: str, output_json: str, threads: int, uncorr_qT1: bool=False,):
     # with open(metadata_json_path, "r") as f:
     #     metadata = json.load(f)
     
@@ -84,7 +84,7 @@ def create_json_for_mp2proc(b1map_nifti: str, inv1_nifti: str, inv2_nifti: str, 
 
         #MP2RAGE parameters
         #echo spacing needs to be read from PDF of scan protocol
-        "t_echo_spacing_msUnit"                         : echo_spacing,
+        "t_echo_spacing_msUnit"                         : inv1_meta["EchoSpacing_ms"],
         "t_repeat_MP2RAGE_msUnit"                       : inv1_meta["tr_ms"],
         "t_inversion1_msUnit"                           : inv1_meta["ti1_ms"],
         "t_inversion2_msUnit"                           : inv1_meta["ti2_ms"],
@@ -149,9 +149,8 @@ if __name__ == '__main__':
     parser.add_argument('-inv2_nifti', type=str, help="Path to input INV2 MP2RAGE image. Should have an accompanying json sidecar with the same base name.")
     parser.add_argument('-unit1_nifti', type=str, help="Path to input UNIT1 MP2RAGE image. Should have an accompanying json sidecar with the same base name.")
     parser.add_argument('-output_json', type=str, help="Path to output json for use in MP2PROC")
-    parser.add_argument('-echo_spacing', type=float, help="MP2RAGE echo spacing, must be read from the protocol PDF folder")
     parser.add_argument("-threads", type=int, help="Number of threads")
     parser.add_argument("-uncorr_qT1", type=bool, default=False, help="If true, only save qT1 without B1 correction. Default is false, calculate all maps with B1 correction.")
     args = parser.parse_args()
-    create_json_for_mp2proc(args.b1map_nifti, args.inv1_nifti, args.inv2_nifti, args.unit1_nifti, args.output_json, args.echo_spacing, args.threads, args.uncorr_qT1)
+    create_json_for_mp2proc(args.b1map_nifti, args.inv1_nifti, args.inv2_nifti, args.unit1_nifti, args.output_json, args.threads, args.uncorr_qT1)
 # create_json_for_mp2proc(b1map_nifti=snakemake.input.b1map_nifti, inv1_nifti=snakemake.input.inv1_nifti, inv2_nifti=snakemake.input.inv2_nifti, unit1_nifti=snakemake.input.unit1_nifti, output_json=snakemake.output[0], echo_spacing=snakemake.config["mp2rage_echo_spacing"], threads=snakemake.threads, uncorr_qT1=snakemake.params.uncorr_qT1)
