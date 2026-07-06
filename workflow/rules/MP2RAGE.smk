@@ -406,6 +406,20 @@ rule apply_reg_first_mp2rage_acq:
         fi
         """
 
+rule MPRAGEise:
+    input:
+        inv2_nifti = get_inv2,
+        unit1_nifti = get_unit1
+    output:
+        temp(directory("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/MPRAGEise/"))
+    container:
+         "docker://afni/afni_make_build:AFNI_26.1.04"
+    log:
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/MPRAGEise.log"
+    shell:
+        """
+        python workflow/scripts/MPRAGEise/MPRAGEise.py -i {input.inv2_nifti} -u {input.unit1_nifti} -o {output}
+        """
 
 rule crop_mp2rage_256:
     input:

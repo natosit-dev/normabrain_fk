@@ -13,3 +13,6 @@
 [submodule "workflow/scripts/tim_ihMT"]
 	path = workflow/scripts/tim_ihMT
 	url = git@github.com:SirTwinkleberry/ihMT.git
+[submodule "workflow/scripts/MPRAGEise"]
+	path = workflow/scripts/MPRAGEise
+	url = https://github.com/srikash/MPRAGEise.git
