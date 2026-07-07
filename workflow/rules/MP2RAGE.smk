@@ -411,27 +411,33 @@ rule MPRAGEise:
         inv2_nifti = get_inv2,
         unit1_nifti = get_unit1
     output:
-        temp(directory("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/MPRAGEise/"))
+        outdir = temp(directory("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/MPRAGEise/")),
+        outimg = temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_MPRAGEise.nii.gz")
+    params:
+        "sub-{subject}_ses-{session}_acq-{mp2rage_params}_UNIT1_unbiased_clean.nii.gz"
     container:
-         "docker://afni/afni_make_build:AFNI_26.1.04"
+         "docker://afni/afni_cmake_build:AFNI_26.1.04"
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/MPRAGEise.log"
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_MPRAGEise.log"
     shell:
         """
-        python workflow/scripts/MPRAGEise/MPRAGEise.py -i {input.inv2_nifti} -u {input.unit1_nifti} -o {output}
+        python workflow/scripts/MPRAGEise.py -i {input.inv2_nifti} -u {input.unit1_nifti} -o {output.outdir}
+        mv {output.outdir}/{params} {output.outimg}
         """
 
 rule crop_mp2rage_256:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_MPRAGEise.nii.gz"
+        # "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}.nii.gz"
     output:
-        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_cropped.nii.gz")
+        temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_MPRAGEise_cropped.nii.gz")
+        # temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_cropped.nii.gz")
     resources:
         mem_mb=1000
     conda:
         "../envs/qMT.yaml"
     log:
-        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_{mp2rage_map}_cropped.log"
+        "logs/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_MPRAGEise_cropped.log"
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
@@ -441,8 +447,10 @@ rule crop_mp2rage_256:
         start_2="$((${{size_2}}-256))"
         mrgrid {input} crop -axis 2 ${{start_2}}:end {output} -force 
 
-        #crop nose
-        mrgrid {output} crop -axis 1 0:255 {output} -force 
+        #crop coronal
+        size_1="$(mrinfo -size {input} | awk '{{print $2}}')"
+        crop_size_1="$(((${{size_1}}-256)/2))"
+        mrgrid {output} crop -axis 1 ${{crop_size_1}},${{crop_size_1}} {output} -force 
 
         #pad ears
         size_0="$(mrinfo -size {input} | awk '{{print $1}}')"
@@ -453,7 +461,8 @@ rule crop_mp2rage_256:
 
 rule recon_all:
     input:
-        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN_b1corr_cropped.nii.gz"
+        "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_MPRAGEise_cropped.nii.gz"
+        # "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/sub-{subject}_ses-{session}_acq-{mp2rage_params}_T1w_UNIDEN_b1corr_cropped.nii.gz"
     params:
         subjects_dir="data/derivatives/{field_strength}/freesurfer/",
         subject="sub-{subject}_ses-{session}_acq-{mp2rage_params}"
