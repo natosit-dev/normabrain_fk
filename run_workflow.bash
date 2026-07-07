@@ -257,8 +257,8 @@ config_args=(
     "qmt_contrasts=${qmt_contrasts}"
 )
 config_string=" --config input_dicoms_path='${input_dicoms_path}' protocol_path='${protocol_path}' subject_list_dicom='${subject_list_dicom}' qmt_sequence='${qmt_sequence}' qmt_contrasts='${qmt_contrasts}'"
-first_pass_args=(--sdm conda --cores 1)
-first_pass_string=" --sdm conda --cores 1"
+first_pass_args=(--sdm conda --rerun-incomplete)
+first_pass_string=" --sdm conda --rerun-incomplete"
 main_args=(--sdm conda apptainer --rerun-incomplete)
 main_string=" --sdm conda apptainer --rerun-incomplete"
 target_args=()
@@ -294,9 +294,13 @@ fi
 if [ "$cores" -eq 0 ]; then
     main_args+=(--cores all)
     main_string+=" --cores all"
+    first_pass_args+=(--cores all)
+    first_pass_string+=" --cores all"
 else
     main_args+=(--cores "$cores")
     main_string+=" --cores ${cores}"
+    first_pass_args+=(--cores "$cores")
+    first_pass_string+=" --cores ${cores}"
 fi
 
 if [ "$reg_seg" = true ]; then #--reg_seg with no other flags functions the same as --all
