@@ -371,6 +371,8 @@ fi
 if [ "$dry_run" = true ]; then
     main_args+=(--dry-run)
     main_string+=" --dry-run"
+    first_pass_args+=(--dry-run)
+    first_pass_string+=" --dry-run"
 fi
 
 if [ "$all" = true ]; then
