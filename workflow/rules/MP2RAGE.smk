@@ -412,7 +412,7 @@ rule MPRAGEise:
         unit1_nifti = get_unit1
     output:
         outdir = temp(directory("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/MPRAGEise/")),
-        outimg = temp("data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_MPRAGEise.nii.gz")
+        outimg = "data/derivatives/{field_strength}/MP2RAGE/sub-{subject}/ses-{session}/acq-{mp2rage_params}/preproc/sub-{subject}_ses-{session}_acq-{mp2rage_params}_MPRAGEise.nii.gz"
     params:
         "sub-{subject}_ses-{session}_acq-{mp2rage_params}_UNIT1_unbiased_clean.nii.gz"
     container:
@@ -424,6 +424,7 @@ rule MPRAGEise:
         python workflow/scripts/MPRAGEise.py -i {input.inv2_nifti} -u {input.unit1_nifti} -o {output.outdir}
         mv {output.outdir}/{params} {output.outimg}
         """
+
 
 rule crop_mp2rage_256:
     input:
@@ -450,7 +451,9 @@ rule crop_mp2rage_256:
         #crop coronal
         size_1="$(mrinfo -size {input} | awk '{{print $2}}')"
         crop_size_1="$(((${{size_1}}-256)/2))"
-        mrgrid {output} crop -axis 1 ${{crop_size_1}},${{crop_size_1}} {output} -force 
+        crop_size_1a="$((${{crop_size_1}}-10))"
+        crop_size_1b="$((${{crop_size_1}}+10))"
+        mrgrid {output} crop -axis 1 ${{crop_size_1a}},${{crop_size_1b}} {output} -force 
 
         #pad ears
         size_0="$(mrinfo -size {input} | awk '{{print $1}}')"
