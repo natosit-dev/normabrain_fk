@@ -26,7 +26,7 @@ def get_b1anat2mp2rage_reg(wildcards):
     #get b1anat2mp2rage registration if b1anat exists, otherwise return a blank string (applyAntsTransforms will then reslice instead of register)
     try:
         b1anat = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-anat*_TB1*.nii.gz'))[-1]
-        b1anat2mp2rage_reg = "data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/reg2MP2RAGE/sub-{wildcards.subject}_ses-{wildcards.session}_b1_reg2{wildcards.mp2rage_params}_0GenericAffine.mat"
+        b1anat2mp2rage_reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2MP2RAGE/sub-{subject}_ses-{session}_b1_reg2{mp2rage_params}_0GenericAffine.mat"
     except:
        b1anat2mp2rage_reg = []
     return b1anat2mp2rage_reg
@@ -35,7 +35,7 @@ def get_b1anat2qMT_reg(wildcards):
     #get b1anat2qMT registration if b1anat exists, otherwise return a blank string (applyAntsTransforms will then reslice instead of register)
     try:
         b1anat = sorted(glob.glob(f'data/rawdata/bids/{wildcards.field_strength}/sub-{wildcards.subject}/ses-{wildcards.session}/fmap/sub-{wildcards.subject}_ses-{wildcards.session}_acq-anat*_TB1*.nii.gz'))[-1]
-        b1anat2qMT_reg = "data/derivatives/{wildcards.field_strength}/B1map/sub-{wildcards.subject}/ses-{wildcards.session}/reg2qMT/sub-{wildcards.subject}_ses-{wildcards.session}_b1_reg2{wildcards.seq}t1w{wildcards.qMT_params}_0GenericAffine.mat"
+        b1anat2qMT_reg = "data/derivatives/{field_strength}/B1map/sub-{subject}/ses-{session}/reg2qMT/sub-{subject}_ses-{session}_b1_reg2{seq}t1w{qMT_params}_0GenericAffine.mat"
     except:
        b1anat2qMT_reg = []
     return b1anat2qMT_reg
