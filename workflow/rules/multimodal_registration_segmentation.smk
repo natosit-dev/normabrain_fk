@@ -500,7 +500,8 @@ rule ihmt_tsv:
         
         if ! [ -n {params.subjectlist} ]; then
             for map in "${{MTmaps[@]}}"; do
-                asegstats2table --subjects {params.subjectlist} --statsfile ihmt_${{map}}.stats -t $SUBJECTS_DIR/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+                asegstats2table --subjects {params.subjectlist} --statsfile ihmt_${{map}}.stats -t $SUBJECTS_DIR/ihmt_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip || \
+                echo "no subjects have this map!"
             done
         fi
         touch {output}
