@@ -766,7 +766,8 @@ rule qMT_tsv:
         
         if ! [ -n {params.subjectlist} ]; then
             for map in "${{qMTmaps[@]}}"; do
-                asegstats2table --subjects {params.subjectlist} --statsfile qMT_${{map}}.stats -t $SUBJECTS_DIR/qMT_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+                asegstats2table --subjects {params.subjectlist} --statsfile qMT_${{map}}.stats -t $SUBJECTS_DIR/qMT_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip || \
+                echo "no subjects have this map!"
             done
         fi
         touch {output}
@@ -997,7 +998,8 @@ rule dwi_tsv:
         
         if ! [ -n {params.subjectlist} ]; then
             for map in "${{dkimaps[@]}}"; do
-                asegstats2table --subjects {params.subjectlist} --statsfile dki_${{map}}.stats -t $SUBJECTS_DIR/dki_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip
+                asegstats2table --subjects {params.subjectlist} --statsfile dki_${{map}}.stats -t $SUBJECTS_DIR/dki_${{map}}_stats.tsv --meas mean --common-segs --no-segno 0 --skip || \
+                echo "no subjects have this map!"
             done
         fi
         touch {output}
