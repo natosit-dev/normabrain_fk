@@ -3,12 +3,12 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python=3.13.14
-  - snakemake=9.14.5
-  - graphviz=12.2.1
-  - snakefmt=0.11.2
+  - python=3.14.6
+  - snakemake=9.23.1
+  - graphviz=14.1.2
+  - snakefmt=2.0.3
   - conda=26.5.3
   - pip=26.1.2
   - pip:
-    - pybids==0.21.0
-    - lxml==6.0.2
+    - pybids==0.22.0
+    - lxml==6.1.1
