@@ -566,7 +566,7 @@ DICOM:
       B0FieldIdentifier:
   - attributes:                         # First match the SBREF bold run-items (the normal bold run-items don't have SBREF in the seriesdescription)
       <<: *func_dicomattr
-      SeriesDescription: (?i).*(f.?MRI|f.?mri|task|BOLD|bold|func|rest|RSN|rsn|CMRR.*_TR|cmrr.*_tr).*(SBREF|sbref).*
+      SeriesDescription: (?i).*(f.?MRI|f.?mri|task|BOLD|bold|func|rest|RSN|rsn).*(SBREF|sbref).*
     bids:
       <<: *func_dicoment_func
       suffix: sbref
@@ -586,7 +586,7 @@ DICOM:
       suffix: noRF
   - attributes:                         # Then match the PHYSIO run-items (the normal bold run-items don't have PHYSIO in the seriesdescription)
       <<: *func_dicomattr
-      ProtocolName: (?i).*(f.?MRI|f.?mri|task|BOLD|bold|func|rest|RSN|rsn|CMRR.*_TR|cmrr.*_tr).*
+      ProtocolName: (?i).*(f.?MRI|f.?mri|task|BOLD|bold|func|rest|RSN|rsn).*
       ImageType: .*'PHYSIO'.*
     bids: &func_dicoment_timeseries     # See: schema/rules/files/raw/func.yaml
       task: <ProtocolName>
@@ -602,12 +602,12 @@ DICOM:
       TaskName: <ProtocolName>
   - attributes:
       <<: *func_dicomattr
-      SeriesDescription: (?i).*(f.?MRI| f.?mri|task|BOLD|bold|func|rest|RSN|rsn|CMRR.*_TR|cmrr.*_tr).*(PHYSIO|physio).*
+      SeriesDescription: (?i).*(f.?MRI| f.?mri|task|BOLD|bold|func|rest|RSN|rsn).*(PHYSIO|physio).*
     bids: *func_dicoment_timeseries
     meta: *func_meta
   - attributes:                         # Then catch the bold run-items themselves
       <<: *func_dicomattr
-      ProtocolName: (?i).*(f.?MRI|f.?mri|task|BOLD|bold|func|rest|RSN|rsn|CMRR.*_TR|cmrr.*_tr).*
+      ProtocolName: (?i).*(f.?MRI|f.?mri|task|BOLD|bold|func|rest|RSN|rsn).*
     bids: *func_dicoment_func
     meta: *func_meta
   - attributes:
@@ -939,22 +939,27 @@ DICOM:
       <<: *dwi_dicoment_DWI
       rec: TRACE
     meta: *dwi_meta
-  - attributes:                         # Then catch the normal DWI run-items
+  - attributes:                         
       <<: *dwi_dicomattr
       ProtocolName: (?i).*(DWI|dwi|diffusion|HARDI|hardi|DTI|dti|dMRI|dmri|DW.?MRI|dw.?mri).*
-      SeriesDescription: .*PA.*
-    bids: 
-      <<: *dwi_dicoment_DWI
-      dir: PA
+    bids: *dwi_dicoment_DWI
     meta: *dwi_meta
-  - attributes:                         # Then catch the normal DWI run-items
-      <<: *dwi_dicomattr
-      ProtocolName: (?i).*(DWI|dwi|diffusion|HARDI|hardi|DTI|dti|dMRI|dmri|DW.?MRI|dw.?mri).*
-      SeriesDescription: .*AP.*
-    bids: 
-      <<: *dwi_dicoment_DWI
-      dir: AP
-    meta: *dwi_meta
+  # - attributes:                         # Then catch the normal DWI run-items
+  #     <<: *dwi_dicomattr
+  #     ProtocolName: (?i).*(DWI|dwi|diffusion|HARDI|hardi|DTI|dti|dMRI|dmri|DW.?MRI|dw.?mri).*
+  #     SeriesDescription: .*PA.*
+  #   bids: 
+  #     <<: *dwi_dicoment_DWI
+  #     dir: PA
+  #   meta: *dwi_meta
+  # - attributes:                         
+  #     <<: *dwi_dicomattr
+  #     ProtocolName: (?i).*(DWI|dwi|diffusion|HARDI|hardi|DTI|dti|dMRI|dmri|DW.?MRI|dw.?mri).*
+  #     SeriesDescription: .*AP.*
+  #   bids: 
+  #     <<: *dwi_dicoment_DWI
+  #     dir: AP
+  #   meta: *dwi_meta
   - attributes:
       <<: *dwi_dicomattr
       ImageType: .*'DIFFUSION'.*
@@ -1099,7 +1104,9 @@ DICOM:
       chunk:
       suffix: TB1EPI
     meta: *fmap_meta_B0Field
-  - attributes: *fmap_dicomattr
+  - attributes: 
+      <<: *fmap_dicomattr
+      ProtocolName: (?i).*(afi|AFI).*
     bids: &fmap_dicoment_RFFieldMaps    # See: schema/rules/files/raw/fmap.yaml
       acq: <SeriesDescription>
       ce:
@@ -1419,7 +1426,7 @@ Presentation:
     meta: *presentation_beh_meta
     events: *presentation_events
   - properties:
-      filename: (?i).*(f.?MRI|task|BOLD|func|rest|task|RSN|CMRR.*_TR).*
+      filename: (?i).*(f.?MRI|task|BOLD|func|rest|task|RSN).*
     attributes: *presentation_attr
     bids:
       <<: *presentationent_beh
@@ -1521,7 +1528,7 @@ Psychopy:
     meta: *psychopy_func_meta
     events: *psychopy_events
   - properties:
-      filename: (?i).*(f.?MRI|task|BOLD|func|rest|task|RSN|CMRR.*_TR).*
+      filename: (?i).*(f.?MRI|task|BOLD|func|rest|task|RSN).*
     attributes: *psychopy_attr
     bids:
       <<: *psychopy_beh
@@ -1600,7 +1607,7 @@ Logdata:
     meta: *free_func_meta
     events: *free_events
   - properties:
-      filename: (?i).*(f.?MRI|task|BOLD|func|rest|task|RSN|CMRR.*_TR).*
+      filename: (?i).*(f.?MRI|task|BOLD|func|rest|task|RSN).*
     bids:
       <<: *free_beh
       ce:
@@ -2091,7 +2098,7 @@ PAR:
   - attributes: &fmap_parattr
       series_type:
       exam_name:
-      protocol_name: (?i).*(field.?map|B0.?map|b0.?map).*
+      protocol_name: (?i).*(field.?map|B0.?map|b0.?map|AFI|afi).*
       tech:
       diffusion:
       fov:
@@ -2791,14 +2798,14 @@ Nibabel:
       suffix: bold
     meta: *func_meta
   - properties:                         # First match the SBREF bold run-items (the normal bold run-items won't have SBREF in the name)
-      filename: (?i).*(f.?MRI|fmri|task|BOLD|bold|func|rest|RSN|rsn|CMRR.*_TR|cmrr.*_tr).*(SBREF|sbref).*
+      filename: (?i).*(f.?MRI|fmri|task|BOLD|bold|func|rest|RSN|rsn).*(SBREF|sbref).*
     attributes: *nibattr
     bids:
       <<: *func_nibent_func
       suffix: sbref
     meta: *func_meta
   - properties:                         # Then catch the bold run-items themselves
-      filename: (?i).*(f.?MRI|fmri|task|BOLD|bold|func|rest|RSN|rsn|CMRR.*_TR|cmrr.*_tr).*
+      filename: (?i).*(f.?MRI|fmri|task|BOLD|bold|func|rest|RSN|rsn).*
     attributes: *nibattr
     bids: *func_nibent_func
     meta: *func_meta
