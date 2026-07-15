@@ -339,8 +339,17 @@ DICOM:
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(ihMT|ihmt).*
+      VolumetricProperties: (?i).*(DISTORT|distort).*
     bids:
       <<: *anat_dicoment_parametric
+      rec: DISTORTED
+      suffix: ihmt
+  - attributes:
+      <<: *anat_dicomattr
+      ProtocolName: (?i).*(ihMT|ihmt).*
+    bids:
+      <<: *anat_dicoment_parametric
+      rec: UNDISTORTED
       suffix: ihmt
   - attributes:
       <<: *anat_dicomattr
