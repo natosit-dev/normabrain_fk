@@ -107,7 +107,7 @@ DICOM:
       task:
       acq: <SeriesDescription>    # This will be expanded by the bidsmapper (so the user can edit it in the bidseditor)
       ce:
-      rec:
+      rec: <VolumetricProperties>
       run: <<>>                   # This will be updated dynamically during bidscoiner runtime (as it depends on the already existing files)
       echo:
       part: ['', mag, phase, real, imag, 0]   # This BIDS value list will be shown as a dropdown menu in the bidseditor with the first (empty) item selected (as indicated by the last item, i.e. 0)
@@ -119,7 +119,7 @@ DICOM:
       ProtocolName: (?i).*(T1|t1).?map.*
     bids: &anat_dicoment_parametric     # See: schema/rules/files/raw/anat.yaml
       task:
-      acq: <ProtocolName>
+      acq: <SeriesDescription>
       ce:
       rec:
       run: <<>>
@@ -339,17 +339,8 @@ DICOM:
   - attributes:
       <<: *anat_dicomattr
       ProtocolName: (?i).*(ihMT|ihmt).*
-      VolumetricProperties: (?i).*(DISTORT|distort).*
     bids:
       <<: *anat_dicoment_parametric
-      rec: DISTORTED
-      suffix: ihmt
-  - attributes:
-      <<: *anat_dicomattr
-      ProtocolName: (?i).*(ihMT|ihmt).*
-    bids:
-      <<: *anat_dicoment_parametric
-      rec: UNDISTORTED
       suffix: ihmt
   - attributes:
       <<: *anat_dicomattr
@@ -473,7 +464,7 @@ DICOM:
       MRAcquisitionType: 3D
     bids: &anat_dicoment_mp2rage        # See: schema/rules/files/raw/anat.yaml
       task:
-      acq: <ProtocolName>
+      acq: <SeriesDescription>
       ce:
       rec:
       run: <<>>
@@ -559,7 +550,7 @@ DICOM:
       RepetitionTime:
       PhaseEncodingDirection:
     bids: &func_dicoment_func           # See: schema/rules/files/raw/func.yaml
-      task: <ProtocolName>              # More consistent between SBREF and PHYSIO files
+      task: <SeriesDescription>              # More consistent between SBREF and PHYSIO files
       acq:
       ce:
       dir: <PhaseEncodingDirection>     # PhaseEncodingDirection is not an existing DICOM tag but parsed from other fields by BIDScoin
@@ -570,7 +561,7 @@ DICOM:
       chunk:
       suffix: bold
     meta: &func_meta
-      TaskName: <ProtocolName>
+      TaskName: <SeriesDescription>
       B0FieldSource:
       B0FieldIdentifier:
   - attributes:                         # First match the SBREF bold run-items (the normal bold run-items don't have SBREF in the seriesdescription)
@@ -598,7 +589,7 @@ DICOM:
       ProtocolName: (?i).*(f.?MRI|f.?mri|task|BOLD|bold|func|rest|RSN|rsn).*
       ImageType: .*'PHYSIO'.*
     bids: &func_dicoment_timeseries     # See: schema/rules/files/raw/func.yaml
-      task: <ProtocolName>
+      task: <SeriesDescription>
       acq:
       ce:
       dir:
@@ -608,7 +599,7 @@ DICOM:
       chunk:
       suffix: physio
     meta:
-      TaskName: <ProtocolName>
+      TaskName: <SeriesDescription>
   - attributes:
       <<: *func_dicomattr
       SeriesDescription: (?i).*(f.?MRI| f.?mri|task|BOLD|bold|func|rest|RSN|rsn).*(PHYSIO|physio).*
@@ -636,7 +627,7 @@ DICOM:
       <<: *func_dicoment_timeseries
       suffix: stim
     meta:
-      TaskName: <ProtocolName>
+      TaskName: <SeriesDescription>
 
   perf:       # ----------------------- All perfusion run-items ---------------------
   - attributes: &perf_dicomattr
@@ -658,7 +649,7 @@ DICOM:
       RepetitionTime:
       PhaseEncodingDirection:
     bids: &perf_dicoment_group1         # See: schema/rules/files/raw/perf.yaml
-      acq: <ProtocolName>
+      acq: <SeriesDescription>
       rec:
       dir: <PhaseEncodingDirection>     # PhaseEncodingDirection is not an existing DICOM tag but parsed from other fields by BIDScoin
       run: <<>>
@@ -857,7 +848,7 @@ DICOM:
     meta: *perf_meta
   - attributes: *perf_dicomattr
     bids: &perf_dicoment_group2         # See: schema/rules/files/raw/perf.yaml
-      acq: <ProtocolName>
+      acq: <SeriesDescription>
       rec: <SeriesDescription>
       dir:
       run: <<>>
@@ -866,14 +857,14 @@ DICOM:
       VolumeType: <ASLContext>
   - attributes: *perf_dicomattr
     bids: &perf_dicoment_group3         # See: schema/rules/files/raw/perf.yaml
-      acq: <ProtocolName>
+      acq: <SeriesDescription>
       rec: <SeriesDescription>
       run: <<>>
       suffix: asllabeling
     meta: *perf_meta
 #  - attributes: *perf_dicomattr
 #    bids: &perf_dicoment_physio         # See: schema/rules/files/raw/perf.yaml
-#      acq: <ProtocolName>
+#      acq: <SeriesDescription>
 #      rec:
 #      task: <SeriesDescription>
 #      recording:
@@ -902,7 +893,7 @@ DICOM:
       RepetitionTime:
       PhaseEncodingDirection:
     bids: &dwi_dicoment_DWI             # See: schema/rules/files/raw/dwi.yaml
-      acq: <ProtocolName>               # More consistent between SBREF and PHYSIO files
+      acq: <SeriesDescription>               # More consistent between SBREF and PHYSIO files
       rec:
       dir: <PhaseEncodingDirection>     # PhaseEncodingDirection is not an existing DICOM tag but parsed from other fields by BIDScoin
       run: <<>>
@@ -1066,7 +1057,7 @@ DICOM:
       ProtocolName: (?i).*(inverted|pepolar|_inv).*
       ScanningSequence: EP
     bids: &fmap_dicoment_PEPolar        # See: schema/rules/files/raw/fmap.yaml
-      acq: <SeriesDescription>          # NB: <ProtocolName> is consistent between SBREF and PHYSIO files but causes name clashes
+      acq: <SeriesDescription>          # NB: <SeriesDescription> is consistent between SBREF and PHYSIO files but causes name clashes
       ce:
       dir: <PhaseEncodingDirection>     # PhaseEncodingDirection is not an existing DICOM tag but parsed from other fields by BIDScoin
       run: <<>>
