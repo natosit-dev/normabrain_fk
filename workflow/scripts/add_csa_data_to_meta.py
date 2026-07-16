@@ -110,7 +110,7 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[5]'])
                     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[7]'])
                     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.adFree[1]'])
-                #Parameters for version 4 protocol at 3T
+                #Parameters for version 4 and 4.1 protocols at 3T
                 elif jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4" or jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4p1":
                     jsondata['PulseDuration_us'] = float(csa_data['sWipMemBlock.alFree[20]'])
                     jsondata['PulseRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[21]'])
@@ -121,7 +121,11 @@ def add_csa_data_to_meta(bidspath: str):
                     jsondata['BurstRepetitionTime_us'] = float(csa_data['sWipMemBlock.alFree[27]'])
                     jsondata['TotalPrepDuration_us'] = float(csa_data['sWipMemBlock.alFree[28]'])
                     jsondata['TukeyShape'] = float(csa_data['sWipMemBlock.alFree[24]']) / 100
-    
+
+                #Parameters for version 4.1 protocol at 3T
+                if jsondata["PulseSequenceDetails"] == "%CustomerSeq%\\crmbm_ihMT_tfl_v4p1":
+                    jsondata["EchoSpacing_ms"] = float(csa_data['sWipMemBlock.alFree[34]']) / 1000
+                    
                 #dump new json file to json sidecar
                 with jsonfile.open('w') as jf:
                     json.dump(jsondata, jf, indent=4)
