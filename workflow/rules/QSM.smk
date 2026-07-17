@@ -251,8 +251,8 @@ rule copy_mask_qsm:
 
 rule qsmxt:
     input:
-        qsm_nii_list,
-        qsm_json_list,
+        qsm_nii_list = qsm_nii_list,
+        qsm_json_list = qsm_json_list,
         # qsm_mask_list,
         # t1w_nii_list,
         # t1w_json_list
@@ -271,20 +271,26 @@ rule qsmxt:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
         
-        if command -v nvidia-smi; then
-            export CUDA_VISIBLE_DEVICES=0
-        fi
-        
-        rm -rf {params.qsm_folder}/derivatives/qsmxt-*
-
-        qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --n_procs {threads} --gpu --auto_yes || \
-        qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --n_procs {threads} --auto_yes
-
-        #move qsmxt folder so it has a consistent name for snakemake
         rm -rf {output}
         mkdir -p {output}
-        mv {params.qsm_folder}/derivatives/qsmxt-*/* {output}
-        rm -rf {params.qsm_folder}/derivatives/qsmxt-*/*
+
+        export qsm_nii_list=({input.qsm_nii_list})
+        if [ ${{#qsm_nii_list[@]}} -gt 0 ]; then
+
+            if command -v nvidia-smi; then
+                export CUDA_VISIBLE_DEVICES=0
+            fi
+            
+            rm -rf {params.qsm_folder}/derivatives/qsmxt-*
+
+            qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --n_procs {threads} --gpu --auto_yes || \
+            qsmxt {params.qsm_folder} --do_qsm --do_swi --do_t2starmap --do_r2starmap --premade gre --n_procs {threads} --auto_yes
+
+            #move qsmxt folder so it has a consistent name for snakemake
+            mv {params.qsm_folder}/derivatives/qsmxt-*/* {output}
+            rm -rf {params.qsm_folder}/derivatives/qsmxt-*/*
+        
+        fi
         """
 
 rule aggregate_qsmxt:
