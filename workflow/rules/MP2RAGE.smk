@@ -201,7 +201,7 @@ rule create_uncorr_qT1:
     threads:
         8
     container:
-        "docker://rflaherty3636/mp2proc:v0.1.0"
+        "docker://rflaherty3636/mp2proc:v0.1.1"
     resources:
         mem_mb=3000
     log:
@@ -210,7 +210,7 @@ rule create_uncorr_qT1:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
 
-        /opt/vol_proc/main {input}
+        /opt/VolProc/bin/main {input}
         cp {params.qT1} {output}
         """
 
@@ -266,7 +266,7 @@ rule run_mp2proc:
     threads:
         8
     container:
-        "docker://rflaherty3636/mp2proc:v0.1.0"
+        "docker://rflaherty3636/mp2proc:v0.1.1"
     resources: 
         mem_mb=5000
     log:
@@ -274,7 +274,7 @@ rule run_mp2proc:
     shell:
         """
         exec > >(tee {log}) 2>&1 #save output to log AND print to console
-        /opt/vol_proc/main {input.mp2proc_json}
+        /opt/VolProc/bin/main {input.mp2proc_json}
 
         mv {params.b1} {output.b1}
         mv {params.t1map} {output.t1map}
